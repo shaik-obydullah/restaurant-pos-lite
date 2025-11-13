@@ -1,4 +1,10 @@
 <?php
+/**
+ * Plugin Handler
+ *
+ * @package Restaurant_POS_Lite
+ * @since   1.0.0
+ */
 if (!defined('ABSPATH'))
     exit;
 
@@ -9,6 +15,7 @@ require_once OBY_RESTAURANT_POS_LITE_PATH . 'includes/class-restaurant-pos-lite-
 require_once OBY_RESTAURANT_POS_LITE_PATH . 'includes/class-restaurant-pos-lite-products.php';
 require_once OBY_RESTAURANT_POS_LITE_PATH . 'includes/class-restaurant-pos-lite-stocks.php';
 require_once OBY_RESTAURANT_POS_LITE_PATH . 'includes/class-restaurant-pos-lite-stock_adjustments.php';
+require_once OBY_RESTAURANT_POS_LITE_PATH . 'includes/class-restaurant-pos-lite-customers.php';
 require_once OBY_RESTAURANT_POS_LITE_PATH . 'includes/class-restaurant-pos-lite-pos.php';
 require_once OBY_RESTAURANT_POS_LITE_PATH . 'includes/class-restaurant-pos-lite-sales.php';
 require_once OBY_RESTAURANT_POS_LITE_PATH . 'includes/class-restaurant-pos-lite-accounting.php';
@@ -21,6 +28,7 @@ class Restaurant_POS_Lite_Handler
     public $products;
     public $stocks;
     public $stock_adjustments;
+    public $customers;
     public $pos;
     public $sales;
     public $accounting;
@@ -33,6 +41,7 @@ class Restaurant_POS_Lite_Handler
         $this->products = new Restaurant_POS_Lite_Products();
         $this->stocks = new Restaurant_POS_Lite_Stocks();
         $this->stock_adjustments = new Restaurant_POS_Lite_Stock_Adjustments();
+        $this->customers = new Restaurant_POS_Lite_Customers();
         $this->pos = new Restaurant_POS_Lite_POS();
         $this->sales = new Restaurant_POS_Lite_Sales();
         $this->accounting = new Restaurant_POS_Lite_Accounting();
@@ -47,7 +56,7 @@ class Restaurant_POS_Lite_Handler
             __('Restaurant POS', 'restaurant-pos-lite'),
             __('Restaurant POS', 'restaurant-pos-lite'),
             'manage_options',
-            'wp-restaurant-pos-lite',
+            'restaurant-pos-lite',
             [$this->dashboard, 'render_page'],
             'dashicons-store',
             25
@@ -55,101 +64,101 @@ class Restaurant_POS_Lite_Handler
 
         // Dashboard submenu
         add_submenu_page(
-            'wp-restaurant-pos-lite',
+            'restaurant-pos-lite',
             __('Dashboard', 'restaurant-pos-lite'),
             __('Dashboard', 'restaurant-pos-lite'),
             'manage_options',
-            'wp-restaurant-pos-lite',
+            'restaurant-pos-lite',
             [$this->dashboard, 'render_page']
         );
 
         // Categories submenu
         add_submenu_page(
-            'wp-restaurant-pos-lite',
+            'restaurant-pos-lite',
             __('Categories', 'restaurant-pos-lite'),
             __('Categories', 'restaurant-pos-lite'),
             'manage_options',
-            'wp-restaurant-pos-lite-categories',
+            'restaurant-pos-lite-categories',
             [$this->categories, 'render_page']
         );
 
         // Products submenu
         add_submenu_page(
-            'wp-restaurant-pos-lite',
+            'restaurant-pos-lite',
             __('Products', 'restaurant-pos-lite'),
             __('Products', 'restaurant-pos-lite'),
             'manage_options',
-            'wp-restaurant-pos-lite-products',
+            'restaurant-pos-lite-products',
             [$this->products, 'render_page']
         );
 
         // Stock submenu
         add_submenu_page(
-            'wp-restaurant-pos-lite',
+            'restaurant-pos-lite',
             __('Stocks', 'restaurant-pos-lite'),
             __('Stocks', 'restaurant-pos-lite'),
             'manage_options',
-            'wp-restaurant-pos-lite-stocks',
+            'restaurant-pos-lite-stocks',
             [$this->stocks, 'render_page']
         );
 
         // Stock Adjustments submenu
         add_submenu_page(
-            'wp-restaurant-pos-lite',
+            'restaurant-pos-lite',
             __('Stock Adjustments', 'restaurant-pos-lite'),
             __('Stock Adjustments', 'restaurant-pos-lite'),
             'manage_options',
-            'wp-restaurant-pos-lite-stock_adjustments',
+            'restaurant-pos-lite-stock_adjustments',
             [$this->stock_adjustments, 'render_page']
         );
 
         // Customer submenu
         add_submenu_page(
-            'wp-restaurant-pos-lite',
+            'restaurant-pos-lite',
             __('Customers', 'restaurant-pos-lite'),
             __('Customers', 'restaurant-pos-lite'),
             'manage_options',
-            'wp-restaurant-pos-lite-customers',
+            'restaurant-pos-lite-customers',
             [$this->customers, 'render_page']
         );
 
         // POS submenu
         add_submenu_page(
-            'wp-restaurant-pos-lite',
+            'restaurant-pos-lite',
             __('POS', 'restaurant-pos-lite'),
             __('POS', 'restaurant-pos-lite'),
             'manage_options',
-            'wp-restaurant-pos-lite-pos',
+            'restaurant-pos-lite-pos',
             [$this->pos, 'render_page']
         );
 
         // Sales submenu
         add_submenu_page(
-            'wp-restaurant-pos-lite',
+            'restaurant-pos-lite',
             __('Sales', 'restaurant-pos-lite'),
             __('Sales', 'restaurant-pos-lite'),
             'manage_options',
-            'wp-restaurant-pos-lite-sales',
+            'restaurant-pos-lite-sales',
             [$this->sales, 'render_page']
         );
 
         // Accounting submenu
         add_submenu_page(
-            'wp-restaurant-pos-lite',
+            'restaurant-pos-lite',
             __('Accounting', 'restaurant-pos-lite'),
             __('Accounting', 'restaurant-pos-lite'),
             'manage_options',
-            'wp-restaurant-pos-lite-accounting',
+            'restaurant-pos-lite-accounting',
             [$this->accounting, 'render_page']
         );
 
         // Settings submenu
         add_submenu_page(
-            'wp-restaurant-pos-lite',
+            'restaurant-pos-lite',
             __('Settings', 'restaurant-pos-lite'),
             __('Settings', 'restaurant-pos-lite'),
             'manage_options',
-            'wp-restaurant-pos-lite-settings',
+            'restaurant-pos-lite-settings',
             [$this->settings, 'render_page']
         );
     }

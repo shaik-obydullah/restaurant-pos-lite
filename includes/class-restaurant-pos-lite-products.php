@@ -1,10 +1,9 @@
 <?php
 /**
- * Products Management for Restaurant POS
- * 
- * Note: Direct database queries and table name interpolation are necessary
- * for custom plugin functionality and follow WordPress development practices.
- * Table names are safely constructed using $wpdb->prefix.
+ * Product Management
+ *
+ * @package Restaurant_POS_Lite
+ * @since   1.0.0
  */
 if (!defined('ABSPATH'))
     exit;
@@ -193,90 +192,6 @@ class Restaurant_POS_Lite_Products
                     </div>
                 </div>
             </div>
-
-            <style>
-                /* Status styling */
-                .status-active {
-                    color: #0a7c38;
-                    font-weight: 600;
-                    padding: 4px 8px;
-                    border-radius: 3px;
-                    background: #edfaef;
-                    display: inline-block;
-                }
-
-                .status-inactive {
-                    color: #d63638;
-                    font-weight: 600;
-                    padding: 4px 8px;
-                    border-radius: 3px;
-                    background: #fef0f1;
-                    display: inline-block;
-                }
-
-                /* Form field focus states */
-                #product-name:focus,
-                #product-category:focus,
-                #product-status:focus,
-                #product-image:focus,
-                #product-search:focus {
-                    border-color: #2271b1 !important;
-                    box-shadow: 0 0 0 1px #2271b1 !important;
-                    outline: none !important;
-                }
-
-                /* Product image in table */
-                .product-image {
-                    width: 40px;
-                    height: 40px;
-                    object-fit: cover;
-                    border-radius: 4px;
-                    border: 1px solid #ddd;
-                }
-
-                .no-image {
-                    width: 40px;
-                    height: 40px;
-                    background: #f6f7f7;
-                    border: 1px solid #ddd;
-                    border-radius: 4px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: #8c8f94;
-                    font-size: 10px;
-                    text-align: center;
-                }
-
-                /* Button loading state */
-                .button-loading {
-                    position: relative;
-                    color: transparent !important;
-                }
-
-                .button-loading .spinner {
-                    display: inline-block !important;
-                    visibility: visible !important;
-                }
-
-                /* Pagination styles */
-                .tablenav-pages .button:disabled {
-                    opacity: 0.5;
-                    cursor: default;
-                }
-
-                .current-page {
-                    width: 40px;
-                    text-align: center;
-                    padding: 4px;
-                }
-
-                #per-page-select:focus {
-                    border-color: #2271b1;
-                    box-shadow: 0 0 0 1px #2271b1;
-                    outline: none;
-                }
-            </style>
 
             <script>
                 jQuery(document).ready(function ($) {

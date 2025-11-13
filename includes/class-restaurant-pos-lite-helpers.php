@@ -26,6 +26,7 @@ class Restaurant_POS_Lite_Helpers
         return array(
             'currency' => get_option('oby_restaurant_pos_lite_currency', '$'),
             'vat_rate' => get_option('oby_restaurant_pos_lite_vat_rate', '0'),
+            'tax_rate' => get_option('oby_restaurant_pos_lite_tax_rate', '0'),
             'shop_name' => get_option('oby_restaurant_pos_lite_shop_name', ''),
             'shop_address' => get_option('oby_restaurant_pos_lite_shop_address', ''),
             'shop_phone' => get_option('oby_restaurant_pos_lite_shop_phone', ''),
@@ -49,7 +50,20 @@ class Restaurant_POS_Lite_Helpers
     }
 
     /**
-     * Calculate total with VAT
+     * Calculate TAX amount
+     *
+     * @since 1.0.0
+     * @param float $amount The amount to calculate TAX for.
+     * @return float
+     */
+    public static function calculate_tax($amount)
+    {
+        $tax_rate = floatval(get_option('oby_restaurant_pos_lite_tax_rate', '0'));
+        return ($amount * $tax_rate) / 100;
+    }
+
+    /**
+     * Calculate total with VAT and TAX
      *
      * @since 1.0.0
      * @param float $subtotal The subtotal amount.
@@ -58,11 +72,13 @@ class Restaurant_POS_Lite_Helpers
     public static function calculate_totals($subtotal)
     {
         $vat_amount = self::calculate_vat($subtotal);
-        $total = $subtotal + $vat_amount;
+        $tax_amount = self::calculate_tax($subtotal);
+        $total = $subtotal + $vat_amount + $tax_amount;
 
         return array(
             'subtotal' => $subtotal,
             'vat_amount' => $vat_amount,
+            'tax_amount' => $tax_amount,
             'total' => $total
         );
     }
@@ -80,6 +96,18 @@ class Restaurant_POS_Lite_Helpers
     }
 
     /**
+     * Check if TAX is enabled (rate > 0)
+     *
+     * @since 1.0.0
+     * @return bool
+     */
+    public static function is_tax_enabled()
+    {
+        $tax_rate = floatval(get_option('oby_restaurant_pos_lite_tax_rate', '0'));
+        return $tax_rate > 0;
+    }
+
+    /**
      * Get VAT rate
      *
      * @since 1.0.0
@@ -88,6 +116,17 @@ class Restaurant_POS_Lite_Helpers
     public static function get_vat_rate()
     {
         return floatval(get_option('oby_restaurant_pos_lite_vat_rate', '0'));
+    }
+
+    /**
+     * Get TAX rate
+     *
+     * @since 1.0.0
+     * @return float
+     */
+    public static function get_tax_rate()
+    {
+        return floatval(get_option('oby_restaurant_pos_lite_tax_rate', '0'));
     }
 
     /**
@@ -278,6 +317,7 @@ class Restaurant_POS_Lite_Helpers
             'shop_phone' => '',
             'shop_logo' => '',
             'vat_rate' => '0',
+            'tax_rate' => '0', // ADDED TAX RATE TO DEFAULTS
         );
     }
 }

@@ -1,4 +1,4 @@
-    /*
+/*
 ===========================================
  Restaurant POS Lite - Admin Styles
  Author: Shaik Obydullah
@@ -507,4 +507,586 @@
 .button-loading .spinner {
   display: inline-block !important;
   visibility: visible !important;
+}
+
+/* ===============================
+   Products
+=============================== */
+
+/* Status styling */
+.status-active {
+  color: #0a7c38;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background: #edfaef;
+  display: inline-block;
+}
+
+.status-inactive {
+  color: #d63638;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background: #fef0f1;
+  display: inline-block;
+}
+
+/* Form field focus states */
+#product-name:focus,
+#product-category:focus,
+#product-status:focus,
+#product-image:focus,
+#product-search:focus {
+  border-color: #2271b1 !important;
+  box-shadow: 0 0 0 1px #2271b1 !important;
+  outline: none !important;
+}
+
+/* Product image in table */
+.product-image {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.no-image {
+  width: 40px;
+  height: 40px;
+  background: #f6f7f7;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8c8f94;
+  font-size: 10px;
+  text-align: center;
+}
+
+/* Button loading state */
+.button-loading {
+  position: relative;
+  color: transparent !important;
+}
+
+.button-loading .spinner {
+  display: inline-block !important;
+  visibility: visible !important;
+}
+
+/* Pagination styles */
+.tablenav-pages .button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.current-page {
+  width: 40px;
+  text-align: center;
+  padding: 4px;
+}
+
+#per-page-select:focus {
+  border-color: #2271b1;
+  box-shadow: 0 0 0 1px #2271b1;
+  outline: none;
+}
+
+/* ===============================
+   Stocks
+=============================== */
+
+/* Status styling */
+.status-inStock {
+  color: #0a7c38;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background: #edfaef;
+  display: inline-block;
+}
+
+.status-outStock {
+  color: #d63638;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background: #fef0f1;
+  display: inline-block;
+}
+
+.status-lowStock {
+  color: #ffb900;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background: #fef8e7;
+  display: inline-block;
+}
+
+/* Form field focus states */
+#stock-product:focus,
+#net-cost:focus,
+#sale-cost:focus,
+#stock-quantity:focus,
+#stock-status:focus {
+  border-color: #2271b1 !important;
+  box-shadow: 0 0 0 1px #2271b1 !important;
+  outline: none !important;
+}
+
+/* Button loading state */
+.button-loading {
+  position: relative;
+  color: transparent !important;
+}
+
+.button-loading .spinner {
+  display: inline-block !important;
+  visibility: visible !important;
+}
+
+/* Summary cards */
+.summary-card {
+  transition: transform 0.2s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Pagination styles */
+.tablenav-pages .button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.current-page {
+  width: 40px;
+  text-align: center;
+}
+
+/* Search and filter styles */
+#stock-search:focus,
+#status-filter:focus,
+#quantity-filter:focus,
+#per-page-select:focus {
+  border-color: #2271b1;
+  box-shadow: 0 0 0 1px #2271b1;
+  outline: none;
+}
+
+/* ===============================
+   Stock Adjustment
+=============================== */
+
+/* Adjustment type styling */
+.adjustment-increase {
+  color: #0a7c38;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background: #edfaef;
+  display: inline-block;
+}
+
+.adjustment-decrease {
+  color: #d63638;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background: #fef0f1;
+  display: inline-block;
+}
+
+/* Form field focus states */
+#adjustment-product:focus,
+#adjustment-type:focus,
+#adjustment-quantity:focus,
+#adjustment-note:focus {
+  border-color: #2271b1 !important;
+  box-shadow: 0 0 0 1px #2271b1 !important;
+  outline: none !important;
+}
+
+/* Button loading state */
+.button-loading {
+  position: relative;
+  color: transparent !important;
+}
+
+.button-loading .spinner {
+  display: inline-block !important;
+  visibility: visible !important;
+}
+
+/* Pagination styles */
+.tablenav-pages .button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.current-page {
+  width: 40px;
+  text-align: center;
+}
+
+/* Search and filter styles */
+#adjustment-search:focus,
+#type-filter:focus,
+#date-filter:focus,
+#per-page-select:focus {
+  border-color: #2271b1;
+  box-shadow: 0 0 0 1px #2271b1;
+  outline: none;
+}
+
+/* ===============================
+   Customers
+=============================== */
+
+/* Status styling */
+.status-active {
+  color: #0a7c38;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background: #edfaef;
+  display: inline-block;
+}
+
+.status-inactive {
+  color: #d63638;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background: #fef0f1;
+  display: inline-block;
+}
+
+/* Balance styling */
+.balance-positive {
+  color: #0a7c38;
+  font-weight: 600;
+}
+
+.balance-zero {
+  color: #666;
+  font-weight: 600;
+}
+
+.balance-negative {
+  color: #d63638;
+  font-weight: 600;
+}
+
+/* Form field focus states */
+#customer-name:focus,
+#customer-email:focus,
+#customer-mobile:focus,
+#customer-address:focus,
+#customer-status:focus {
+  border-color: #2271b1 !important;
+  box-shadow: 0 0 0 1px #2271b1 !important;
+  outline: none !important;
+}
+
+/* Button loading state */
+.button-loading {
+  position: relative;
+  color: transparent !important;
+}
+
+.button-loading .spinner {
+  display: inline-block !important;
+  visibility: visible !important;
+}
+
+/* Summary cards */
+.summary-card {
+  transition: transform 0.2s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Pagination styles */
+.tablenav-pages .button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.current-page {
+  width: 40px;
+  text-align: center;
+}
+
+/* Search and filter styles */
+#customer-search:focus,
+#status-filter:focus,
+#per-page-select:focus {
+  border-color: #2271b1;
+  box-shadow: 0 0 0 1px #2271b1;
+  outline: none;
+}
+
+/* ===============================
+   POS
+=============================== */
+
+#wpfooter {
+  position: static !important;
+  margin-top: 15rem;
+  padding-top: 2rem;
+  border-top: 1px solid #ddd;
+}
+
+#pos-container {
+  min-height: calc(100vh - 250px) !important;
+}
+
+/* Success Modal Styles */
+#success-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  justify-content: center;
+  align-items: center;
+}
+
+#success-modal > div {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 90%;
+  animation: modalAppear 0.3s ease-out;
+}
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+/* ===============================
+   Sales
+=============================== */
+
+.sales-table-wrapper {
+  background: #fff;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.sale-actions {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
+
+.status-completed {
+  color: #0a7c38;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background: #edfaef;
+  display: inline-block;
+}
+
+.status-saveSale {
+  color: #dba617;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background: #fef8e7;
+  display: inline-block;
+}
+
+.status-canceled {
+  color: #d63638;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background: #fef0f1;
+  display: inline-block;
+}
+
+.sale-type-dineIn {
+  color: #2271b1;
+  font-weight: 600;
+}
+
+.sale-type-takeAway {
+  color: #dba617;
+  font-weight: 600;
+}
+
+.sale-type-pickUp {
+  color: #0a7c38;
+  font-weight: 600;
+}
+
+.amount-positive {
+  color: #0a7c38;
+  font-weight: 600;
+}
+
+.amount-zero {
+  color: #646970;
+}
+
+.amount-negative {
+  color: #d63638;
+  font-weight: 600;
+}
+
+.pagination-numbers .page-number {
+  padding: 6px 10px;
+  border: 1px solid #dcdcde;
+  border-radius: 3px;
+  text-decoration: none;
+  font-size: 13px;
+  min-width: 32px;
+  text-align: center;
+  display: inline-block;
+}
+
+.pagination-numbers .page-number.current {
+  background: #2271b1;
+  color: #fff;
+  border-color: #2271b1;
+}
+
+.pagination-numbers .page-number:hover:not(.current) {
+  background: #f6f7f7;
+}
+
+/* ===============================
+   Accounting
+=============================== */
+
+.type-income {
+  color: #0a7c38;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background: #edfaef;
+  display: inline-block;
+}
+
+.type-expense {
+  color: #d63638;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background: #fef0f1;
+  display: inline-block;
+}
+
+.type-payable {
+  color: #2271b1;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background: #e8f2f8;
+  display: inline-block;
+}
+
+.type-receivable {
+  color: #ffb900;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background: #fef8e7;
+  display: inline-block;
+}
+
+.amount-positive {
+  color: #0a7c38;
+  font-weight: 600;
+}
+
+.amount-zero {
+  color: #646970;
+}
+
+.amount-negative {
+  color: #d63638;
+  font-weight: 600;
+}
+
+.entry-description {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #646970;
+  font-size: 12px;
+}
+
+#entry-type:focus,
+#entry-amount:focus,
+#entry-description:focus,
+#entry-date:focus {
+  border-color: #2271b1 !important;
+  box-shadow: 0 0 0 1px #2271b1 !important;
+  outline: none !important;
+}
+
+.button-loading {
+  position: relative;
+  color: transparent !important;
+}
+
+.button-loading .spinner {
+  display: inline-block !important;
+  visibility: visible !important;
+}
+
+.summary-card {
+  transition: transform 0.2s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+}
+
+.pagination-numbers .page-number {
+  padding: 6px 10px;
+  border: 1px solid #dcdcde;
+  border-radius: 3px;
+  text-decoration: none;
+  font-size: 13px;
+  min-width: 32px;
+  text-align: center;
+  display: inline-block;
+}
+
+.pagination-numbers .page-number.current {
+  background: #2271b1;
+  color: #fff;
+  border-color: #2271b1;
+}
+
+.pagination-numbers .page-number:hover:not(.current) {
+  background: #f6f7f7;
 }

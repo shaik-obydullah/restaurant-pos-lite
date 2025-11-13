@@ -1,9 +1,9 @@
 <?php
 /**
  * Product Categories Management
- * 
- * Note: Direct database queries are necessary for custom table operations
- * and follow WordPress plugin development practices.
+ *
+ * @package Restaurant_POS_Lite
+ * @since   1.0.0
  */
 if (!defined('ABSPATH'))
     exit;

@@ -334,10 +334,16 @@ class Restaurant_POS_Lite_Settings
                     <?php echo esc_html(Restaurant_POS_Lite_Helpers::format_currency(100)); ?></p>
                 <p><strong><?php esc_html_e('VAT Rate:', 'restaurant-pos-lite'); ?></strong>
                     <?php echo esc_html(get_option('oby_restaurant_pos_lite_vat_rate', '0')); ?>%</p>
-                <p><strong><?php esc_html_e('Tax Rate:', 'restaurant-pos-lite'); ?></strong>
-                    <?php echo esc_html(get_option('oby_restaurant_pos_lite_tax_rate', '0')); ?>%</p>
                 <p><strong><?php esc_html_e('VAT Enabled:', 'restaurant-pos-lite'); ?></strong>
                     <?php echo Restaurant_POS_Lite_Helpers::is_vat_enabled() ? esc_html__('Yes', 'restaurant-pos-lite') : esc_html__('No', 'restaurant-pos-lite'); ?>
+                </p>
+                <p><strong><?php esc_html_e('Tax Rate:', 'restaurant-pos-lite'); ?></strong>
+                    <?php echo esc_html(get_option('oby_restaurant_pos_lite_tax_rate', '0')); ?>%</p>
+                <p><strong><?php esc_html_e('Tax Enabled:', 'restaurant-pos-lite'); ?></strong>
+                    <?php
+                    $tax_rate = floatval(get_option('oby_restaurant_pos_lite_tax_rate', '0'));
+                    echo $tax_rate > 0 ? esc_html__('Yes', 'restaurant-pos-lite') : esc_html__('No', 'restaurant-pos-lite');
+                    ?>
                 </p>
                 <?php if (Restaurant_POS_Lite_Helpers::is_vat_enabled()): ?>
                     <p><strong><?php esc_html_e('VAT Calculation Example (on $100):', 'restaurant-pos-lite'); ?></strong>
@@ -349,10 +355,11 @@ class Restaurant_POS_Lite_Settings
                         ?>
                     </p>
                 <?php endif; ?>
-                <?php if (floatval(get_option('oby_restaurant_pos_lite_tax_rate', '0')) > 0): ?>
+                <?php
+                $tax_rate = floatval(get_option('oby_restaurant_pos_lite_tax_rate', '0'));
+                if ($tax_rate > 0): ?>
                     <p><strong><?php esc_html_e('Tax Calculation Example (on $100):', 'restaurant-pos-lite'); ?></strong>
                         <?php
-                        $tax_rate = floatval(get_option('oby_restaurant_pos_lite_tax_rate', '0'));
                         $tax_amount = (100 * $tax_rate) / 100;
                         $total_with_tax = 100 + $tax_amount;
                         echo esc_html(Restaurant_POS_Lite_Helpers::format_currency($total_with_tax) . ' (' .
