@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Restaurant POS Lite</title>
+    <style>
+      /* Reset and Base Styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-size: 14px;
+        line-height: 1.6;
+        color: #000000;
+        background-color: #ffffff;
+      }
+
+      a {
+        color: #000000;
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .p-1 {
+        padding: 0.5%;
+      }
+
+      .m-1 {
+        margin: 1%;
+      }
+
+      /* Header Styles */
+      .header {
+        background-color: #000000;
+        color: #ffffff;
+        padding: 15px 0;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .header-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        font-size: 24px;
+        font-weight: bold;
+      }
+
+      .logo a {
+        color: #ffffff;
+      }
+
+      .nav ul {
+        list-style: none;
+        display: flex;
+      }
+
+      .nav li {
+        margin-left: 20px;
+      }
+
+      .nav a {
+        color: #ffffff;
+        font-weight: 500;
+      }
+
+      /* Main Content Layout */
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        display: flex;
+      }
+
+      /* Sidebar Styles */
+      .sidebar {
+        width: 250px;
+        background-color: #f5f5f5;
+        border: 1px solid #000000;
+        border-radius: 5px;
+        padding: 20px;
+        margin-right: 2px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .sidebar h3 {
+        color: #000000;
+        margin-bottom: 15px;
+        font-size: 16px;
+        border-bottom: 1px solid #000000;
+        padding-bottom: 5px;
+      }
+
+      .sidebar ul {
+        list-style: none;
+      }
+
+      .sidebar li {
+        margin-bottom: 8px;
+      }
+
+      .sidebar a {
+        color: #000000;
+        display: block;
+        padding: 5px 0;
+      }
+
+      .sidebar a:hover {
+        text-decoration: underline;
+      }
+
+      /* Content Area Styles */
+      .content {
+        flex: 1;
+        background-color: #ffffff;
+        border: 1px solid #000000;
+        border-radius: 5px;
+        padding: 30px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .content h1 {
+        color: #000000;
+        font-size: 28px;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #000000;
+      }
+
+      .content h2 {
+        color: #000000;
+        font-size: 22px;
+        margin: 25px 0 15px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #000000;
+      }
+
+      .content h3 {
+        color: #000000;
+        font-size: 18px;
+        margin: 20px 0 10px;
+      }
+
+      .content p {
+        margin-bottom: 15px;
+      }
+
+      .content ul,
+      .content ol {
+        margin-bottom: 15px;
+        padding-left: 20px;
+      }
+
+      .content li {
+        margin-bottom: 5px;
+      }
+
+      /* Code Blocks */
+      .code-block {
+        background-color: #f8f8f8;
+        border: 1px solid #000000;
+        border-radius: 4px;
+        padding: 15px;
+        margin: 15px 0;
+        font-family: Consolas, Monaco, "Andale Mono", monospace;
+        font-size: 13px;
+        line-height: 1.5;
+        overflow-x: auto;
+      }
+
+      .code-block code {
+        color: #000000;
+      }
+
+      /* Note Boxes */
+      .note {
+        background-color: #f0f0f0;
+        border: 1px solid #000000;
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 4px;
+      }
+
+      .note strong {
+        color: #000000;
+      }
+
+      /* Footer Styles */
+      .footer {
+        background-color: #000000;
+        color: #ffffff;
+        padding: 20px 0;
+        text-align: center;
+        margin-top: 40px;
+      }
+
+      .footer a {
+        color: #ffffff;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .container {
+          flex-direction: column;
+        }
+
+        .sidebar {
+          width: 100%;
+          margin-right: 0;
+          margin-bottom: 20px;
+        }
+
+        .header-container {
+          flex-direction: column;
+          text-align: center;
+        }
+
+        .nav ul {
+          margin-top: 15px;
+        }
+
+        .nav li {
+          margin: 0 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-container">
+        <div class="logo">
+          <a href="/">Restaurant POS Lite</a>
+        </div>
+        <nav class="nav">
+          <ul>
+            <li>
+              <a href="https://wordpress.org/plugins/restaurant-pos-lite/"
+                >Download</a
+              >
+            </li>
+            <li><a href="https://obydullah.com/">Support</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <div class="container">
+      <aside class="sidebar">
+        <h3>Getting Started</h3>
+        <ul>
+          <li><a href="#introduction">Introduction</a></li>
+          <li><a href="#installation">Installation</a></li>
+          <li><a href="#setting">Plugin Settings</a></li>
+        </ul>
+
+        <h3>Features</h3>
+        <ul>
+          <li><a href="#feature1">Feature 1</a></li>
+          <li><a href="#feature2">Feature 2</a></li>
+          <li><a href="#feature3">Feature 3</a></li>
+        </ul>
+
+        <h3>Advanced Usage</h3>
+        <ul>
+          <li><a href="#customization">Customization</a></li>
+          <li><a href="#hooks">Hooks & Filters</a></li>
+          <li><a href="#troubleshooting">Troubleshooting</a></li>
+        </ul>
+      </aside>
+
+      <main class="content">
+        <h1>Technical Documentation</h1>
+
+        <h2 id="introduction">Introduction</h2>
+        <p>
+          A free plugin to manage restaurant orders, menu items, and sales
+          directly from your WordPress dashboard. Restaurant POS Lite is simple,
+          fast, and built with clean PHP code — ideal for cafés, restaurants,
+          food trucks, and takeaways. Create menus, take orders, and view sales
+          reports without needing any external POS software. Designed to be
+          lightweight, user-friendly, and fully compatible with modern WordPress
+          setups.
+        </p>
+        <h2 id="installation">Installation</h2>
+
+        <p>
+          You can install <strong>Restaurant POS Lite</strong> in two ways: from
+          the WordPress Plugin Directory or manually from GitHub.
+        </p>
+
+        <h3>1. Install from WordPress Plugin Directory</h3>
+        <ol>
+          <li>Log in to your WordPress admin dashboard.</li>
+          <li>Go to <strong>Plugins &gt; Add New</strong>.</li>
+          <li>
+            In the search box, type <strong>"Restaurant POS Lite"</strong>.
+          </li>
+          <li>Click <strong>Install Now</strong>.</li>
+          <li>After installation, click <strong>Activate</strong>.</li>
+        </ol>
+
+        <h3>2. Manual Installation (from GitHub)</h3>
+        <ol>
+          <li>
+            Download the latest plugin ZIP file from the
+            <a href="YOUR_GITHUB_RELEASE_URL" target="_blank"
+              >GitHub Releases page</a
+            >.
+          </li>
+          <li>Log in to your WordPress admin dashboard.</li>
+          <li>Navigate to <strong>Plugins &gt; Add New</strong>.</li>
+          <li>Click the <strong>Upload Plugin</strong> button.</li>
+          <li>
+            Select the downloaded ZIP file and click
+            <strong>Install Now</strong>.
+          </li>
+          <li>
+            Once uploaded, click <strong>Activate</strong> to enable the plugin.
+          </li>
+        </ol>
+
+        <div class="note">
+          <strong>Note:</strong> Make sure your WordPress installation meets the
+          minimum requirements before installing.
+        </div>
+
+        <h2 id="setting">Plugin Settings</h2>
+        <p>
+          After installing and activating
+          <strong>Restaurant POS Lite</strong>, you can configure all system
+          options from the plugin settings panel.
+        </p>
+
+        <h3>Accessing the Settings</h3>
+        <p>To open the settings page:</p>
+        <ol>
+          <li>
+            In your WordPress dashboard, click
+            <strong>Restaurant POS</strong> from the left sidebar.
+          </li>
+          <li>Select <strong>Settings</strong>.</li>
+        </ol>
+
+        <img
+          src="../screenshot/10. Settings.png"
+          alt="Restaurant POS Lite Settings Screenshot"
+          style="
+            max-width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            margin: 20px 0;
+          "
+        />
+
+        <p>The settings page is divided into two primary sections:</p>
+
+        <ul>
+          <li><strong>General Settings</strong></li>
+          <li><strong>Shop Information</strong></li>
+        </ul>
+
+        <hr />
+
+        <h3>General Settings</h3>
+        <p>
+          These settings control how the POS system formats dates, displays
+          currency, and calculates tax/VAT.
+        </p>
+
+        <table
+          style="width: 100%; border-collapse: collapse"
+          border="1"
+          cellpadding="10"
+        >
+          <tr>
+            <th class="p-1">Setting</th>
+            <th class="p-1">Description</th>
+          </tr>
+          <tr>
+            <td class="p-1"><strong>Date Format</strong></td>
+            <td class="p-1">
+              Select the date format used throughout the POS (orders, reports,
+              receipts).
+            </td>
+          </tr>
+          <tr>
+            <td class="p-1"><strong>Currency</strong></td>
+            <td class="p-1">
+              Choose the currency symbol (USD, GBP, EUR, INR, etc.).
+            </td>
+          </tr>
+          <tr>
+            <td class="p-1"><strong>Currency Position</strong></td>
+            <td class="p-1">
+              Choose how the price is displayed: $100, 100$, $ 100, or 100 $.
+            </td>
+          </tr>
+          <tr>
+            <td class="p-1"><strong>VAT Rate (%)</strong></td>
+            <td class="p-1">
+              Enter your VAT percentage. Set to 0 to disable VAT.
+            </td>
+          </tr>
+          <tr>
+            <td class="p-1"><strong>Tax Rate (%)</strong></td>
+            <td class="p-1">
+              Enter a general tax percentage (optional). Set to 0 to disable
+              tax.
+            </td>
+          </tr>
+        </table>
+
+        <hr />
+
+        <h3>Shop Information</h3>
+        <p>
+          Details entered here will appear on receipts, order printouts, and
+          reports.
+        </p>
+
+        <table
+          style="width: 100%; border-collapse: collapse"
+          border="1"
+          cellpadding="10"
+        >
+          <tr>
+            <th class="p-1">Setting</th>
+            <th class="p-1">Description</th>
+          </tr>
+          <tr>
+            <td class="p-1"><strong>Restaurant Name</strong></td>
+            <td class="p-1">Your shop or restaurant name.</td>
+          </tr>
+          <tr>
+            <td class="p-1"><strong>Address</strong></td>
+            <td class="p-1">Full address of your business.</td>
+          </tr>
+          <tr>
+            <td class="p-1"><strong>Phone Number</strong></td>
+            <td class="p-1">
+              The main contact number for receipts or customer display.
+            </td>
+          </tr>
+          <tr>
+            <td class="p-1"><strong>Shop Logo</strong></td>
+            <td class="p-1">
+              A URL to your logo image (shown on receipts and reports).
+            </td>
+          </tr>
+        </table>
+
+        <hr />
+
+        <h2>Settings Page Implementation</h2>
+        <p>
+          The <strong>Restaurant POS Lite</strong> settings page is fully built
+          using the native <strong>WordPress Options API</strong>. This ensures
+          secure data handling, automatic sanitization, and full compatibility
+          with WordPress core standards.
+        </p>
+
+        <h3>How the Settings System Works</h3>
+        <p>
+          The plugin registers all settings, sections, and input fields using a
+          combination of:
+        </p>
+
+        <ul>
+          <li>
+            <code>register_setting()</code> – Registers the main settings group.
+          </li>
+          <li>
+            <code>add_settings_section()</code> – Organizes settings into
+            sections.
+          </li>
+          <li>
+            <code>add_settings_field()</code> – Adds individual fields to the
+            settings page.
+          </li>
+        </ul>
+
+        <h3>1. Registering the Settings</h3>
+        <p>
+          The following code registers the
+          <code>restaurant_pos_lite_settings</code> option:
+        </p>
+
+        <div class="code-block">
+          <code>
+            register_setting( 'restaurant_pos_lite_settings_group',
+            'restaurant_pos_lite_settings', array( $this, 'sanitize_settings' )
+            );
+          </code>
+        </div>
+
+        <p>
+          This tells WordPress to store all settings as a single array and pass
+          them through the
+          <strong>sanitize_settings()</strong> method before saving.
+        </p>
+
+        <h3>2. Settings Sanitization</h3>
+        <p>
+          All values submitted by the user are cleaned using WordPress
+          sanitization functions such as:
+        </p>
+
+        <ul>
+          <li><code>sanitize_text_field()</code></li>
+          <li><code>sanitize_textarea_field()</code></li>
+          <li><code>esc_url_raw()</code></li>
+          <li><code>floatval()</code></li>
+        </ul>
+
+        <div class="code-block">
+          <code>
+            $sanitized['currency'] = sanitize_text_field( $input['currency'] ??
+            '$' ); $sanitized['vat_rate'] = floatval( $input['vat_rate'] ?? '0'
+            );
+          </code>
+        </div>
+
+        <p>
+          This ensures all settings stored in the database are clean, valid, and
+          safe.
+        </p>
+
+        <h3>3. Saving Individual Options for Helper Classes</h3>
+        <p>
+          For better developer access, the plugin also stores each setting as a
+          separate option:
+        </p>
+
+        <div class="code-block">
+          <code>
+            update_option( 'oby_restaurant_pos_lite_currency',
+            $sanitized['currency'] ); update_option(
+            'oby_restaurant_pos_lite_vat_rate', $sanitized['vat_rate'] );
+          </code>
+        </div>
+
+        <p>
+          This allows helpers like <code>Restaurant_POS_Lite_Helpers</code> to
+          retrieve settings easily.
+        </p>
+
+        <h3>4. Rendering the Settings Page</h3>
+        <p>The settings page is rendered in the WordPress admin using:</p>
+
+        <ul>
+          <li><code>settings_fields()</code></li>
+          <li><code>do_settings_sections()</code></li>
+          <li><code>submit_button()</code></li>
+        </ul>
+
+        <h3>5. Using Settings in the Plugin</h3>
+        <p>
+          Developers can retrieve settings directly using WordPress functions:
+        </p>
+
+        <div class="code-block">
+          <code>
+            $currency = get_option( 'oby_restaurant_pos_lite_currency', '$' );
+            $vat_rate = get_option( 'oby_restaurant_pos_lite_vat_rate', 0 );
+          </code>
+        </div>
+
+        <p>
+          These values are used throughout the POS system — invoice generation,
+          order totals, reporting, and UI formatting.
+        </p>
+
+        <div class="code-block">
+          <code>
+            $date_format = get_option('oby_restaurant_pos_lite_date_format');
+            $currency = get_option('oby_restaurant_pos_lite_currency');
+            $vat_rate = get_option('oby_restaurant_pos_lite_vat_rate');
+          </code>
+        </div>
+
+        <h2 id="dashboard">Dashboard Overview</h2>
+        <p>
+          After installing and activating <strong>Restaurant POS Lite</strong>,
+          you can monitor all sales, income, expenses, and stock metrics
+          directly from the dashboard.
+        </p>
+
+        <h3>Accessing the Dashboard</h3>
+        <p>To open the dashboard page:</p>
+        <ol>
+          <li>
+            In your WordPress admin, click <strong>Restaurant POS</strong> from
+            the left sidebar.
+          </li>
+          <li>Select <strong>Dashboard</strong>.</li>
+        </ol>
+
+        <img
+          src="../screenshot/1. Dashboard.png"
+          alt="Restaurant POS Lite Dashboard Screenshot"
+          style="
+            max-width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            margin: 20px 0;
+          "
+        />
+
+        <p>The dashboard page is divided into three primary sections:</p>
+
+        <ul>
+          <li><strong>Main Metrics Grid</strong></li>
+          <li><strong>Charts Section</strong></li>
+          <li><strong>Top Selling Products</strong></li>
+        </ul>
+
+        <hr />
+
+        <h3>Main Metrics Grid</h3>
+        <p>
+          This section displays key business metrics at a glance. Each card
+          shows financial or sales data with formatted numbers.
+        </p>
+
+        <table
+          style="width: 100%; border-collapse: collapse"
+          border="1"
+          cellpadding="10"
+        >
+          <tr>
+            <th class="p-1">Metric</th>
+            <th class="p-1">Description</th>
+          </tr>
+          <tr>
+            <td class="p-1"><strong>Stock Value</strong></td>
+            <td class="p-1">
+              Current total inventory value based on product stock levels.
+            </td>
+          </tr>
+          <tr>
+            <td class="p-1"><strong>Today's Sales</strong></td>
+            <td class="p-1">Number of completed orders today.</td>
+          </tr>
+          <tr>
+            <td class="p-1"><strong>Monthly Sales</strong></td>
+            <td class="p-1">Total completed orders for the current month.</td>
+          </tr>
+          <tr>
+            <td class="p-1"><strong>Today's Income</strong></td>
+            <td class="p-1">Revenue collected today.</td>
+          </tr>
+          <tr>
+            <td class="p-1"><strong>Monthly Income</strong></td>
+            <td class="p-1">Total revenue collected in the current month.</td>
+          </tr>
+          <tr>
+            <td class="p-1"><strong>Today's Expense</strong></td>
+            <td class="p-1">Expenses recorded today.</td>
+          </tr>
+          <tr>
+            <td class="p-1"><strong>Monthly Expense</strong></td>
+            <td class="p-1">Total expenses for the current month.</td>
+          </tr>
+          <tr>
+            <td class="p-1"><strong>Monthly Profit</strong></td>
+            <td class="p-1">
+              Net profit calculated as Monthly Income minus Monthly Expense.
+            </td>
+          </tr>
+        </table>
+
+        <hr />
+
+        <h3>Charts Section</h3>
+        <p>
+          Visual representation of your sales and financial data helps track
+          trends efficiently.
+        </p>
+
+        <ul>
+          <li>
+            <strong>Income vs Expense</strong> – Displays income and expense for
+            the current month using bar charts.
+          </li>
+          <li>
+            <strong>Weekly Sales Trend</strong> – Displays daily sales for the
+            last 7 days using a line/bar chart.
+          </li>
+        </ul>
+
+        <hr />
+
+        <h3>Top Selling Products</h3>
+        <p>
+          Shows the top 5 products based on revenue over the last 30 days. Each
+          card displays:
+        </p>
+
+        <ul>
+          <li>Sales count</li>
+          <li>Total units sold</li>
+          <li>Total revenue generated per product</li>
+        </ul>
+
+        <hr />
+
+        <h2>Dashboard Implementation</h2>
+        <p>
+          The <strong>Restaurant POS Lite</strong> dashboard is fully
+          implemented using WordPress best practices, querying data securely
+          from the database and rendering metrics and charts dynamically.
+        </p>
+
+        <h3>How the Dashboard System Works</h3>
+        <p>
+          The plugin retrieves all metrics from the database using secure
+          <strong>$wpdb</strong> queries and formats them for display.
+        </p>
+
+        <ul>
+          <li>
+            <code>get_stock_value()</code> – Returns total inventory value.
+          </li>
+          <li>
+            <code>get_today_sales_count()</code> – Returns number of orders
+            today.
+          </li>
+          <li>
+            <code>get_month_sales_count()</code> – Returns total monthly orders.
+          </li>
+          <li><code>get_today_income()</code> – Returns today's revenue.</li>
+          <li>
+            <code>get_month_income()</code> – Returns total monthly revenue.
+          </li>
+          <li><code>get_today_expense()</code> – Returns today's expenses.</li>
+          <li>
+            <code>get_month_expense()</code> – Returns total monthly expenses.
+          </li>
+          <li>
+            <code>get_weekly_sales_trend()</code> – Returns last 7 days' sales
+            data.
+          </li>
+          <li>
+            <code>get_top_products()</code> – Returns top 5 products in last 30
+            days.
+          </li>
+        </ul>
+
+        <h3>1. Data Sanitization and Formatting</h3>
+        <p>Financial and numeric data is formatted using helper functions:</p>
+
+        <ul>
+          <li>
+            <code>format_currency()</code> – Formats numbers into selected
+            currency.
+          </li>
+          <li>
+            <code>format_number()</code> – Adds thousand separators to numbers.
+          </li>
+        </ul>
+
+        <div class="code-block">
+          <code>
+            $formatted_income =
+            $this->format_currency($this->get_today_income()); $formatted_sales
+            = $this->format_number($this->get_today_sales_count());
+          </code>
+        </div>
+
+        <h3>2. Database Security</h3>
+        <p>
+          All database queries use <code>$wpdb->prepare()</code> to prevent SQL
+          injection.
+        </p>
+
+        <div class="code-block">
+          <code>
+            $this->wpdb->get_var( $this->wpdb->prepare( "SELECT SUM(paid_amount)
+            FROM {$this->table_sales} WHERE status = %s", 'completed' ) );
+          </code>
+        </div>
+
+        <h3>3. Rendering Dashboard Page</h3>
+        <p>
+          The dashboard page is rendered in the admin using a combination of PHP
+          templates and CSS. Key sections include:
+        </p>
+
+        <ul>
+          <li>Metrics grid with dynamic values</li>
+          <li>
+            Bar and line charts for income/expense and weekly sales trends
+          </li>
+          <li>Top-selling products cards</li>
+        </ul>
+
+        <h3>4. Using Metrics in Other Plugins or Helpers</h3>
+        <p>Developers can access individual metrics using helper methods:</p>
+
+        <div class="code-block">
+          <code>
+            $today_income = $dashboard->get_today_income(); $monthly_expense =
+            $dashboard->get_month_expense(); $top_products =
+            $dashboard->get_top_products();
+          </code>
+        </div>
+
+        <p>
+          These values can be used for reporting, custom notifications, or
+          integrations with other WordPress plugins.
+        </p>
+      </main>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-container">
+        <p>
+          Obydullah.com &copy; 2025 |
+          <a href="https://obydullah.com/">Privacy Policy</a> |
+          <a href="https://obydullah.com/">Terms of Service</a>
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
