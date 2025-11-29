@@ -2,11 +2,11 @@
 /**
  * Fired during plugin deactivation
  *
- * @package Restaurant_POS_Lite
+ * @package Obydullah_Restaurant_POS_Lite
  * @since   1.0.0
  */
 
-class Restaurant_POS_Lite_Deactivator
+class Obydullah_Restaurant_POS_Lite_Deactivator
 {
     public static function deactivate()
     {

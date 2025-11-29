@@ -2,7 +2,7 @@
 /**
  * Fired when the plugin is uninstalled.
  *
- * @package Restaurant_POS_Lite
+ * @package Obydullah_Restaurant_POS_Lite
  * @since   1.0.0
  */
 
@@ -14,40 +14,38 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
 global $wpdb;
 
 // Delete plugin options
-$oby_restaurant_pos_lite_options = array(
-    'oby_restaurant_pos_lite_version',
-    'oby_restaurant_pos_lite_currency',
-    'oby_restaurant_pos_lite_tax_rate',
-    'oby_restaurant_pos_lite_vat_rate',
-    'oby_restaurant_pos_lite_shop_name',
-    'oby_restaurant_pos_lite_shop_address',
-    'oby_restaurant_pos_lite_shop_phone',
-    'oby_restaurant_pos_lite_shop_logo',
-    'oby_restaurant_pos_lite_currency_position',
-    'oby_restaurant_pos_lite_date_format',
+$orpl_options = array(
+    'orpl_version',
+    'orpl_currency',
+    'orpl_tax_rate',
+    'orpl_vat_rate',
+    'orpl_shop_name',
+    'orpl_shop_address',
+    'orpl_shop_phone',
+    'orpl_currency_position',
+    'orpl_date_format',
 );
 
 // Drop all tables in a loop
-// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-foreach ($oby_restaurant_pos_lite_options as $oby_restaurant_pos_lite_option) {
-    delete_option($oby_restaurant_pos_lite_option);
-    delete_site_option($oby_restaurant_pos_lite_option);
+foreach ($orpl_options as $orpl_option) {
+    delete_option($orpl_option);
+    delete_site_option($orpl_option);
 }
 
-$oby_restaurant_pos_lite_tables = array(
-    'pos_categories',
-    'pos_products',
-    'pos_stocks',
-    'pos_stock_adjustments',
-    'pos_customers',
-    'pos_sales',
-    'pos_sale_details',
-    'pos_accounting'
+$orpl_tables = array(
+    'orpl_categories',
+    'orpl_products',
+    'orpl_stocks',
+    'orpl_stock_adjustments',
+    'orpl_customers',
+    'orpl_sales',
+    'orpl_sale_details',
+    'orpl_accounting'
 );
 
 // Drop all tables in a loop
-foreach ($oby_restaurant_pos_lite_tables as $oby_restaurant_pos_lite_table) {
-    $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}$oby_restaurant_pos_lite_table");
+foreach ($orpl_tables as $orpl_table) {
+    $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}$orpl_table");
 }
 
 // Clear any cached data that might be related

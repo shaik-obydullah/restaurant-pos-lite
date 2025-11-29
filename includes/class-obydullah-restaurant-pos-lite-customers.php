@@ -2,20 +2,29 @@
 /**
  * Customer Management
  *
- * @package Restaurant_POS_Lite
+ * @package Obydullah_Restaurant_POS_Lite
  * @since   1.0.0
  */
-if (!defined('ABSPATH'))
+if (!defined('ABSPATH')) {
     exit;
+}
 
-class Restaurant_POS_Lite_Customers
+class Obydullah_Restaurant_POS_Lite_Customers
 {
+    const CACHE_GROUP = 'orpl_customers';
+    const CACHE_EXPIRATION = 15 * MINUTE_IN_SECONDS;
+
+    private $customers_table;
+
     public function __construct()
     {
-        add_action('wp_ajax_add_customer', [$this, 'ajax_add_customer']);
-        add_action('wp_ajax_get_customers', [$this, 'ajax_get_customers']);
-        add_action('wp_ajax_edit_customer', [$this, 'ajax_edit_customer']);
-        add_action('wp_ajax_delete_customer', [$this, 'ajax_delete_customer']);
+        global $wpdb;
+        $this->customers_table = $wpdb->prefix . 'orpl_customers';
+
+        add_action('wp_ajax_orpl_add_customer', [$this, 'ajax_add_customer']);
+        add_action('wp_ajax_orpl_get_customers', [$this, 'ajax_get_customers']);
+        add_action('wp_ajax_orpl_edit_customer', [$this, 'ajax_edit_customer']);
+        add_action('wp_ajax_orpl_delete_customer', [$this, 'ajax_delete_customer']);
     }
 
     /**
@@ -25,7 +34,9 @@ class Restaurant_POS_Lite_Customers
     {
         ?>
         <div class="wrap">
-            <h1 class="wp-heading-inline" style="margin-bottom:20px;">Customers</h1>
+            <h1 class="wp-heading-inline" style="margin-bottom:20px;">
+                <?php esc_html_e('Customers', 'obydullah-restaurant-pos-lite'); ?>
+            </h1>
             <hr class="wp-header-end">
 
             <!-- Customer Summary Cards -->
@@ -33,23 +44,24 @@ class Restaurant_POS_Lite_Customers
                 style="display:grid;grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));gap:20px;margin-bottom:30px;">
                 <div class="summary-card"
                     style="background:#fff;padding:20px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.05);border-left:4px solid #0a7c38;">
-                    <h3 style="margin:0 0 10px 0;font-size:14px;color:#666;">Active Customers</h3>
+                    <h3 style="margin:0 0 10px 0;font-size:14px;color:#666;">
+                        <?php esc_html_e('Active Customers', 'obydullah-restaurant-pos-lite'); ?>
+                    </h3>
                     <p class="summary-number" style="font-size:32px;font-weight:bold;margin:0;color:#0a7c38;">0</p>
                 </div>
                 <div class="summary-card"
                     style="background:#fff;padding:20px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.05);border-left:4px solid #d63638;">
-                    <h3 style="margin:0 0 10px 0;font-size:14px;color:#666;">Inactive Customers</h3>
+                    <h3 style="margin:0 0 10px 0;font-size:14px;color:#666;">
+                        <?php esc_html_e('Inactive Customers', 'obydullah-restaurant-pos-lite'); ?>
+                    </h3>
                     <p class="summary-number" style="font-size:32px;font-weight:bold;margin:0;color:#d63638;">0</p>
                 </div>
                 <div class="summary-card"
                     style="background:#fff;padding:20px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.05);border-left:4px solid #2271b1;">
-                    <h3 style="margin:0 0 10px 0;font-size:14px;color:#666;">Total Customers</h3>
+                    <h3 style="margin:0 0 10px 0;font-size:14px;color:#666;">
+                        <?php esc_html_e('Total Customers', 'obydullah-restaurant-pos-lite'); ?>
+                    </h3>
                     <p class="summary-number" style="font-size:32px;font-weight:bold;margin:0;color:#2271b1;">0</p>
-                </div>
-                <div class="summary-card"
-                    style="background:#fff;padding:20px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.05);border-left:4px solid #ffb900;">
-                    <h3 style="margin:0 0 10px 0;font-size:14px;color:#666;">Total Balance</h3>
-                    <p class="summary-number" style="font-size:32px;font-weight:bold;margin:0;color:#ffb900;">0.00</p>
                 </div>
             </div>
 
@@ -59,10 +71,10 @@ class Restaurant_POS_Lite_Customers
                     <div class="col-wrap"
                         style="background:#fff;padding:20px;border:1px solid #ddd;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.05);">
                         <h2 id="form-title" style="margin:0 0 20px 0;padding:0;font-size:16px;font-weight:600;color:#1d2327;">
-                            Add New Customer
+                            <?php esc_html_e('Add New Customer', 'obydullah-restaurant-pos-lite'); ?>
                         </h2>
                         <form id="add-customer-form" method="post">
-                            <?php wp_nonce_field('add_customer', 'customer_nonce'); ?>
+                            <?php wp_nonce_field('orpl_add_customer', 'customer_nonce'); ?>
                             <input type="hidden" id="customer-id" name="id" value="">
 
                             <div style="display:flex;flex-direction:column;gap:15px;">
@@ -71,7 +83,8 @@ class Restaurant_POS_Lite_Customers
                                     <div class="form-field form-required">
                                         <label for="customer-name"
                                             style="display:block;font-weight:600;margin-bottom:6px;font-size:12px;color:#1d2327;text-transform:uppercase;letter-spacing:0.5px;">
-                                            Name <span style="color:#d63638;">*</span>
+                                            <?php esc_html_e('Name', 'obydullah-restaurant-pos-lite'); ?> <span
+                                                style="color:#d63638;">*</span>
                                         </label>
                                         <input name="name" id="customer-name" type="text" value="" required
                                             style="width:100%;padding:8px 10px;font-size:13px;border:1px solid #8c8f94;border-radius:3px;background:#fff;transition:border-color 0.2s ease;">
@@ -80,7 +93,8 @@ class Restaurant_POS_Lite_Customers
                                     <div class="form-field form-required">
                                         <label for="customer-email"
                                             style="display:block;font-weight:600;margin-bottom:6px;font-size:12px;color:#1d2327;text-transform:uppercase;letter-spacing:0.5px;">
-                                            Email <span style="color:#d63638;">*</span>
+                                            <?php esc_html_e('Email', 'obydullah-restaurant-pos-lite'); ?> <span
+                                                style="color:#d63638;">*</span>
                                         </label>
                                         <input name="email" id="customer-email" type="email" value="" required
                                             style="width:100%;padding:8px 10px;font-size:13px;border:1px solid #8c8f94;border-radius:3px;background:#fff;transition:border-color 0.2s ease;">
@@ -91,7 +105,7 @@ class Restaurant_POS_Lite_Customers
                                 <div class="form-field">
                                     <label for="customer-mobile"
                                         style="display:block;font-weight:600;margin-bottom:6px;font-size:12px;color:#1d2327;text-transform:uppercase;letter-spacing:0.5px;">
-                                        Mobile
+                                        <?php esc_html_e('Mobile', 'obydullah-restaurant-pos-lite'); ?>
                                     </label>
                                     <input name="mobile" id="customer-mobile" type="text" value=""
                                         style="width:100%;padding:8px 10px;font-size:13px;border:1px solid #8c8f94;border-radius:3px;background:#fff;transition:border-color 0.2s ease;">
@@ -101,23 +115,26 @@ class Restaurant_POS_Lite_Customers
                                 <div class="form-field">
                                     <label for="customer-address"
                                         style="display:block;font-weight:600;margin-bottom:6px;font-size:12px;color:#1d2327;text-transform:uppercase;letter-spacing:0.5px;">
-                                        Address
+                                        <?php esc_html_e('Address', 'obydullah-restaurant-pos-lite'); ?>
                                     </label>
                                     <textarea name="address" id="customer-address" rows="2"
                                         style="width:100%;padding:8px 10px;font-size:13px;border:1px solid #8c8f94;border-radius:3px;background:#fff;transition:border-color 0.2s ease;resize:vertical;"
-                                        placeholder="Customer address..."></textarea>
+                                        placeholder="<?php esc_attr_e('Customer address...', 'obydullah-restaurant-pos-lite'); ?>"></textarea>
                                 </div>
 
                                 <!-- Status -->
                                 <div class="form-field">
                                     <label for="customer-status"
                                         style="display:block;font-weight:600;margin-bottom:6px;font-size:12px;color:#1d2327;text-transform:uppercase;letter-spacing:0.5px;">
-                                        Status
+                                        <?php esc_html_e('Status', 'obydullah-restaurant-pos-lite'); ?>
                                     </label>
                                     <select name="status" id="customer-status"
                                         style="width:100%;padding:8px 10px;font-size:13px;border:1px solid #8c8f94;border-radius:3px;background:#fff;cursor:pointer;">
-                                        <option value="active">Active</option>
-                                        <option value="inactive">Inactive</option>
+                                        <option value="active"><?php esc_html_e('Active', 'obydullah-restaurant-pos-lite'); ?>
+                                        </option>
+                                        <option value="inactive">
+                                            <?php esc_html_e('Inactive', 'obydullah-restaurant-pos-lite'); ?>
+                                        </option>
                                     </select>
                                 </div>
                             </div>
@@ -125,12 +142,13 @@ class Restaurant_POS_Lite_Customers
                             <div style="margin-top:20px;display:flex;gap:10px;">
                                 <button type="submit" id="submit-customer" class="button button-primary"
                                     style="flex:1;padding:8px 12px;font-size:13px;font-weight:500;">
-                                    <span class="btn-text">Save Customer</span>
+                                    <span
+                                        class="btn-text"><?php esc_html_e('Save Customer', 'obydullah-restaurant-pos-lite'); ?></span>
                                     <span class="spinner" style="float:none;margin:0;display:none;"></span>
                                 </button>
                                 <button type="button" id="cancel-edit" class="button"
                                     style="display:none;flex:1;padding:8px 12px;font-size:13px;font-weight:500;">
-                                    Cancel
+                                    <?php esc_html_e('Cancel', 'obydullah-restaurant-pos-lite'); ?>
                                 </button>
                             </div>
                         </form>
@@ -146,7 +164,8 @@ class Restaurant_POS_Lite_Customers
                         <div style="margin-bottom:20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
                             <!-- Search Input -->
                             <div style="flex:1;min-width:200px;">
-                                <input type="text" id="customer-search" placeholder="Search by name or mobile..."
+                                <input type="text" id="customer-search"
+                                    placeholder="<?php esc_attr_e('Search by name or mobile...', 'obydullah-restaurant-pos-lite'); ?>"
                                     style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:4px;font-size:13px;">
                             </div>
 
@@ -154,15 +173,18 @@ class Restaurant_POS_Lite_Customers
                             <div style="min-width:150px;">
                                 <select id="status-filter"
                                     style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:4px;font-size:13px;">
-                                    <option value="">All Status</option>
-                                    <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
+                                    <option value=""><?php esc_html_e('All Status', 'obydullah-restaurant-pos-lite'); ?>
+                                    </option>
+                                    <option value="active"><?php esc_html_e('Active', 'obydullah-restaurant-pos-lite'); ?>
+                                    </option>
+                                    <option value="inactive"><?php esc_html_e('Inactive', 'obydullah-restaurant-pos-lite'); ?>
+                                    </option>
                                 </select>
                             </div>
 
                             <!-- Refresh Button -->
                             <button id="refresh-customers" class="button" style="padding:6px 12px;">
-                                Refresh
+                                <?php esc_html_e('Refresh', 'obydullah-restaurant-pos-lite'); ?>
                             </button>
                         </div>
 
@@ -170,19 +192,21 @@ class Restaurant_POS_Lite_Customers
                         <table class="wp-list-table widefat fixed striped table-view-list">
                             <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Mobile</th>
-                                    <th>Balance</th>
-                                    <th>Status</th>
-                                    <th style="text-align:center;">Actions</th>
+                                    <th><?php esc_html_e('Name', 'obydullah-restaurant-pos-lite'); ?></th>
+                                    <th><?php esc_html_e('Email', 'obydullah-restaurant-pos-lite'); ?></th>
+                                    <th><?php esc_html_e('Mobile', 'obydullah-restaurant-pos-lite'); ?></th>
+                                    <th><?php esc_html_e('Address', 'obydullah-restaurant-pos-lite'); ?></th>
+                                    <th><?php esc_html_e('Status', 'obydullah-restaurant-pos-lite'); ?></th>
+                                    <th style="text-align:center;">
+                                        <?php esc_html_e('Actions', 'obydullah-restaurant-pos-lite'); ?>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody id="customer-list">
                                 <tr>
                                     <td colspan="6" class="loading-customers" style="text-align:center;">
                                         <span class="spinner is-active"></span>
-                                        Loading customers...
+                                        <?php esc_html_e('Loading customers...', 'obydullah-restaurant-pos-lite'); ?>
                                     </td>
                                 </tr>
                             </tbody>
@@ -192,38 +216,50 @@ class Restaurant_POS_Lite_Customers
                         <div class="tablenav bottom"
                             style="margin-top:20px;display:flex;justify-content:space-between;align-items:center;">
                             <div class="tablenav-pages">
-                                <span class="displaying-num" id="displaying-num">0 items</span>
+                                <span class="displaying-num" id="displaying-num">0
+                                    <?php esc_html_e('items', 'obydullah-restaurant-pos-lite'); ?></span>
                                 <span class="pagination-links">
                                     <a class="first-page button" href="#">
-                                        <span class="screen-reader-text">First page</span>
+                                        <span
+                                            class="screen-reader-text"><?php esc_html_e('First page', 'obydullah-restaurant-pos-lite'); ?></span>
                                         <span aria-hidden="true">«</span>
                                     </a>
                                     <a class="prev-page button" href="#">
-                                        <span class="screen-reader-text">Previous page</span>
+                                        <span
+                                            class="screen-reader-text"><?php esc_html_e('Previous page', 'obydullah-restaurant-pos-lite'); ?></span>
                                         <span aria-hidden="true">‹</span>
                                     </a>
                                     <span class="paging-input">
-                                        <label for="current-page-selector" class="screen-reader-text">Current Page</label>
+                                        <label for="current-page-selector"
+                                            class="screen-reader-text"><?php esc_html_e('Current Page', 'obydullah-restaurant-pos-lite'); ?></label>
                                         <input class="current-page" id="current-page-selector" type="text" name="paged"
                                             value="1" size="3" aria-describedby="table-paging">
-                                        <span class="tablenav-paging-text"> of <span class="total-pages">1</span></span>
+                                        <span class="tablenav-paging-text">
+                                            <?php esc_html_e('of', 'obydullah-restaurant-pos-lite'); ?> <span
+                                                class="total-pages">1</span></span>
                                     </span>
                                     <a class="next-page button" href="#">
-                                        <span class="screen-reader-text">Next page</span>
+                                        <span
+                                            class="screen-reader-text"><?php esc_html_e('Next page', 'obydullah-restaurant-pos-lite'); ?></span>
                                         <span aria-hidden="true">›</span>
                                     </a>
                                     <a class="last-page button" href="#">
-                                        <span class="screen-reader-text">Last page</span>
+                                        <span
+                                            class="screen-reader-text"><?php esc_html_e('Last page', 'obydullah-restaurant-pos-lite'); ?></span>
                                         <span aria-hidden="true">»</span>
                                     </a>
                                 </span>
                             </div>
                             <div class="tablenav-pages" style="float:none;">
-                                <select id="per-page-select" style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;">
-                                    <option value="10">10 per page</option>
-                                    <option value="20">20 per page</option>
-                                    <option value="50">50 per page</option>
-                                    <option value="100">100 per page</option>
+                                <select id="per-page-select" style="padding:4px 16px;border:1px solid #ddd;border-radius:4px;">
+                                    <option value="10">10 <?php esc_html_e('per page', 'obydullah-restaurant-pos-lite'); ?>
+                                    </option>
+                                    <option value="20">20 <?php esc_html_e('per page', 'obydullah-restaurant-pos-lite'); ?>
+                                    </option>
+                                    <option value="50">50 <?php esc_html_e('per page', 'obydullah-restaurant-pos-lite'); ?>
+                                    </option>
+                                    <option value="100">100 <?php esc_html_e('per page', 'obydullah-restaurant-pos-lite'); ?>
+                                    </option>
                                 </select>
                             </div>
                         </div>
@@ -247,24 +283,24 @@ class Restaurant_POS_Lite_Customers
                         currentPage = page;
 
                         let tbody = $('#customer-list');
-                        tbody.html('<tr><td colspan="6" class="loading-customers" style="text-align:center;"><span class="spinner is-active"></span> Loading customers...</td></tr>');
+                        tbody.html('<tr><td colspan="6" class="loading-customers" style="text-align:center;"><span class="spinner is-active"></span> <?php echo esc_js(__('Loading customers...', 'obydullah-restaurant-pos-lite')); ?></td></tr>');
 
                         $.ajax({
                             url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                             type: 'GET',
                             data: {
-                                action: 'get_customers',
+                                action: 'orpl_get_customers',
                                 page: currentPage,
                                 per_page: perPage,
                                 search: searchTerm,
                                 status: statusFilter,
-                                nonce: '<?php echo esc_attr(wp_create_nonce("get_customers")); ?>'
+                                nonce: '<?php echo esc_attr(wp_create_nonce("orpl_get_customers")); ?>'
                             },
                             success: function (response) {
                                 tbody.empty();
                                 if (response.success) {
                                     if (!response.data.customers.length) {
-                                        tbody.append('<tr><td colspan="6" style="text-align:center;padding:20px;color:#666;">No customers found.</td></tr>');
+                                        tbody.append('<tr><td colspan="6" style="text-align:center;padding:20px;color:#666;"><?php echo esc_js(__('No customers found.', 'obydullah-restaurant-pos-lite')); ?></td></tr>');
                                         updateSummaryCards();
                                         updatePagination(response.data.pagination);
                                         return;
@@ -282,25 +318,20 @@ class Restaurant_POS_Lite_Customers
                                         // Mobile column
                                         row.append($('<td>').text(customer.mobile || '-'));
 
-                                        // Balance column
-                                        let balance = parseFloat(customer.balance);
-                                        let balanceClass = balance > 0 ? 'balance-positive' :
-                                            balance < 0 ? 'balance-negative' : 'balance-zero';
-                                        row.append($('<td>').append(
-                                            $('<span>').addClass(balanceClass).text(balance.toFixed(2))
-                                        ));
+                                        // Address column
+                                        row.append($('<td>').text(customer.address || '-'));
 
                                         // Status column
                                         let statusClass = customer.status === 'active' ? 'status-active' : 'status-inactive';
-                                        let statusText = customer.status === 'active' ? 'Active' : 'Inactive';
+                                        let statusText = customer.status === 'active' ? '<?php echo esc_js(__('Active', 'obydullah-restaurant-pos-lite')); ?>' : '<?php echo esc_js(__('Inactive', 'obydullah-restaurant-pos-lite')); ?>';
                                         row.append($('<td>').append(
                                             $('<span>').addClass(statusClass).text(statusText)
                                         ));
 
                                         // Actions column
                                         row.append($('<td style="text-align:center;">')
-                                            .append('<button class="button button-small edit-customer" style="margin-right:5px;">Edit</button>')
-                                            .append('<button class="button button-small button-link-delete delete-customer">Delete</button>')
+                                            .append('<button class="button button-small edit-customer" style="margin-right:5px;"><?php echo esc_js(__('Edit', 'obydullah-restaurant-pos-lite')); ?></button>')
+                                            .append('<button class="button button-small button-link-delete delete-customer"><?php echo esc_js(__('Delete', 'obydullah-restaurant-pos-lite')); ?></button>')
                                         );
 
                                         tbody.append(row);
@@ -313,27 +344,24 @@ class Restaurant_POS_Lite_Customers
                                 }
                             },
                             error: function () {
-                                $('#customer-list').html('<tr><td colspan="6" style="color:red;text-align:center;">Failed to load customers.</td></tr>');
+                                $('#customer-list').html('<tr><td colspan="6" style="color:red;text-align:center;"><?php echo esc_js(__('Failed to load customers.', 'obydullah-restaurant-pos-lite')); ?></td></tr>');
                             }
                         });
                     }
 
                     function updateSummaryCards(customers = []) {
-                        let active = 0, inactive = 0, totalBalance = 0;
+                        let active = 0, inactive = 0;
 
                         if (customers.length > 0) {
                             customers.forEach(customer => {
                                 if (customer.status === 'active') active++;
                                 else inactive++;
-
-                                totalBalance += parseFloat(customer.balance);
                             });
                         }
 
                         $('.summary-card:nth-child(1) .summary-number').text(active);
                         $('.summary-card:nth-child(2) .summary-number').text(inactive);
                         $('.summary-card:nth-child(3) .summary-number').text(customers.length);
-                        $('.summary-card:nth-child(4) .summary-number').text(totalBalance.toFixed(2));
                     }
 
                     function updatePagination(pagination) {
@@ -341,7 +369,7 @@ class Restaurant_POS_Lite_Customers
                         totalItems = pagination.total_items;
 
                         // Update displaying text
-                        $('#displaying-num').text(pagination.total_items + ' items');
+                        $('#displaying-num').text(pagination.total_items + ' <?php echo esc_js(__('items', 'obydullah-restaurant-pos-lite')); ?>');
 
                         // Update page input and total pages
                         $('#current-page-selector').val(currentPage);
@@ -419,7 +447,7 @@ class Restaurant_POS_Lite_Customers
                         }
 
                         let id = $('#customer-id').val();
-                        let action = id ? 'edit_customer' : 'add_customer';
+                        let action = id ? 'orpl_edit_customer' : 'orpl_add_customer';
                         let name = $('#customer-name').val().trim();
                         let email = $('#customer-email').val().trim();
                         let mobile = $('#customer-mobile').val().trim();
@@ -427,15 +455,15 @@ class Restaurant_POS_Lite_Customers
                         let status = $('#customer-status').val();
 
                         if (!name) {
-                            alert('Please enter customer name');
+                            alert('<?php echo esc_js(__('Please enter customer name', 'obydullah-restaurant-pos-lite')); ?>');
                             return false;
                         }
                         if (!email) {
-                            alert('Please enter customer email');
+                            alert('<?php echo esc_js(__('Please enter customer email', 'obydullah-restaurant-pos-lite')); ?>');
                             return false;
                         }
                         if (!isValidEmail(email)) {
-                            alert('Please enter a valid email address');
+                            alert('<?php echo esc_js(__('Please enter a valid email address', 'obydullah-restaurant-pos-lite')); ?>');
                             return false;
                         }
 
@@ -451,15 +479,15 @@ class Restaurant_POS_Lite_Customers
                             mobile: mobile,
                             address: address,
                             status: status,
-                            nonce: '<?php echo esc_attr(wp_create_nonce("add_customer")); ?>'
+                            nonce: '<?php echo esc_attr(wp_create_nonce("orpl_add_customer")); ?>'
                         }, function (res) {
                             if (res.success) {
                                 resetForm();
                                 loadCustomers(currentPage);
                             } else {
-                                alert('Error: ' + res.data);
+                                alert('<?php echo esc_js(__('Error:', 'obydullah-restaurant-pos-lite')); ?> ' + res.data);
                             }
-                        }).fail(() => alert('Request failed. Please try again.'))
+                        }).fail(() => alert('<?php echo esc_js(__('Request failed. Please try again.', 'obydullah-restaurant-pos-lite')); ?>'))
                             .always(function () {
                                 // Reset submitting state
                                 isSubmitting = false;
@@ -480,9 +508,9 @@ class Restaurant_POS_Lite_Customers
                             url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                             type: 'GET',
                             data: {
-                                action: 'get_customers',
+                                action: 'orpl_get_customers',
                                 id: customerId,
-                                nonce: '<?php echo esc_attr(wp_create_nonce("get_customers")); ?>'
+                                nonce: '<?php echo esc_attr(wp_create_nonce("orpl_get_customers")); ?>'
                             },
                             success: function (response) {
                                 if (response.success && response.data.customers.length > 0) {
@@ -495,8 +523,8 @@ class Restaurant_POS_Lite_Customers
                                         $('#customer-address').val(customer.address || '');
                                         $('#customer-status').val(customer.status);
 
-                                        $('#form-title').text('Edit Customer');
-                                        $('#submit-customer').find('.btn-text').text('Update Customer');
+                                        $('#form-title').text('<?php echo esc_js(__('Edit Customer', 'obydullah-restaurant-pos-lite')); ?>');
+                                        $('#submit-customer').find('.btn-text').text('<?php echo esc_js(__('Update Customer', 'obydullah-restaurant-pos-lite')); ?>');
                                         $('#cancel-edit').show();
                                     }
                                 }
@@ -505,26 +533,26 @@ class Restaurant_POS_Lite_Customers
                     });
 
                     $(document).on('click', '.delete-customer', function () {
-                        if (!confirm('Are you sure you want to delete this customer?')) return;
+                        if (!confirm('<?php echo esc_js(__('Are you sure you want to delete this customer?', 'obydullah-restaurant-pos-lite')); ?>')) return;
 
                         let button = $(this);
                         let originalText = button.text();
                         let id = $(this).closest('tr').data('customer-id');
 
                         // Disable button and show loading
-                        button.prop('disabled', true).text('Deleting...');
+                        button.prop('disabled', true).text('<?php echo esc_js(__('Deleting...', 'obydullah-restaurant-pos-lite')); ?>');
 
                         $.post('<?php echo esc_url(admin_url('admin-ajax.php')); ?>', {
-                            action: 'delete_customer',
+                            action: 'orpl_delete_customer',
                             id: id,
-                            nonce: '<?php echo esc_attr(wp_create_nonce("delete_customer")); ?>'
+                            nonce: '<?php echo esc_attr(wp_create_nonce("orpl_delete_customer")); ?>'
                         }, function (res) {
                             if (res.success) {
                                 loadCustomers(currentPage);
                             } else {
                                 alert(res.data);
                             }
-                        }).fail(() => alert('Delete request failed. Please try again.'))
+                        }).fail(() => alert('<?php echo esc_js(__('Delete request failed. Please try again.', 'obydullah-restaurant-pos-lite')); ?>'))
                             .always(function () {
                                 // Re-enable button
                                 button.prop('disabled', false).text(originalText);
@@ -539,11 +567,11 @@ class Restaurant_POS_Lite_Customers
                         if (loading) {
                             button.prop('disabled', true).addClass('button-loading');
                             spinner.show();
-                            btnText.text(button.hasClass('button-loading') ? 'Saving...' : 'Updating...');
+                            btnText.text(button.hasClass('button-loading') ? '<?php echo esc_js(__('Saving...', 'obydullah-restaurant-pos-lite')); ?>' : '<?php echo esc_js(__('Updating...', 'obydullah-restaurant-pos-lite')); ?>');
                         } else {
                             button.prop('disabled', false).removeClass('button-loading');
                             spinner.hide();
-                            btnText.text(button.find('.btn-text').text().includes('Update') ? 'Update Customer' : 'Save Customer');
+                            btnText.text(button.find('.btn-text').text().includes('Update') ? '<?php echo esc_js(__('Update Customer', 'obydullah-restaurant-pos-lite')); ?>' : '<?php echo esc_js(__('Save Customer', 'obydullah-restaurant-pos-lite')); ?>');
                         }
                     }
 
@@ -559,8 +587,8 @@ class Restaurant_POS_Lite_Customers
                         $('#customer-mobile').val('');
                         $('#customer-address').val('');
                         $('#customer-status').val('active');
-                        $('#form-title').text('Add New Customer');
-                        $('#submit-customer').find('.btn-text').text('Save Customer');
+                        $('#form-title').text('<?php echo esc_js(__('Add New Customer', 'obydullah-restaurant-pos-lite')); ?>');
+                        $('#submit-customer').find('.btn-text').text('<?php echo esc_js(__('Save Customer', 'obydullah-restaurant-pos-lite')); ?>');
                         $('#cancel-edit').hide();
                         $('#customer-name').focus();
 
@@ -578,28 +606,34 @@ class Restaurant_POS_Lite_Customers
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
-        if (!wp_verify_nonce($nonce, 'get_customers')) {
-            wp_send_json_error('Security verification failed');
+        if (!wp_verify_nonce($nonce, 'orpl_get_customers')) {
+            wp_send_json_error(__('Security verification failed', 'obydullah-restaurant-pos-lite'));
         }
-
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'pos_customers';
 
         // Get parameters - sanitize inputs
         $customer_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
         $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
         $per_page = isset($_GET['per_page']) ? intval($_GET['per_page']) : 10;
         $search = isset($_GET['search']) ? sanitize_text_field(wp_unslash($_GET['search'])) : '';
+        $status = isset($_GET['status']) ? sanitize_text_field(wp_unslash($_GET['status'])) : '';
 
-        // Build query based on filters
         if ($customer_id > 0) {
-            // Single customer request
-            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-            $customers = $wpdb->get_results($wpdb->prepare(
-                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                "SELECT * FROM $table_name WHERE id = %d",
-                $customer_id
-            ));
+            // Single customer request - cache individual customer
+            $cache_key = 'orpl_customer_' . $customer_id;
+            $customers = wp_cache_get($cache_key, self::CACHE_GROUP);
+
+            if (false === $customers) {
+                global $wpdb;
+
+                $customers = $wpdb->get_results($wpdb->prepare(
+                    "SELECT id, name, email, mobile, address, status, created_at 
+                FROM {$this->customers_table} 
+                WHERE id = %d",
+                    $customer_id
+                ));
+
+                wp_cache_set($cache_key, $customers, self::CACHE_GROUP, self::CACHE_EXPIRATION);
+            }
 
             $response_data = [
                 'customers' => $customers,
@@ -611,7 +645,16 @@ class Restaurant_POS_Lite_Customers
                 ]
             ];
         } else {
-            // Multiple customers with pagination
+            // Multiple customers with pagination - cache based on filters
+            $cache_key = 'orpl_customers_' . md5(serialize([$page, $per_page, $search, $status]));
+            $cached_data = wp_cache_get($cache_key, self::CACHE_GROUP);
+
+            if (false !== $cached_data) {
+                wp_send_json_success($cached_data);
+            }
+
+            global $wpdb;
+
             $where_conditions = [];
             $query_params = [];
 
@@ -634,32 +677,34 @@ class Restaurant_POS_Lite_Customers
                 $where_clause = 'WHERE ' . implode(' AND ', $where_conditions);
             }
 
-            // Count total items
-            $count_query = "SELECT COUNT(*) FROM $table_name $where_clause";
+            $count_query = "SELECT COUNT(*) FROM {$this->customers_table} {$where_clause}";
             if (!empty($query_params)) {
-                $count_query = $wpdb->prepare($count_query, $query_params);
+                $total_items = $wpdb->get_var($wpdb->prepare($count_query, $query_params));
+            } else {
+                $total_items = $wpdb->get_var($count_query);
             }
-            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-            $total_items = $wpdb->get_var($count_query);
 
             // Calculate pagination
             $total_pages = ceil($total_items / $per_page);
             $offset = ($page - 1) * $per_page;
 
-            // Build main query
-            $main_query = "SELECT * FROM $table_name $where_clause ORDER BY created_at DESC LIMIT %d OFFSET %d";
+            $main_query = "SELECT id, name, email, mobile, address, status, created_at 
+                  FROM {$this->customers_table} 
+                  {$where_clause} 
+                  ORDER BY created_at DESC 
+                  LIMIT %d OFFSET %d";
 
             // Add pagination parameters
-            $query_params[] = $per_page;
-            $query_params[] = $offset;
+            $pagination_params = $query_params;
+            $pagination_params[] = $per_page;
+            $pagination_params[] = $offset;
 
-            // Prepare and execute main query
-            if (!empty($query_params)) {
-                $main_query = $wpdb->prepare($main_query, $query_params);
+            // Execute main query
+            if (!empty($pagination_params)) {
+                $customers = $wpdb->get_results($wpdb->prepare($main_query, $pagination_params));
+            } else {
+                $customers = $wpdb->get_results($main_query);
             }
-
-            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-            $customers = $wpdb->get_results($main_query);
 
             $response_data = [
                 'customers' => $customers,
@@ -670,6 +715,9 @@ class Restaurant_POS_Lite_Customers
                     'total_pages' => $total_pages
                 ]
             ];
+
+            // Cache for 5 minutes
+            wp_cache_set($cache_key, $response_data, self::CACHE_GROUP, 5 * MINUTE_IN_SECONDS);
         }
 
         wp_send_json_success($response_data);
@@ -679,13 +727,10 @@ class Restaurant_POS_Lite_Customers
     public function ajax_add_customer()
     {
         // Verify nonce - sanitize the input first
-        $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
-        if (!wp_verify_nonce($nonce, 'add_customer')) {
-            wp_send_json_error('Security verification failed');
+        $nonce = sanitize_text_field(wp_unslash($_POST['nonce'] ?? ''));
+        if (!wp_verify_nonce($nonce, 'orpl_add_customer')) {
+            wp_send_json_error(__('Security verification failed', 'obydullah-restaurant-pos-lite'));
         }
-
-        global $wpdb;
-        $table = $wpdb->prefix . 'pos_customers';
 
         // Unslash and sanitize input
         $name = sanitize_text_field(wp_unslash($_POST['name'] ?? ''));
@@ -697,51 +742,56 @@ class Restaurant_POS_Lite_Customers
 
         // Validate required fields
         if (empty($name)) {
-            wp_send_json_error('Customer name is required');
+            wp_send_json_error(__('Customer name is required', 'obydullah-restaurant-pos-lite'));
         }
         if (empty($email) || !is_email($email)) {
-            wp_send_json_error('Valid email address is required');
+            wp_send_json_error(__('Valid email address is required', 'obydullah-restaurant-pos-lite'));
         }
+
+        global $wpdb;
 
         // Check if email already exists
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-        $existing = $wpdb->get_var($wpdb->prepare(
-            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            "SELECT id FROM $table WHERE email = %s",
-            $email
-        ));
+        $cache_key = 'orpl_customer_email_' . md5($email);
+        $existing = wp_cache_get($cache_key, self::CACHE_GROUP);
 
-        if ($existing) {
-            wp_send_json_error('Customer email already exists');
+        if (false === $existing) {
+            $existing = $wpdb->get_var($wpdb->prepare(
+                "SELECT id FROM {$this->customers_table} WHERE email = %s",
+                $email
+            ));
+            wp_cache_set($cache_key, $existing, self::CACHE_GROUP, 5 * MINUTE_IN_SECONDS);
         }
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-        $result = $wpdb->insert($table, [
+        if ($existing) {
+            wp_send_json_error(__('Customer email already exists', 'obydullah-restaurant-pos-lite'));
+        }
+
+        $result = $wpdb->insert($this->customers_table, [
             'name' => $name,
             'email' => $email,
             'mobile' => $mobile,
             'address' => $address,
-            'status' => $status
-        ], ['%s', '%s', '%s', '%s', '%s']);
+            'status' => $status,
+            'created_at' => current_time('mysql')
+        ], ['%s', '%s', '%s', '%s', '%s', '%s']);
 
         if ($result === false) {
-            wp_send_json_error('Failed to add customer');
+            wp_send_json_error(__('Failed to add customer', 'obydullah-restaurant-pos-lite'));
         }
 
-        wp_send_json_success('Customer added successfully');
-    }
+        // Clear relevant caches
+        $this->clear_customer_caches();
 
+        wp_send_json_success(__('Customer added successfully', 'obydullah-restaurant-pos-lite'));
+    }
     /** Edit customer */
     public function ajax_edit_customer()
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
-        if (!wp_verify_nonce($nonce, 'add_customer')) {
-            wp_send_json_error('Security verification failed');
+        if (!wp_verify_nonce($nonce, 'orpl_add_customer')) {
+            wp_send_json_error(__('Security verification failed', 'obydullah-restaurant-pos-lite'));
         }
-
-        global $wpdb;
-        $table = $wpdb->prefix . 'pos_customers';
 
         $id = intval($_POST['id'] ?? 0);
         // Unslash and sanitize input
@@ -753,24 +803,29 @@ class Restaurant_POS_Lite_Customers
             sanitize_text_field(wp_unslash($_POST['status'])) : 'active';
 
         if (!$id || empty($name) || empty($email) || !is_email($email)) {
-            wp_send_json_error('Invalid data provided');
+            wp_send_json_error(__('Invalid data provided', 'obydullah-restaurant-pos-lite'));
         }
+
+        global $wpdb;
 
         // Check if email already exists (excluding current customer)
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-        $existing = $wpdb->get_var($wpdb->prepare(
-            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            "SELECT id FROM $table WHERE email = %s AND id != %d",
-            $email,
-            $id
-        ));
+        $cache_key = 'orpl_customer_email_' . md5($email . '_' . $id);
+        $existing = wp_cache_get($cache_key, self::CACHE_GROUP);
 
-        if ($existing) {
-            wp_send_json_error('Customer email already exists');
+        if (false === $existing) {
+            $existing = $wpdb->get_var($wpdb->prepare(
+                "SELECT id FROM {$this->customers_table} WHERE email = %s AND id != %d",
+                $email,
+                $id
+            ));
+            wp_cache_set($cache_key, $existing, self::CACHE_GROUP, 5 * MINUTE_IN_SECONDS);
         }
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-        $result = $wpdb->update($table, [
+        if ($existing) {
+            wp_send_json_error(__('Customer email already exists', 'obydullah-restaurant-pos-lite'));
+        }
+
+        $result = $wpdb->update($this->customers_table, [
             'name' => $name,
             'email' => $email,
             'mobile' => $mobile,
@@ -779,36 +834,68 @@ class Restaurant_POS_Lite_Customers
         ], ['id' => $id], ['%s', '%s', '%s', '%s', '%s'], ['%d']);
 
         if ($result === false) {
-            wp_send_json_error('Failed to update customer');
+            wp_send_json_error(__('Failed to update customer', 'obydullah-restaurant-pos-lite'));
         }
 
-        wp_send_json_success('Customer updated successfully');
+        // Clear relevant caches
+        $this->clear_customer_caches();
+        wp_cache_delete('orpl_customer_' . $id, self::CACHE_GROUP);
+
+        wp_send_json_success(__('Customer updated successfully', 'obydullah-restaurant-pos-lite'));
     }
 
     /** Delete customer */
     public function ajax_delete_customer()
     {
         // Verify nonce - sanitize the input first
-        $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
-        if (!wp_verify_nonce($nonce, 'delete_customer')) {
-            wp_send_json_error('Security verification failed');
+        $nonce = sanitize_text_field(wp_unslash($_POST['nonce'] ?? ''));
+        if (!wp_verify_nonce($nonce, 'orpl_delete_customer')) {
+            wp_send_json_error(__('Security verification failed', 'obydullah-restaurant-pos-lite'));
         }
 
-        global $wpdb;
-        $table = $wpdb->prefix . 'pos_customers';
         $id = intval($_POST['id'] ?? 0);
 
         if (!$id) {
-            wp_send_json_error('Invalid customer ID');
+            wp_send_json_error(__('Invalid customer ID', 'obydullah-restaurant-pos-lite'));
         }
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-        $result = $wpdb->delete($table, ['id' => $id], ['%d']);
+        global $wpdb;
+
+        $customer = $wpdb->get_row($wpdb->prepare(
+            "SELECT email FROM {$this->customers_table} WHERE id = %d",
+            $id
+        ));
+
+        $result = $wpdb->delete($this->customers_table, ['id' => $id], ['%d']);
 
         if ($result === false) {
-            wp_send_json_error('Failed to delete customer');
+            wp_send_json_error(__('Failed to delete customer', 'obydullah-restaurant-pos-lite'));
         }
 
-        wp_send_json_success('Customer deleted successfully');
+        // Clear relevant caches
+        $this->clear_customer_caches();
+        if ($customer) {
+            wp_cache_delete('orpl_customer_email_' . md5($customer->email), self::CACHE_GROUP);
+            wp_cache_delete('orpl_customer_' . $id, self::CACHE_GROUP);
+        }
+
+        wp_send_json_success(__('Customer deleted successfully', 'obydullah-restaurant-pos-lite'));
+    }
+
+    /**
+     * Clear all customer-related caches
+     */
+    private function clear_customer_caches()
+    {
+        global $wpdb;
+
+        $wpdb->query(
+            $wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", '_transient_orpl_customers_%')
+        );
+        $wpdb->query(
+            $wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", '_transient_timeout_orpl_customers_%')
+        );
+
+        wp_cache_delete('orpl_customer_email_', self::CACHE_GROUP);
     }
 }

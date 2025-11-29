@@ -1,23 +1,40 @@
 <?php
 /**
- * Stock Adjustments
+ * Stock Adjustments Management
  *
- * @package Restaurant_POS_Lite
+ * @package Obydullah_Restaurant_POS_Lite
  * @since   1.0.0
  */
-
-if (!defined('ABSPATH'))
+if (!defined('ABSPATH')) {
     exit;
+}
 
-class Restaurant_POS_Lite_Stock_Adjustments
+class Obydullah_Restaurant_POS_Lite_Stock_Adjustments
 {
+    const CACHE_GROUP = 'orpl_stock_adjustments';
+    const CACHE_EXPIRATION = 15 * MINUTE_IN_SECONDS;
+
+    private $adjustments_table;
+    private $stocks_table;
+    private $products_table;
+    private $categories_table;
+    private $accounting_table;
+
     public function __construct()
     {
-        add_action('wp_ajax_add_stock_adjustment', [$this, 'ajax_add_stock_adjustment']);
-        add_action('wp_ajax_get_stock_adjustments', [$this, 'ajax_get_stock_adjustments']);
-        add_action('wp_ajax_delete_stock_adjustment', [$this, 'ajax_delete_stock_adjustment']);
-        add_action('wp_ajax_get_products_for_adjustments', [$this, 'ajax_get_products_for_adjustments']);
-        add_action('wp_ajax_get_current_stock', [$this, 'ajax_get_current_stock']);
+        global $wpdb;
+
+        $this->adjustments_table = $wpdb->prefix . 'orpl_stock_adjustments';
+        $this->stocks_table = $wpdb->prefix . 'orpl_stocks';
+        $this->products_table = $wpdb->prefix . 'orpl_products';
+        $this->categories_table = $wpdb->prefix . 'orpl_categories';
+        $this->accounting_table = $wpdb->prefix . 'orpl_accounting';
+
+        add_action('wp_ajax_orpl_add_stock_adjustment', [$this, 'ajax_add_stock_adjustment']);
+        add_action('wp_ajax_orpl_get_stock_adjustments', [$this, 'ajax_get_stock_adjustments']);
+        add_action('wp_ajax_orpl_delete_stock_adjustment', [$this, 'ajax_delete_stock_adjustment']);
+        add_action('wp_ajax_orpl_get_products_for_adjustments', [$this, 'ajax_get_products_for_adjustments']);
+        add_action('wp_ajax_orpl_get_current_stock', [$this, 'ajax_get_current_stock']);
     }
 
     /**
@@ -27,7 +44,8 @@ class Restaurant_POS_Lite_Stock_Adjustments
     {
         ?>
         <div class="wrap">
-            <h1 class="wp-heading-inline" style="margin-bottom:20px;">Stock Adjustments</h1>
+            <h1 class="wp-heading-inline" style="margin-bottom:20px;">
+                <?php esc_html_e('Stock Adjustments', 'obydullah-restaurant-pos-lite'); ?></h1>
             <hr class="wp-header-end">
 
             <div id="col-container" class="wp-clearfix" style="display:flex;gap:24px;">
@@ -36,28 +54,31 @@ class Restaurant_POS_Lite_Stock_Adjustments
                     <div class="col-wrap"
                         style="background:#fff;padding:20px;border:1px solid #ddd;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.05);">
                         <h2 style="margin:0 0 20px 0;padding:0;font-size:16px;font-weight:600;color:#1d2327;">
-                            Make Stock Adjustment
+                            <?php esc_html_e('Make Stock Adjustment', 'obydullah-restaurant-pos-lite'); ?>
                         </h2>
                         <form id="add-adjustment-form" method="post">
-                            <?php wp_nonce_field('add_stock_adjustment', 'adjustment_nonce'); ?>
+                            <?php wp_nonce_field('orpl_add_stock_adjustment', 'adjustment_nonce'); ?>
 
                             <div style="display:flex;flex-direction:column;gap:15px;">
                                 <!-- Stock Selection -->
                                 <div class="form-field form-required">
                                     <label for="adjustment-product"
                                         style="display:block;font-weight:600;margin-bottom:6px;font-size:12px;color:#1d2327;text-transform:uppercase;letter-spacing:0.5px;">
-                                        Stock <span style="color:#d63638;">*</span>
+                                        <?php esc_html_e('Stock', 'obydullah-restaurant-pos-lite'); ?> <span
+                                            style="color:#d63638;">*</span>
                                     </label>
                                     <select name="fk_product_id" id="adjustment-product" required
                                         style="width:100%;padding:8px 10px;font-size:13px;border:1px solid #8c8f94;border-radius:3px;background:#fff;cursor:pointer;">
-                                        <option value="">Select Stock</option>
+                                        <option value=""><?php esc_html_e('Select Stock', 'obydullah-restaurant-pos-lite'); ?>
+                                        </option>
                                     </select>
                                 </div>
 
                                 <!-- Current Stock Display -->
                                 <div style="background:#f6f7f7;padding:12px;border-radius:4px;border:1px solid #e2e4e7;">
                                     <div style="display:flex;justify-content:space-between;font-size:12px;">
-                                        <span style="font-weight:600;">Current Stock:</span>
+                                        <span
+                                            style="font-weight:600;"><?php esc_html_e('Current Stock:', 'obydullah-restaurant-pos-lite'); ?></span>
                                         <span id="current-stock" style="font-weight:600;color:#2271b1;">0</span>
                                     </div>
                                 </div>
@@ -67,19 +88,23 @@ class Restaurant_POS_Lite_Stock_Adjustments
                                     <div class="form-field form-required">
                                         <label for="adjustment-type"
                                             style="display:block;font-weight:600;margin-bottom:6px;font-size:12px;color:#1d2327;text-transform:uppercase;letter-spacing:0.5px;">
-                                            Type <span style="color:#d63638;">*</span>
+                                            <?php esc_html_e('Type', 'obydullah-restaurant-pos-lite'); ?> <span
+                                                style="color:#d63638;">*</span>
                                         </label>
                                         <select name="adjustment_type" id="adjustment-type" required
                                             style="width:100%;padding:8px 10px;font-size:13px;border:1px solid #8c8f94;border-radius:3px;background:#fff;cursor:pointer;">
-                                            <option value="increase">Increase</option>
-                                            <option value="decrease">Decrease</option>
+                                            <option value="increase">
+                                                <?php esc_html_e('Increase', 'obydullah-restaurant-pos-lite'); ?></option>
+                                            <option value="decrease">
+                                                <?php esc_html_e('Decrease', 'obydullah-restaurant-pos-lite'); ?></option>
                                         </select>
                                     </div>
 
                                     <div class="form-field form-required">
                                         <label for="adjustment-quantity"
                                             style="display:block;font-weight:600;margin-bottom:6px;font-size:12px;color:#1d2327;text-transform:uppercase;letter-spacing:0.5px;">
-                                            Quantity <span style="color:#d63638;">*</span>
+                                            <?php esc_html_e('Quantity', 'obydullah-restaurant-pos-lite'); ?> <span
+                                                style="color:#d63638;">*</span>
                                         </label>
                                         <input name="quantity" id="adjustment-quantity" type="number" min="1" value="1" required
                                             style="width:100%;padding:8px 10px;font-size:13px;border:1px solid #8c8f94;border-radius:3px;background:#fff;transition:border-color 0.2s ease;">
@@ -89,11 +114,13 @@ class Restaurant_POS_Lite_Stock_Adjustments
                                 <!-- New Stock Calculation -->
                                 <div style="background:#f6f7f7;padding:12px;border-radius:4px;border:1px solid #e2e4e7;">
                                     <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;">
-                                        <span style="font-weight:600;">Adjustment:</span>
+                                        <span
+                                            style="font-weight:600;"><?php esc_html_e('Adjustment:', 'obydullah-restaurant-pos-lite'); ?></span>
                                         <span id="adjustment-display" style="font-weight:600;color:#0a7c38;">+0</span>
                                     </div>
                                     <div style="display:flex;justify-content:space-between;font-size:12px;">
-                                        <span style="font-weight:600;">New Stock:</span>
+                                        <span
+                                            style="font-weight:600;"><?php esc_html_e('New Stock:', 'obydullah-restaurant-pos-lite'); ?></span>
                                         <span id="new-stock" style="font-weight:600;color:#2271b1;">0</span>
                                     </div>
                                 </div>
@@ -102,18 +129,19 @@ class Restaurant_POS_Lite_Stock_Adjustments
                                 <div class="form-field">
                                     <label for="adjustment-note"
                                         style="display:block;font-weight:600;margin-bottom:6px;font-size:12px;color:#1d2327;text-transform:uppercase;letter-spacing:0.5px;">
-                                        Note
+                                        <?php esc_html_e('Note', 'obydullah-restaurant-pos-lite'); ?>
                                     </label>
                                     <textarea name="note" id="adjustment-note" rows="3"
                                         style="width:100%;padding:8px 10px;font-size:13px;border:1px solid #8c8f94;border-radius:3px;background:#fff;transition:border-color 0.2s ease;resize:vertical;"
-                                        placeholder="Reason for adjustment..."></textarea>
+                                        placeholder="<?php esc_attr_e('Reason for adjustment...', 'obydullah-restaurant-pos-lite'); ?>"></textarea>
                                 </div>
                             </div>
 
                             <div style="margin-top:20px;">
                                 <button type="submit" id="submit-adjustment" class="button button-primary"
                                     style="width:100%;padding:8px 12px;font-size:13px;font-weight:500;">
-                                    <span class="btn-text">Apply Adjustment</span>
+                                    <span
+                                        class="btn-text"><?php esc_html_e('Apply Adjustment', 'obydullah-restaurant-pos-lite'); ?></span>
                                     <span class="spinner" style="float:none;margin:0;display:none;"></span>
                                 </button>
                             </div>
@@ -130,7 +158,8 @@ class Restaurant_POS_Lite_Stock_Adjustments
                         <div style="margin-bottom:20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
                             <!-- Search Input -->
                             <div style="flex:1;min-width:200px;">
-                                <input type="text" id="adjustment-search" placeholder="Search by stock name..."
+                                <input type="text" id="adjustment-search"
+                                    placeholder="<?php esc_attr_e('Search by stock name...', 'obydullah-restaurant-pos-lite'); ?>"
                                     style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:4px;font-size:13px;">
                             </div>
 
@@ -138,9 +167,11 @@ class Restaurant_POS_Lite_Stock_Adjustments
                             <div style="min-width:150px;">
                                 <select id="type-filter"
                                     style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:4px;font-size:13px;">
-                                    <option value="">All Types</option>
-                                    <option value="increase">Increase</option>
-                                    <option value="decrease">Decrease</option>
+                                    <option value=""><?php esc_html_e('All Types', 'obydullah-restaurant-pos-lite'); ?></option>
+                                    <option value="increase"><?php esc_html_e('Increase', 'obydullah-restaurant-pos-lite'); ?>
+                                    </option>
+                                    <option value="decrease"><?php esc_html_e('Decrease', 'obydullah-restaurant-pos-lite'); ?>
+                                    </option>
                                 </select>
                             </div>
 
@@ -152,7 +183,7 @@ class Restaurant_POS_Lite_Stock_Adjustments
 
                             <!-- Refresh Button -->
                             <button id="refresh-adjustments" class="button" style="padding:6px 12px;">
-                                Refresh
+                                <?php esc_html_e('Refresh', 'obydullah-restaurant-pos-lite'); ?>
                             </button>
                         </div>
 
@@ -160,19 +191,20 @@ class Restaurant_POS_Lite_Stock_Adjustments
                         <table class="wp-list-table widefat fixed striped table-view-list">
                             <thead>
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Stock</th>
-                                    <th>Type</th>
-                                    <th>Quantity</th>
-                                    <th>Note</th>
-                                    <th style="text-align:center;">Actions</th>
+                                    <th><?php esc_html_e('Date', 'obydullah-restaurant-pos-lite'); ?></th>
+                                    <th><?php esc_html_e('Stock', 'obydullah-restaurant-pos-lite'); ?></th>
+                                    <th><?php esc_html_e('Type', 'obydullah-restaurant-pos-lite'); ?></th>
+                                    <th><?php esc_html_e('Quantity', 'obydullah-restaurant-pos-lite'); ?></th>
+                                    <th><?php esc_html_e('Note', 'obydullah-restaurant-pos-lite'); ?></th>
+                                    <th style="text-align:center;">
+                                        <?php esc_html_e('Actions', 'obydullah-restaurant-pos-lite'); ?></th>
                                 </tr>
                             </thead>
                             <tbody id="adjustment-list">
                                 <tr>
                                     <td colspan="6" class="loading-adjustments" style="text-align:center;">
                                         <span class="spinner is-active"></span>
-                                        Loading adjustments...
+                                        <?php esc_html_e('Loading adjustments...', 'obydullah-restaurant-pos-lite'); ?>
                                     </td>
                                 </tr>
                             </tbody>
@@ -182,38 +214,50 @@ class Restaurant_POS_Lite_Stock_Adjustments
                         <div class="tablenav bottom"
                             style="margin-top:20px;display:flex;justify-content:space-between;align-items:center;">
                             <div class="tablenav-pages">
-                                <span class="displaying-num" id="displaying-num">0 items</span>
+                                <span class="displaying-num" id="displaying-num">0
+                                    <?php esc_html_e('items', 'obydullah-restaurant-pos-lite'); ?></span>
                                 <span class="pagination-links">
                                     <a class="first-page button" href="#">
-                                        <span class="screen-reader-text">First page</span>
+                                        <span
+                                            class="screen-reader-text"><?php esc_html_e('First page', 'obydullah-restaurant-pos-lite'); ?></span>
                                         <span aria-hidden="true">«</span>
                                     </a>
                                     <a class="prev-page button" href="#">
-                                        <span class="screen-reader-text">Previous page</span>
+                                        <span
+                                            class="screen-reader-text"><?php esc_html_e('Previous page', 'obydullah-restaurant-pos-lite'); ?></span>
                                         <span aria-hidden="true">‹</span>
                                     </a>
                                     <span class="paging-input">
-                                        <label for="current-page-selector" class="screen-reader-text">Current Page</label>
+                                        <label for="current-page-selector"
+                                            class="screen-reader-text"><?php esc_html_e('Current Page', 'obydullah-restaurant-pos-lite'); ?></label>
                                         <input class="current-page" id="current-page-selector" type="text" name="paged"
                                             value="1" size="3" aria-describedby="table-paging">
-                                        <span class="tablenav-paging-text"> of <span class="total-pages">1</span></span>
+                                        <span class="tablenav-paging-text">
+                                            <?php esc_html_e('of', 'obydullah-restaurant-pos-lite'); ?> <span
+                                                class="total-pages">1</span></span>
                                     </span>
                                     <a class="next-page button" href="#">
-                                        <span class="screen-reader-text">Next page</span>
+                                        <span
+                                            class="screen-reader-text"><?php esc_html_e('Next page', 'obydullah-restaurant-pos-lite'); ?></span>
                                         <span aria-hidden="true">›</span>
                                     </a>
                                     <a class="last-page button" href="#">
-                                        <span class="screen-reader-text">Last page</span>
+                                        <span
+                                            class="screen-reader-text"><?php esc_html_e('Last page', 'obydullah-restaurant-pos-lite'); ?></span>
                                         <span aria-hidden="true">»</span>
                                     </a>
                                 </span>
                             </div>
                             <div class="tablenav-pages" style="float:none;">
-                                <select id="per-page-select" style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;">
-                                    <option value="10">10 per page</option>
-                                    <option value="20">20 per page</option>
-                                    <option value="50">50 per page</option>
-                                    <option value="100">100 per page</option>
+                                <select id="per-page-select" style="padding:4px 16px;border:1px solid #ddd;border-radius:4px;">
+                                    <option value="10">10 <?php esc_html_e('per page', 'obydullah-restaurant-pos-lite'); ?>
+                                    </option>
+                                    <option value="20">20 <?php esc_html_e('per page', 'obydullah-restaurant-pos-lite'); ?>
+                                    </option>
+                                    <option value="50">50 <?php esc_html_e('per page', 'obydullah-restaurant-pos-lite'); ?>
+                                    </option>
+                                    <option value="100">100 <?php esc_html_e('per page', 'obydullah-restaurant-pos-lite'); ?>
+                                    </option>
                                 </select>
                             </div>
                         </div>
@@ -241,13 +285,13 @@ class Restaurant_POS_Lite_Stock_Adjustments
                             url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                             type: 'GET',
                             data: {
-                                action: 'get_products_for_adjustments',
-                                nonce: '<?php echo esc_attr(wp_create_nonce("get_products_for_adjustments")); ?>'
+                                action: 'orpl_get_products_for_adjustments',
+                                nonce: '<?php echo esc_attr(wp_create_nonce("orpl_get_products_for_adjustments")); ?>'
                             },
                             success: function (response) {
                                 if (response.success) {
                                     let select = $('#adjustment-product');
-                                    select.empty().append('<option value="">Select Stock</option>');
+                                    select.empty().append('<option value=""><?php echo esc_js(__('Select Stock', 'obydullah-restaurant-pos-lite')); ?></option>');
 
                                     $.each(response.data, function (_, product) {
                                         select.append(
@@ -263,25 +307,25 @@ class Restaurant_POS_Lite_Stock_Adjustments
                         currentPage = page;
 
                         let tbody = $('#adjustment-list');
-                        tbody.html('<tr><td colspan="6" class="loading-adjustments" style="text-align:center;"><span class="spinner is-active"></span> Loading adjustments...</td></tr>');
+                        tbody.html('<tr><td colspan="6" class="loading-adjustments" style="text-align:center;"><span class="spinner is-active"></span> <?php echo esc_js(__('Loading adjustments...', 'obydullah-restaurant-pos-lite')); ?></td></tr>');
 
                         $.ajax({
                             url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                             type: 'GET',
                             data: {
-                                action: 'get_stock_adjustments',
+                                action: 'orpl_get_stock_adjustments',
                                 page: currentPage,
                                 per_page: perPage,
                                 search: searchTerm,
                                 type: typeFilter,
                                 date: dateFilter,
-                                nonce: '<?php echo esc_attr(wp_create_nonce("get_stock_adjustments")); ?>'
+                                nonce: '<?php echo esc_attr(wp_create_nonce("orpl_get_stock_adjustments")); ?>'
                             },
                             success: function (response) {
                                 tbody.empty();
                                 if (response.success) {
                                     if (!response.data.adjustments.length) {
-                                        tbody.append('<tr><td colspan="6" style="text-align:center;padding:20px;color:#666;">No adjustments found.</td></tr>');
+                                        tbody.append('<tr><td colspan="6" style="text-align:center;padding:20px;color:#666;"><?php echo esc_js(__('No adjustments found.', 'obydullah-restaurant-pos-lite')); ?></td></tr>');
                                         updatePagination(response.data.pagination);
                                         return;
                                     }
@@ -299,7 +343,7 @@ class Restaurant_POS_Lite_Stock_Adjustments
 
                                         // Type column
                                         let typeClass = 'adjustment-' + adjustment.adjustment_type;
-                                        let typeText = adjustment.adjustment_type === 'increase' ? 'Increase' : 'Decrease';
+                                        let typeText = adjustment.adjustment_type === 'increase' ? '<?php echo esc_js(__('Increase', 'obydullah-restaurant-pos-lite')); ?>' : '<?php echo esc_js(__('Decrease', 'obydullah-restaurant-pos-lite')); ?>';
                                         row.append($('<td>').append(
                                             $('<span>').addClass(typeClass).text(typeText)
                                         ));
@@ -313,7 +357,7 @@ class Restaurant_POS_Lite_Stock_Adjustments
 
                                         // Actions column - Only Delete button
                                         row.append($('<td style="text-align:center;">')
-                                            .append('<button class="button button-small button-link-delete delete-adjustment">Delete</button>')
+                                            .append('<button class="button button-small button-link-delete delete-adjustment"><?php echo esc_js(__('Delete', 'obydullah-restaurant-pos-lite')); ?></button>')
                                         );
 
                                         tbody.append(row);
@@ -325,7 +369,7 @@ class Restaurant_POS_Lite_Stock_Adjustments
                                 }
                             },
                             error: function () {
-                                $('#adjustment-list').html('<tr><td colspan="6" style="color:red;text-align:center;">Failed to load adjustments.</td></tr>');
+                                $('#adjustment-list').html('<tr><td colspan="6" style="color:red;text-align:center;"><?php echo esc_js(__('Failed to load adjustments.', 'obydullah-restaurant-pos-lite')); ?></td></tr>');
                             }
                         });
                     }
@@ -335,7 +379,7 @@ class Restaurant_POS_Lite_Stock_Adjustments
                         totalItems = pagination.total_items;
 
                         // Update displaying text
-                        $('#displaying-num').text(pagination.total_items + ' items');
+                        $('#displaying-num').text(pagination.total_items + ' <?php echo esc_js(__('items', 'obydullah-restaurant-pos-lite')); ?>');
 
                         // Update page input and total pages
                         $('#current-page-selector').val(currentPage);
@@ -418,9 +462,9 @@ class Restaurant_POS_Lite_Stock_Adjustments
                                 url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                                 type: 'GET',
                                 data: {
-                                    action: 'get_current_stock',
+                                    action: 'orpl_get_current_stock',
                                     product_id: productId,
-                                    nonce: '<?php echo esc_attr(wp_create_nonce("get_current_stock")); ?>'
+                                    nonce: '<?php echo esc_attr(wp_create_nonce("orpl_get_current_stock")); ?>'
                                 },
                                 success: function (response) {
                                     if (response.success) {
@@ -481,11 +525,11 @@ class Restaurant_POS_Lite_Stock_Adjustments
                         let note = $('#adjustment-note').val();
 
                         if (!fk_product_id) {
-                            alert('Please select a product');
+                            alert('<?php echo esc_js(__('Please select a product', 'obydullah-restaurant-pos-lite')); ?>');
                             return false;
                         }
                         if (quantity <= 0) {
-                            alert('Please enter a valid quantity');
+                            alert('<?php echo esc_js(__('Please enter a valid quantity', 'obydullah-restaurant-pos-lite')); ?>');
                             return false;
                         }
 
@@ -494,7 +538,7 @@ class Restaurant_POS_Lite_Stock_Adjustments
                         let newStock = adjustment_type === 'increase' ? currentStock + parseInt(quantity) : currentStock - parseInt(quantity);
 
                         if (newStock < 0) {
-                            if (!confirm('This adjustment will result in negative stock. Are you sure you want to continue?')) {
+                            if (!confirm('<?php echo esc_js(__('This adjustment will result in negative stock. Are you sure you want to continue?', 'obydullah-restaurant-pos-lite')); ?>')) {
                                 return false;
                             }
                         }
@@ -504,12 +548,12 @@ class Restaurant_POS_Lite_Stock_Adjustments
                         setButtonLoading(true);
 
                         $.post('<?php echo esc_url(admin_url('admin-ajax.php')); ?>', {
-                            action: 'add_stock_adjustment',
+                            action: 'orpl_add_stock_adjustment',
                             fk_product_id: fk_product_id,
                             adjustment_type: adjustment_type,
                             quantity: quantity,
                             note: note,
-                            nonce: '<?php echo esc_attr(wp_create_nonce("add_stock_adjustment")); ?>'
+                            nonce: '<?php echo esc_attr(wp_create_nonce("orpl_add_stock_adjustment")); ?>'
                         }, function (res) {
                             if (res.success) {
                                 resetForm();
@@ -519,9 +563,9 @@ class Restaurant_POS_Lite_Stock_Adjustments
                                     $('#adjustment-product').trigger('change');
                                 }
                             } else {
-                                alert('Error: ' + res.data);
+                                alert('<?php echo esc_js(__('Error:', 'obydullah-restaurant-pos-lite')); ?> ' + res.data);
                             }
-                        }).fail(() => alert('Request failed. Please try again.'))
+                        }).fail(() => alert('<?php echo esc_js(__('Request failed. Please try again.', 'obydullah-restaurant-pos-lite')); ?>'))
                             .always(function () {
                                 // Reset submitting state
                                 isSubmitting = false;
@@ -530,26 +574,26 @@ class Restaurant_POS_Lite_Stock_Adjustments
                     });
 
                     $(document).on('click', '.delete-adjustment', function () {
-                        if (!confirm('Are you sure you want to delete this adjustment?')) return;
+                        if (!confirm('<?php echo esc_js(__('Are you sure you want to delete this adjustment?', 'obydullah-restaurant-pos-lite')); ?>')) return;
 
                         let button = $(this);
                         let originalText = button.text();
                         let id = $(this).closest('tr').data('adjustment-id');
 
                         // Disable button and show loading
-                        button.prop('disabled', true).text('Deleting...');
+                        button.prop('disabled', true).text('<?php echo esc_js(__('Deleting...', 'obydullah-restaurant-pos-lite')); ?>');
 
                         $.post('<?php echo esc_url(admin_url('admin-ajax.php')); ?>', {
-                            action: 'delete_stock_adjustment',
+                            action: 'orpl_delete_stock_adjustment',
                             id: id,
-                            nonce: '<?php echo esc_attr(wp_create_nonce("delete_stock_adjustment")); ?>'
+                            nonce: '<?php echo esc_attr(wp_create_nonce("orpl_delete_stock_adjustment")); ?>'
                         }, function (res) {
                             if (res.success) {
                                 loadAdjustments(currentPage);
                             } else {
                                 alert(res.data);
                             }
-                        }).fail(() => alert('Delete request failed. Please try again.'))
+                        }).fail(() => alert('<?php echo esc_js(__('Delete request failed. Please try again.', 'obydullah-restaurant-pos-lite')); ?>'))
                             .always(function () {
                                 // Re-enable button
                                 button.prop('disabled', false).text(originalText);
@@ -564,11 +608,11 @@ class Restaurant_POS_Lite_Stock_Adjustments
                         if (loading) {
                             button.prop('disabled', true).addClass('button-loading');
                             spinner.show();
-                            btnText.text('Applying...');
+                            btnText.text('<?php echo esc_js(__('Applying...', 'obydullah-restaurant-pos-lite')); ?>');
                         } else {
                             button.prop('disabled', false).removeClass('button-loading');
                             spinner.hide();
-                            btnText.text('Apply Adjustment');
+                            btnText.text('<?php echo esc_js(__('Apply Adjustment', 'obydullah-restaurant-pos-lite')); ?>');
                         }
                     }
 
@@ -592,23 +636,27 @@ class Restaurant_POS_Lite_Stock_Adjustments
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
-        if (!wp_verify_nonce($nonce, 'get_products_for_adjustments')) {
-            wp_send_json_error('Security verification failed');
+        if (!wp_verify_nonce($nonce, 'orpl_get_products_for_adjustments')) {
+            wp_send_json_error(__('Security verification failed', 'obydullah-restaurant-pos-lite'));
         }
 
         global $wpdb;
-        $products_table = $wpdb->prefix . 'pos_products';
-        $categories_table = $wpdb->prefix . 'pos_categories';
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-        $products = $wpdb->get_results(
-            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            "SELECT p.id, p.name, c.name as category_name 
-            FROM $products_table p 
-            LEFT JOIN $categories_table c ON p.fk_category_id = c.id 
+        $cache_key = 'orpl_products_for_adjustments';
+        $products = wp_cache_get($cache_key, self::CACHE_GROUP);
+
+        if (false === $products) {
+            $query = $wpdb->prepare(
+                "SELECT p.id, p.name, c.name as category_name 
+            FROM {$this->products_table} p 
+            LEFT JOIN {$this->categories_table} c ON p.fk_category_id = c.id 
             WHERE p.status = 'active' 
             ORDER BY p.name ASC"
-        );
+            );
+            $products = $wpdb->get_results($query);
+
+            wp_cache_set($cache_key, $products, self::CACHE_GROUP, self::CACHE_EXPIRATION);
+        }
 
         wp_send_json_success($products);
     }
@@ -618,24 +666,29 @@ class Restaurant_POS_Lite_Stock_Adjustments
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
-        if (!wp_verify_nonce($nonce, 'get_current_stock')) {
-            wp_send_json_error('Security verification failed');
+        if (!wp_verify_nonce($nonce, 'orpl_get_current_stock')) {
+            wp_send_json_error(__('Security verification failed', 'obydullah-restaurant-pos-lite'));
         }
 
-        global $wpdb;
-        $stocks_table = $wpdb->prefix . 'pos_stocks';
         $product_id = intval($_GET['product_id'] ?? 0);
 
         if ($product_id <= 0) {
-            wp_send_json_error('Invalid product ID');
+            wp_send_json_error(__('Invalid product ID', 'obydullah-restaurant-pos-lite'));
         }
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-        $current_stock = $wpdb->get_var($wpdb->prepare(
-            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            "SELECT quantity FROM $stocks_table WHERE fk_product_id = %d",
-            $product_id
-        ));
+        global $wpdb;
+
+        $cache_key = 'orpl_current_stock_' . $product_id;
+        $current_stock = wp_cache_get($cache_key, self::CACHE_GROUP);
+
+        if (false === $current_stock) {
+            $current_stock = $wpdb->get_var($wpdb->prepare(
+                "SELECT quantity FROM {$this->stocks_table} WHERE fk_product_id = %d",
+                $product_id
+            ));
+
+            wp_cache_set($cache_key, $current_stock, self::CACHE_GROUP, 5 * MINUTE_IN_SECONDS);
+        }
 
         wp_send_json_success(['current_stock' => $current_stock ? intval($current_stock) : 0]);
     }
@@ -645,13 +698,9 @@ class Restaurant_POS_Lite_Stock_Adjustments
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
-        if (!wp_verify_nonce($nonce, 'get_stock_adjustments')) {
-            wp_send_json_error('Security verification failed');
+        if (!wp_verify_nonce($nonce, 'orpl_get_stock_adjustments')) {
+            wp_send_json_error(__('Security verification failed', 'obydullah-restaurant-pos-lite'));
         }
-
-        global $wpdb;
-        $adjustments_table = $wpdb->prefix . 'pos_stock_adjustments';
-        $products_table = $wpdb->prefix . 'pos_products';
 
         // Get parameters - sanitize inputs
         $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
@@ -659,6 +708,16 @@ class Restaurant_POS_Lite_Stock_Adjustments
         $search = isset($_GET['search']) ? sanitize_text_field(wp_unslash($_GET['search'])) : '';
         $type = isset($_GET['type']) ? sanitize_text_field(wp_unslash($_GET['type'])) : '';
         $date = isset($_GET['date']) ? sanitize_text_field(wp_unslash($_GET['date'])) : '';
+
+        // Generate cache key based on filters
+        $cache_key = 'orpl_adjustments_' . md5(serialize([$page, $per_page, $search, $type, $date]));
+        $cached_data = wp_cache_get($cache_key, self::CACHE_GROUP);
+
+        if (false !== $cached_data) {
+            wp_send_json_success($cached_data);
+        }
+
+        global $wpdb;
 
         // Build WHERE conditions
         $where_conditions = [];
@@ -688,16 +747,13 @@ class Restaurant_POS_Lite_Stock_Adjustments
             $where_clause = 'WHERE ' . implode(' AND ', $where_conditions);
         }
 
-        // Count total items
-        $count_query = "SELECT COUNT(*) FROM $adjustments_table a 
-                   LEFT JOIN $products_table p ON a.fk_product_id = p.id 
-                   $where_clause";
+        $count_query = "SELECT COUNT(*) FROM {$this->adjustments_table} a 
+               LEFT JOIN {$this->products_table} p ON a.fk_product_id = p.id 
+               {$where_clause}";
 
         if (!empty($query_params)) {
-            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $total_items = $wpdb->get_var($wpdb->prepare($count_query, $query_params));
         } else {
-            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $total_items = $wpdb->get_var($count_query);
         }
 
@@ -705,24 +761,22 @@ class Restaurant_POS_Lite_Stock_Adjustments
         $total_pages = ceil($total_items / $per_page);
         $offset = ($page - 1) * $per_page;
 
-        // Build main query
         $main_query = "SELECT a.*, p.name as product_name 
-                  FROM $adjustments_table a 
-                  LEFT JOIN $products_table p ON a.fk_product_id = p.id 
-                  $where_clause 
-                  ORDER BY a.created_at DESC 
-                  LIMIT %d OFFSET %d";
+              FROM {$this->adjustments_table} a 
+              LEFT JOIN {$this->products_table} p ON a.fk_product_id = p.id 
+              {$where_clause} 
+              ORDER BY a.created_at DESC 
+              LIMIT %d OFFSET %d";
 
         // Add pagination parameters to query params
-        $query_params[] = $per_page;
-        $query_params[] = $offset;
+        $pagination_params = $query_params;
+        $pagination_params[] = $per_page;
+        $pagination_params[] = $offset;
 
         // Execute main query
-        if (!empty($query_params)) {
-            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-            $adjustments = $wpdb->get_results($wpdb->prepare($main_query, $query_params));
+        if (!empty($pagination_params)) {
+            $adjustments = $wpdb->get_results($wpdb->prepare($main_query, $pagination_params));
         } else {
-            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $adjustments = $wpdb->get_results($main_query);
         }
 
@@ -736,6 +790,9 @@ class Restaurant_POS_Lite_Stock_Adjustments
             ]
         ];
 
+        // Cache for 5 minutes
+        wp_cache_set($cache_key, $response_data, self::CACHE_GROUP, 5 * MINUTE_IN_SECONDS);
+
         wp_send_json_success($response_data);
     }
 
@@ -743,15 +800,10 @@ class Restaurant_POS_Lite_Stock_Adjustments
     public function ajax_add_stock_adjustment()
     {
         // Verify nonce - sanitize the input first
-        $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
-        if (!wp_verify_nonce($nonce, 'add_stock_adjustment')) {
-            wp_send_json_error('Security verification failed');
+        $nonce = sanitize_text_field(wp_unslash($_POST['nonce'] ?? ''));
+        if (!wp_verify_nonce($nonce, 'orpl_add_stock_adjustment')) {
+            wp_send_json_error(__('Security verification failed', 'obydullah-restaurant-pos-lite'));
         }
-
-        global $wpdb;
-        $adjustments_table = $wpdb->prefix . 'pos_stock_adjustments';
-        $stocks_table = $wpdb->prefix . 'pos_stocks';
-        $accounting_table = $wpdb->prefix . 'pos_accounting';
 
         // Unslash and sanitize input
         $fk_product_id = intval($_POST['fk_product_id'] ?? 0);
@@ -762,34 +814,34 @@ class Restaurant_POS_Lite_Stock_Adjustments
 
         // Validate required fields
         if ($fk_product_id <= 0) {
-            wp_send_json_error('Please select a valid product');
+            wp_send_json_error(__('Please select a valid product', 'obydullah-restaurant-pos-lite'));
         }
         if ($quantity <= 0) {
-            wp_send_json_error('Quantity must be greater than 0');
+            wp_send_json_error(__('Quantity must be greater than 0', 'obydullah-restaurant-pos-lite'));
         }
+
+        global $wpdb;
 
         // Start transaction
         $wpdb->query('START TRANSACTION');
 
         try {
             // Add adjustment record
-            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-            $adjustment_result = $wpdb->insert($adjustments_table, [
+            $adjustment_result = $wpdb->insert($this->adjustments_table, [
                 'fk_product_id' => $fk_product_id,
                 'adjustment_type' => $adjustment_type,
                 'quantity' => $quantity,
-                'note' => $note
-            ], ['%d', '%s', '%d', '%s']);
+                'note' => $note,
+                'created_at' => current_time('mysql')
+            ], ['%d', '%s', '%d', '%s', '%s']);
 
             if ($adjustment_result === false) {
-                throw new Exception('Failed to add adjustment record');
+                throw new Exception(__('Failed to add adjustment record', 'obydullah-restaurant-pos-lite'));
             }
 
-            // Get current stock data for accounting calculation
-            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+            // Get current stock data for accounting calculation - ✅ FIXED: Use proper table name
             $current_stock_data = $wpdb->get_row($wpdb->prepare(
-                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                "SELECT quantity, net_cost FROM $stocks_table WHERE fk_product_id = %d",
+                "SELECT quantity, net_cost FROM {$this->stocks_table} WHERE fk_product_id = %d",
                 $fk_product_id
             ));
 
@@ -799,14 +851,14 @@ class Restaurant_POS_Lite_Stock_Adjustments
             // Update stock quantity
             if ($current_stock_data === null) {
                 // Create stock entry if it doesn't exist
-                // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-                $stock_result = $wpdb->insert($stocks_table, [
+                $stock_result = $wpdb->insert($this->stocks_table, [
                     'fk_product_id' => $fk_product_id,
                     'quantity' => $adjustment_type === 'increase' ? $quantity : -$quantity,
                     'net_cost' => 0.00,
                     'sale_cost' => 0.00,
-                    'status' => 'inStock'
-                ], ['%d', '%d', '%f', '%f', '%s']);
+                    'status' => 'inStock',
+                    'created_at' => current_time('mysql')
+                ], ['%d', '%d', '%f', '%f', '%s', '%s']);
             } else {
                 // Update existing stock
                 $new_quantity = $adjustment_type === 'increase' ?
@@ -815,45 +867,51 @@ class Restaurant_POS_Lite_Stock_Adjustments
                 // Determine status based on new quantity
                 $status = $new_quantity > 10 ? 'inStock' : ($new_quantity > 0 ? 'lowStock' : 'outStock');
 
-                // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-                $stock_result = $wpdb->update($stocks_table, [
+                $stock_result = $wpdb->update($this->stocks_table, [
                     'quantity' => $new_quantity,
                     'status' => $status
                 ], ['fk_product_id' => $fk_product_id], ['%d', '%s'], ['%d']);
             }
 
             if ($stock_result === false) {
-                throw new Exception('Failed to update stock');
+                throw new Exception(__('Failed to update stock', 'obydullah-restaurant-pos-lite'));
             }
 
-            // ✅ ADD ACCOUNTING RECORDS FOR STOCK ADJUSTMENTS
+            // Add accounting records for stock adjustments
             if ($adjustment_value > 0) {
+                $description = $adjustment_type === 'increase' ? 'Stock Adjustment (Increase)' : 'Stock Adjustment (Decrease)';
+
                 if ($adjustment_type === 'decrease') {
                     // Stock decrease = loss/wastage (money lost)
-                    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-                    $accounting_result = $wpdb->insert($accounting_table, [
+                    $accounting_result = $wpdb->insert($this->accounting_table, [
                         'out_amount' => $adjustment_value,
                         'amount_receivable' => $adjustment_value,
+                        'description' => $description,
                         'created_at' => current_time('mysql')
-                    ], ['%f', '%f', '%s']);
+                    ], ['%f', '%f', '%s', '%s']);
                 } else {
                     // Stock increase = gain/return (money gained/returned)
-                    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-                    $accounting_result = $wpdb->insert($accounting_table, [
+                    $accounting_result = $wpdb->insert($this->accounting_table, [
                         'in_amount' => $adjustment_value,
                         'amount_payable' => $adjustment_value,
+                        'description' => $description,
                         'created_at' => current_time('mysql')
-                    ], ['%f', '%f', '%s']);
+                    ], ['%f', '%f', '%s', '%s']);
                 }
 
                 if ($accounting_result === false) {
-                    throw new Exception('Failed to create accounting record');
+                    throw new Exception(__('Failed to create accounting record', 'obydullah-restaurant-pos-lite'));
                 }
             }
 
             // Commit transaction
             $wpdb->query('COMMIT');
-            wp_send_json_success('Stock adjustment applied successfully');
+
+            // Clear relevant caches
+            $this->clear_adjustment_caches();
+            wp_cache_delete('orpl_current_stock_' . $fk_product_id, self::CACHE_GROUP);
+
+            wp_send_json_success(__('Stock adjustment applied successfully', 'obydullah-restaurant-pos-lite'));
 
         } catch (Exception $e) {
             // Rollback transaction on error
@@ -866,26 +924,54 @@ class Restaurant_POS_Lite_Stock_Adjustments
     public function ajax_delete_stock_adjustment()
     {
         // Verify nonce - sanitize the input first
-        $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
-        if (!wp_verify_nonce($nonce, 'delete_stock_adjustment')) {
-            wp_send_json_error('Security verification failed');
+        $nonce = sanitize_text_field(wp_unslash($_POST['nonce'] ?? ''));
+        if (!wp_verify_nonce($nonce, 'orpl_delete_stock_adjustment')) {
+            wp_send_json_error(__('Security verification failed', 'obydullah-restaurant-pos-lite'));
         }
 
-        global $wpdb;
-        $table = $wpdb->prefix . 'pos_stock_adjustments';
         $id = intval($_POST['id'] ?? 0);
 
         if (!$id) {
-            wp_send_json_error('Invalid adjustment ID');
+            wp_send_json_error(__('Invalid adjustment ID', 'obydullah-restaurant-pos-lite'));
         }
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-        $result = $wpdb->delete($table, ['id' => $id], ['%d']);
+        global $wpdb;
+
+        $adjustment = $wpdb->get_row($wpdb->prepare(
+            "SELECT fk_product_id FROM {$this->adjustments_table} WHERE id = %d",
+            $id
+        ));
+
+        $result = $wpdb->delete($this->adjustments_table, ['id' => $id], ['%d']);
 
         if ($result === false) {
-            wp_send_json_error('Failed to delete adjustment');
+            wp_send_json_error(__('Failed to delete adjustment', 'obydullah-restaurant-pos-lite'));
         }
 
-        wp_send_json_success('Adjustment deleted successfully');
+        // Clear relevant caches
+        $this->clear_adjustment_caches();
+        if ($adjustment) {
+            wp_cache_delete('orpl_current_stock_' . $adjustment->fk_product_id, self::CACHE_GROUP);
+        }
+
+        wp_send_json_success(__('Adjustment deleted successfully', 'obydullah-restaurant-pos-lite'));
+    }
+
+    /**
+     * Clear all adjustment-related caches
+     */
+    private function clear_adjustment_caches()
+    {
+        global $wpdb;
+
+        $wpdb->query(
+            $wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", '_transient_orpl_adjustments_%')
+        );
+        $wpdb->query(
+            $wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", '_transient_timeout_orpl_adjustments_%')
+        );
+
+        // Clear object cache
+        wp_cache_delete('orpl_products_for_adjustments', self::CACHE_GROUP);
     }
 }

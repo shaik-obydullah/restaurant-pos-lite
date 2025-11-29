@@ -1,9 +1,9 @@
 <?php
 /**
- * Restaurant POS Lite Dashboard Class
+ * Obydullah Restaurant POS Lite Dashboard Class
  * Handles all dashboard functionality for the Restaurant POS plugin
  *
- * @package Restaurant_POS_Lite
+ * @package Obydullah_Restaurant_POS_Lite
  * @since 1.0.0
  */
 
@@ -13,11 +13,10 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Dashboard class for Restaurant POS Lite
+ * Dashboard class for Obydullah Restaurant POS Lite
  */
-class Restaurant_POS_Lite_Dashboard
+class Obydullah_Restaurant_POS_Lite_Dashboard
 {
-
     /**
      * Database instance
      *
@@ -43,11 +42,11 @@ class Restaurant_POS_Lite_Dashboard
     {
         global $wpdb;
         $this->wpdb = $wpdb;
-        $this->table_sales = $wpdb->prefix . 'pos_sales';
-        $this->table_sale_details = $wpdb->prefix . 'pos_sale_details';
-        $this->table_stocks = $wpdb->prefix . 'pos_stocks';
-        $this->table_accounting = $wpdb->prefix . 'pos_accounting';
-        $this->table_products = $wpdb->prefix . 'pos_products';
+        $this->table_sales = $wpdb->prefix . 'orpl_sales';
+        $this->table_sale_details = $wpdb->prefix . 'orpl_sale_details';
+        $this->table_stocks = $wpdb->prefix . 'orpl_stocks';
+        $this->table_accounting = $wpdb->prefix . 'orpl_accounting';
+        $this->table_products = $wpdb->prefix . 'orpl_products';
     }
 
     /**
@@ -58,8 +57,8 @@ class Restaurant_POS_Lite_Dashboard
      */
     private function format_currency($amount)
     {
-        if (class_exists('Restaurant_POS_Lite_Helpers')) {
-            return Restaurant_POS_Lite_Helpers::format_currency($amount);
+        if (class_exists('Obydullah_Restaurant_POS_Lite_Helpers')) {
+            return Obydullah_Restaurant_POS_Lite_Helpers::format_currency($amount);
         }
 
         // Fallback formatting.
@@ -84,8 +83,8 @@ class Restaurant_POS_Lite_Dashboard
      */
     private function get_currency_symbol()
     {
-        if (class_exists('Restaurant_POS_Lite_Helpers')) {
-            return Restaurant_POS_Lite_Helpers::get_currency_symbol();
+        if (class_exists('Obydullah_Restaurant_POS_Lite_Helpers')) {
+            return Obydullah_Restaurant_POS_Lite_Helpers::get_currency_symbol();
         }
 
         // Fallback currency symbol.
@@ -99,7 +98,6 @@ class Restaurant_POS_Lite_Dashboard
      */
     private function get_stock_value()
     {
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.NotPrepared
         $result = $this->wpdb->get_var(
             $this->wpdb->prepare(
                 "SELECT SUM(quantity * net_cost) AS total_value 
@@ -121,7 +119,6 @@ class Restaurant_POS_Lite_Dashboard
     {
         $today = current_time('Y-m-d');
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.NotPrepared
         $result = $this->wpdb->get_var(
             $this->wpdb->prepare(
                 "SELECT COUNT(*) 
@@ -144,7 +141,6 @@ class Restaurant_POS_Lite_Dashboard
         $first_day = current_time('Y-m-01');
         $last_day = current_time('Y-m-t');
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.NotPrepared
         $result = $this->wpdb->get_var(
             $this->wpdb->prepare(
                 "SELECT COUNT(*) 
@@ -167,7 +163,6 @@ class Restaurant_POS_Lite_Dashboard
     {
         $today = current_time('Y-m-d');
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.NotPrepared
         $result = $this->wpdb->get_var(
             $this->wpdb->prepare(
                 "SELECT SUM(paid_amount)
@@ -190,7 +185,6 @@ class Restaurant_POS_Lite_Dashboard
         $first_day = current_time('Y-m-01');
         $last_day = current_time('Y-m-t');
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.NotPrepared
         $result = $this->wpdb->get_var(
             $this->wpdb->prepare(
                 "SELECT SUM(paid_amount) 
@@ -214,7 +208,6 @@ class Restaurant_POS_Lite_Dashboard
     {
         $today = current_time('Y-m-d');
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.NotPrepared
         $result = $this->wpdb->get_var(
             $this->wpdb->prepare(
                 "SELECT SUM(out_amount) 
@@ -237,7 +230,6 @@ class Restaurant_POS_Lite_Dashboard
         $first_day = current_time('Y-m-01');
         $last_day = current_time('Y-m-t');
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.NotPrepared
         $result = $this->wpdb->get_var(
             $this->wpdb->prepare(
                 "SELECT SUM(out_amount) 
@@ -265,7 +257,6 @@ class Restaurant_POS_Lite_Dashboard
             $date = gmdate('Y-m-d', strtotime("-$i days", current_time('timestamp')));
             $day_name = gmdate('D', strtotime($date));
 
-            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.NotPrepared
             $result = $this->wpdb->get_var(
                 $this->wpdb->prepare(
                     "SELECT SUM(paid_amount) as daily_sales
@@ -294,40 +285,26 @@ class Restaurant_POS_Lite_Dashboard
     {
         $thirty_days_ago = gmdate('Y-m-d', strtotime('-30 days', current_time('timestamp')));
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.NotPrepared
-        $result = $this->wpdb->get_results(
-            $this->wpdb->prepare(
-                "SELECT 
-                p.name as product_name,
-                COUNT(sd.id) as sales_count,
-                SUM(sd.quantity) as total_quantity,
-                SUM(sd.quantity * sd.unit_price) as total_revenue
-            FROM {$this->table_sale_details} sd
-            INNER JOIN {$this->table_sales} s ON sd.fk_sale_id = s.id
-            INNER JOIN {$this->table_products} p ON sd.fk_product_id = p.id
-            WHERE s.status = 'completed'
-            AND DATE(s.created_at) >= %s
-            GROUP BY p.id, p.name
-            ORDER BY total_revenue DESC
-            LIMIT 5",
-                $thirty_days_ago
-            )
+        $query = $this->wpdb->prepare(
+            "SELECT 
+            p.name as product_name,
+            COUNT(sd.id) as sales_count,
+            SUM(sd.quantity) as total_quantity,
+            SUM(sd.quantity * sd.unit_price) as total_revenue
+        FROM {$this->table_sale_details} sd
+        INNER JOIN {$this->table_sales} s ON sd.fk_sale_id = s.id
+        INNER JOIN {$this->table_products} p ON sd.fk_product_id = p.id
+        WHERE s.status = 'completed'
+        AND DATE(s.created_at) >= %s
+        GROUP BY p.id, p.name
+        ORDER BY total_revenue DESC
+        LIMIT 5",
+            $thirty_days_ago
         );
+
+        $result = $this->wpdb->get_results($query);
 
         return $result ?: array();
-    }
-
-    /**
-     * Enqueue dashboard styles
-     */
-    public function enqueue_styles()
-    {
-        wp_enqueue_style(
-            'restaurant-pos-dashboard',
-            plugin_dir_url(__FILE__) . 'assets/css/dashboard.css',
-            array(),
-            '1.0.0'
-        );
     }
 
     /**
@@ -335,10 +312,6 @@ class Restaurant_POS_Lite_Dashboard
      */
     public function render_page()
     {
-        // Enqueue styles.
-        $this->enqueue_styles();
-
-        // Get real data.
         $dashboard_data = array(
             'stock_value' => $this->get_stock_value(),
             'today_sale' => $this->get_today_sales_count(),
@@ -349,7 +322,6 @@ class Restaurant_POS_Lite_Dashboard
             'month_expense' => $this->get_month_expense(),
         );
 
-        // Get chart data.
         $income_expense = array(
             'income' => $this->get_month_income(),
             'expense' => $this->get_month_expense(),
@@ -368,7 +340,7 @@ class Restaurant_POS_Lite_Dashboard
         $weekly_sales_max = !empty($weekly_sales_values) ? max($weekly_sales_values) : 0;
         ?>
         <div class="wrap">
-            <h1><?php esc_html_e('Restaurant POS Dashboard', 'restaurant-pos-lite'); ?></h1>
+            <h1><?php esc_html_e('Restaurant POS Dashboard', 'obydullah-restaurant-pos-lite'); ?></h1>
 
             <div class="wp-restaurant-pos-dashboard">
                 <!-- Main Metrics Grid -->
@@ -376,90 +348,90 @@ class Restaurant_POS_Lite_Dashboard
                     <div class="dashboard-card financial-card">
                         <div class="card-icon">💰</div>
                         <div class="card-content">
-                            <h3><?php esc_html_e('Stock Value', 'restaurant-pos-lite'); ?></h3>
+                            <h3><?php esc_html_e('Stock Value', 'obydullah-restaurant-pos-lite'); ?></h3>
                             <p class="number"><?php echo esc_html($this->format_currency($dashboard_data['stock_value'])); ?>
                             </p>
                             <span
-                                class="card-description"><?php esc_html_e('Current inventory value', 'restaurant-pos-lite'); ?></span>
+                                class="card-description"><?php esc_html_e('Current inventory value', 'obydullah-restaurant-pos-lite'); ?></span>
                         </div>
                     </div>
 
                     <div class="dashboard-card sales-card">
                         <div class="card-icon">📊</div>
                         <div class="card-content">
-                            <h3><?php esc_html_e("Today's Sales", 'restaurant-pos-lite'); ?></h3>
+                            <h3><?php esc_html_e("Today's Sales", 'obydullah-restaurant-pos-lite'); ?></h3>
                             <p class="number"><?php echo esc_html($this->format_number($dashboard_data['today_sale'])); ?></p>
 
                             <span
-                                class="card-description"><?php esc_html_e('Completed orders today', 'restaurant-pos-lite'); ?></span>
+                                class="card-description"><?php esc_html_e('Completed orders today', 'obydullah-restaurant-pos-lite'); ?></span>
                         </div>
                     </div>
 
                     <div class="dashboard-card sales-card">
                         <div class="card-icon">📈</div>
                         <div class="card-content">
-                            <h3><?php esc_html_e('Monthly Sales', 'restaurant-pos-lite'); ?></h3>
+                            <h3><?php esc_html_e('Monthly Sales', 'obydullah-restaurant-pos-lite'); ?></h3>
                             <p class="number"><?php echo esc_html($this->format_number($dashboard_data['month_sale'])); ?></p>
 
                             <span
-                                class="card-description"><?php esc_html_e('Total orders this month', 'restaurant-pos-lite'); ?></span>
+                                class="card-description"><?php esc_html_e('Total orders this month', 'obydullah-restaurant-pos-lite'); ?></span>
                         </div>
                     </div>
 
                     <div class="dashboard-card income-card">
                         <div class="card-icon">💵</div>
                         <div class="card-content">
-                            <h3><?php esc_html_e("Today's Income", 'restaurant-pos-lite'); ?></h3>
+                            <h3><?php esc_html_e("Today's Income", 'obydullah-restaurant-pos-lite'); ?></h3>
                             <p class="number"><?php echo esc_html($this->format_currency($dashboard_data['today_income'])); ?>
                             </p>
 
                             <span
-                                class="card-description"><?php esc_html_e('Revenue generated today', 'restaurant-pos-lite'); ?></span>
+                                class="card-description"><?php esc_html_e('Revenue generated today', 'obydullah-restaurant-pos-lite'); ?></span>
                         </div>
                     </div>
 
                     <div class="dashboard-card income-card">
                         <div class="card-icon">💰</div>
                         <div class="card-content">
-                            <h3><?php esc_html_e('Monthly Income', 'restaurant-pos-lite'); ?></h3>
+                            <h3><?php esc_html_e('Monthly Income', 'obydullah-restaurant-pos-lite'); ?></h3>
                             <p class="number"><?php echo esc_html($this->format_currency($dashboard_data['month_income'])); ?>
                             </p>
                             <span
-                                class="card-description"><?php esc_html_e('Total revenue this month', 'restaurant-pos-lite'); ?></span>
+                                class="card-description"><?php esc_html_e('Total revenue this month', 'obydullah-restaurant-pos-lite'); ?></span>
                         </div>
                     </div>
 
                     <div class="dashboard-card expense-card">
                         <div class="card-icon">💸</div>
                         <div class="card-content">
-                            <h3><?php esc_html_e("Today's Expense", 'restaurant-pos-lite'); ?></h3>
+                            <h3><?php esc_html_e("Today's Expense", 'obydullah-restaurant-pos-lite'); ?></h3>
                             <p class="number"><?php echo esc_html($this->format_currency($dashboard_data['today_expense'])); ?>
                             </p>
                             <span
-                                class="card-description"><?php esc_html_e('Expenses incurred today', 'restaurant-pos-lite'); ?></span>
+                                class="card-description"><?php esc_html_e('Expenses incurred today', 'obydullah-restaurant-pos-lite'); ?></span>
                         </div>
                     </div>
 
                     <div class="dashboard-card expense-card">
                         <div class="card-icon">📉</div>
                         <div class="card-content">
-                            <h3><?php esc_html_e('Monthly Expense', 'restaurant-pos-lite'); ?></h3>
+                            <h3><?php esc_html_e('Monthly Expense', 'obydullah-restaurant-pos-lite'); ?></h3>
                             <p class="number"><?php echo esc_html($this->format_currency($dashboard_data['month_expense'])); ?>
                             </p>
                             <span
-                                class="card-description"><?php esc_html_e('Total expenses this month', 'restaurant-pos-lite'); ?></span>
+                                class="card-description"><?php esc_html_e('Total expenses this month', 'obydullah-restaurant-pos-lite'); ?></span>
                         </div>
                     </div>
 
                     <div class="dashboard-card profit-card">
                         <div class="card-icon">📊</div>
                         <div class="card-content">
-                            <h3><?php esc_html_e('Monthly Profit', 'restaurant-pos-lite'); ?></h3>
+                            <h3><?php esc_html_e('Monthly Profit', 'obydullah-restaurant-pos-lite'); ?></h3>
                             <p class="number">
                                 <?php echo esc_html($this->format_currency($dashboard_data['month_income'] - $dashboard_data['month_expense'])); ?>
                             </p>
                             <span
-                                class="card-description"><?php esc_html_e('Net profit this month', 'restaurant-pos-lite'); ?></span>
+                                class="card-description"><?php esc_html_e('Net profit this month', 'obydullah-restaurant-pos-lite'); ?></span>
                         </div>
                     </div>
                 </div>
@@ -467,39 +439,42 @@ class Restaurant_POS_Lite_Dashboard
                 <!-- Charts Section -->
                 <div class="charts-section">
                     <div class="chart-container">
-                        <h3><?php esc_html_e('Income vs Expense (This Month)', 'restaurant-pos-lite'); ?></h3>
+                        <h3><?php esc_html_e('Income vs Expense (This Month)', 'obydullah-restaurant-pos-lite'); ?></h3>
                         <div class="bar-chart">
                             <div class="bar-income" style="height: <?php echo esc_attr($income_height); ?>%">
-                                <span class="bar-label"><?php esc_html_e('Income', 'restaurant-pos-lite'); ?></span>
+                                <span class="bar-label"><?php esc_html_e('Income', 'obydullah-restaurant-pos-lite'); ?></span>
                                 <span
                                     class="bar-value"><?php echo esc_html($this->format_currency($income_expense['income'])); ?></span>
                             </div>
                             <div class="bar-expense" style="height: <?php echo esc_attr($expense_height); ?>%">
-                                <span class="bar-label"><?php esc_html_e('Expense', 'restaurant-pos-lite'); ?></span>
+                                <span class="bar-label"><?php esc_html_e('Expense', 'obydullah-restaurant-pos-lite'); ?></span>
                                 <span
                                     class="bar-value"><?php echo esc_html($this->format_currency($income_expense['expense'])); ?></span>
                             </div>
                         </div>
                         <div class="chart-amounts">
                             <div class="amount-item">
-                                <span class="amount-label"><?php esc_html_e('Total Income:', 'restaurant-pos-lite'); ?></span>
+                                <span
+                                    class="amount-label"><?php esc_html_e('Total Income:', 'obydullah-restaurant-pos-lite'); ?></span>
                                 <span
                                     class="amount-value income"><?php echo esc_html($this->format_currency($income_expense['income'])); ?></span>
                             </div>
                             <div class="amount-item">
-                                <span class="amount-label"><?php esc_html_e('Total Expense:', 'restaurant-pos-lite'); ?></span>
+                                <span
+                                    class="amount-label"><?php esc_html_e('Total Expense:', 'obydullah-restaurant-pos-lite'); ?></span>
                                 <span
                                     class="amount-value expense"><?php echo esc_html($this->format_currency($income_expense['expense'])); ?></span>
                             </div>
                             <div class="amount-item">
-                                <span class="amount-label"><?php esc_html_e('Net Profit:', 'restaurant-pos-lite'); ?></span>
+                                <span
+                                    class="amount-label"><?php esc_html_e('Net Profit:', 'obydullah-restaurant-pos-lite'); ?></span>
                                 <span
                                     class="amount-value profit"><?php echo esc_html($this->format_currency($income_expense['income'] - $income_expense['expense'])); ?></span>
                             </div>
                         </div>
                     </div>
                     <div class="chart-container">
-                        <h3><?php esc_html_e('Weekly Sales Trend', 'restaurant-pos-lite'); ?></h3>
+                        <h3><?php esc_html_e('Weekly Sales Trend', 'obydullah-restaurant-pos-lite'); ?></h3>
                         <div class="line-chart">
                             <?php foreach ($weekly_sales as $day_data): ?>
                                 <?php
@@ -519,7 +494,7 @@ class Restaurant_POS_Lite_Dashboard
 
                 <!-- Top Products Section -->
                 <div class="top-products-section">
-                    <h3><?php esc_html_e('Top Selling Products (Last 30 Days)', 'restaurant-pos-lite'); ?></h3>
+                    <h3><?php esc_html_e('Top Selling Products (Last 30 Days)', 'obydullah-restaurant-pos-lite'); ?></h3>
                     <div class="top-products-grid">
                         <?php if (!empty($top_products)): ?>
                             <?php foreach ($top_products as $index => $product): ?>
@@ -530,11 +505,11 @@ class Restaurant_POS_Lite_Dashboard
                                         <div class="product-stats">
                                             <span class="product-stat">
                                                 <strong><?php echo esc_html($this->format_number($product->sales_count)); ?></strong>
-                                                <?php esc_html_e('sales', 'restaurant-pos-lite'); ?>
+                                                <?php esc_html_e('sales', 'obydullah-restaurant-pos-lite'); ?>
                                             </span>
                                             <span class="product-stat">
                                                 <strong><?php echo esc_html($this->format_number($product->total_quantity)); ?></strong>
-                                                <?php esc_html_e('units', 'restaurant-pos-lite'); ?>
+                                                <?php esc_html_e('units', 'obydullah-restaurant-pos-lite'); ?>
                                             </span>
                                             <span class="product-stat revenue">
                                                 <?php echo esc_html($this->format_currency($product->total_revenue)); ?>
@@ -545,7 +520,7 @@ class Restaurant_POS_Lite_Dashboard
                             <?php endforeach; ?>
                         <?php else: ?>
                             <div class="no-products">
-                                <p><?php esc_html_e('No sales data available for the last 30 days.', 'restaurant-pos-lite'); ?>
+                                <p><?php esc_html_e('No sales data available for the last 30 days.', 'obydullah-restaurant-pos-lite'); ?>
                                 </p>
                             </div>
                         <?php endif; ?>

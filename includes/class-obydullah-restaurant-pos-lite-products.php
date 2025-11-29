@@ -2,21 +2,21 @@
 /**
  * Product Management
  *
- * @package Restaurant_POS_Lite
+ * @package Obydullah_Restaurant_POS_Lite
  * @since   1.0.0
  */
 if (!defined('ABSPATH'))
     exit;
 
-class Restaurant_POS_Lite_Products
+class Obydullah_Restaurant_POS_Lite_Products
 {
     public function __construct()
     {
-        add_action('wp_ajax_add_product', [$this, 'ajax_add_product']);
-        add_action('wp_ajax_get_products', [$this, 'ajax_get_products']);
-        add_action('wp_ajax_edit_product', [$this, 'ajax_edit_product']);
-        add_action('wp_ajax_delete_product', [$this, 'ajax_delete_product']);
-        add_action('wp_ajax_get_categories_for_products', [$this, 'ajax_get_categories_for_products']);
+        add_action('wp_ajax_orpl_add_product', [$this, 'ajax_add_product']);
+        add_action('wp_ajax_orpl_get_products', [$this, 'ajax_get_products']);
+        add_action('wp_ajax_orpl_edit_product', [$this, 'ajax_edit_product']);
+        add_action('wp_ajax_orpl_delete_product', [$this, 'ajax_delete_product']);
+        add_action('wp_ajax_orpl_get_categories_for_products', [$this, 'ajax_get_categories_for_products']);
     }
 
     /**
@@ -26,7 +26,9 @@ class Restaurant_POS_Lite_Products
     {
         ?>
         <div class="wrap">
-            <h1 class="wp-heading-inline" style="margin-bottom:20px;">Products</h1>
+            <h1 class="wp-heading-inline" style="margin-bottom:20px;">
+                <?php esc_html_e('Products', 'obydullah-restaurant-pos-lite'); ?>
+            </h1>
             <hr class="wp-header-end">
 
             <div id="col-container" class="wp-clearfix" style="display:flex;gap:24px;">
@@ -35,10 +37,10 @@ class Restaurant_POS_Lite_Products
                     <div class="col-wrap"
                         style="background:#fff;padding:20px;border:1px solid #ddd;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.05);">
                         <h2 id="form-title" style="margin:0 0 20px 0;padding:0;font-size:16px;font-weight:600;color:#1d2327;">
-                            Add New Product
+                            <?php esc_html_e('Add New Product', 'obydullah-restaurant-pos-lite'); ?>
                         </h2>
                         <form id="add-product-form" method="post" enctype="multipart/form-data">
-                            <?php wp_nonce_field('add_product', 'product_nonce'); ?>
+                            <?php wp_nonce_field('orpl_add_product', 'product_nonce'); ?>
                             <input type="hidden" id="product-id" name="id" value="">
 
                             <div style="display:flex;flex-direction:column;gap:15px;">
@@ -46,7 +48,8 @@ class Restaurant_POS_Lite_Products
                                 <div class="form-field form-required">
                                     <label for="product-name"
                                         style="display:block;font-weight:600;margin-bottom:6px;font-size:12px;color:#1d2327;text-transform:uppercase;letter-spacing:0.5px;">
-                                        Product Name <span style="color:#d63638;">*</span>
+                                        <?php esc_html_e('Product Name', 'obydullah-restaurant-pos-lite'); ?> <span
+                                            style="color:#d63638;">*</span>
                                     </label>
                                     <input name="name" id="product-name" type="text" value="" required
                                         style="width:100%;padding:8px 10px;font-size:13px;border:1px solid #8c8f94;border-radius:3px;background:#fff;transition:border-color 0.2s ease;">
@@ -56,11 +59,14 @@ class Restaurant_POS_Lite_Products
                                 <div class="form-field form-required">
                                     <label for="product-category"
                                         style="display:block;font-weight:600;margin-bottom:6px;font-size:12px;color:#1d2327;text-transform:uppercase;letter-spacing:0.5px;">
-                                        Category <span style="color:#d63638;">*</span>
+                                        <?php esc_html_e('Category', 'obydullah-restaurant-pos-lite'); ?> <span
+                                            style="color:#d63638;">*</span>
                                     </label>
                                     <select name="fk_category_id" id="product-category" required
                                         style="width:100%;padding:8px 10px;font-size:13px;border:1px solid #8c8f94;border-radius:3px;background:#fff;cursor:pointer;">
-                                        <option value="">Select Category</option>
+                                        <option value="">
+                                            <?php esc_html_e('Select Category', 'obydullah-restaurant-pos-lite'); ?>
+                                        </option>
                                     </select>
                                 </div>
 
@@ -68,7 +74,7 @@ class Restaurant_POS_Lite_Products
                                 <div class="form-field">
                                     <label for="product-image"
                                         style="display:block;font-weight:600;margin-bottom:6px;font-size:12px;color:#1d2327;text-transform:uppercase;letter-spacing:0.5px;">
-                                        Product Image
+                                        <?php esc_html_e('Product Image', 'obydullah-restaurant-pos-lite'); ?>
                                     </label>
                                     <input name="image" id="product-image" type="file" accept="image/*"
                                         style="width:100%;padding:8px 10px;font-size:13px;border:1px solid #8c8f94;border-radius:3px;background:#fff;">
@@ -82,12 +88,15 @@ class Restaurant_POS_Lite_Products
                                 <div class="form-field">
                                     <label for="product-status"
                                         style="display:block;font-weight:600;margin-bottom:6px;font-size:12px;color:#1d2327;text-transform:uppercase;letter-spacing:0.5px;">
-                                        Status
+                                        <?php esc_html_e('Status', 'obydullah-restaurant-pos-lite'); ?>
                                     </label>
                                     <select name="status" id="product-status"
                                         style="width:100%;padding:8px 10px;font-size:13px;border:1px solid #8c8f94;border-radius:3px;background:#fff;cursor:pointer;">
-                                        <option value="active">Active</option>
-                                        <option value="inactive">Inactive</option>
+                                        <option value="active"><?php esc_html_e('Active', 'obydullah-restaurant-pos-lite'); ?>
+                                        </option>
+                                        <option value="inactive">
+                                            <?php esc_html_e('Inactive', 'obydullah-restaurant-pos-lite'); ?>
+                                        </option>
                                     </select>
                                 </div>
                             </div>
@@ -95,12 +104,13 @@ class Restaurant_POS_Lite_Products
                             <div style="margin-top:20px;display:flex;gap:10px;">
                                 <button type="submit" id="submit-product" class="button button-primary"
                                     style="flex:1;padding:8px 12px;font-size:13px;font-weight:500;">
-                                    <span class="btn-text">Save Product</span>
+                                    <span
+                                        class="btn-text"><?php esc_html_e('Save Product', 'obydullah-restaurant-pos-lite'); ?></span>
                                     <span class="spinner" style="float:none;margin:0;display:none;"></span>
                                 </button>
                                 <button type="button" id="cancel-edit" class="button"
                                     style="display:none;flex:1;padding:8px 12px;font-size:13px;font-weight:500;">
-                                    Cancel
+                                    <?php esc_html_e('Cancel', 'obydullah-restaurant-pos-lite'); ?>
                                 </button>
                             </div>
                         </form>
@@ -117,14 +127,15 @@ class Restaurant_POS_Lite_Products
                             <div style="flex:1;">
                                 <label for="product-search"
                                     style="display:block;font-weight:600;margin-bottom:6px;font-size:12px;color:#1d2327;text-transform:uppercase;letter-spacing:0.5px;">
-                                    Search Products
+                                    <?php esc_html_e('Search Products', 'obydullah-restaurant-pos-lite'); ?>
                                 </label>
-                                <input type="text" id="product-search" placeholder="Search by product name..."
+                                <input type="text" id="product-search"
+                                    placeholder="<?php esc_attr_e('Search by product name...', 'obydullah-restaurant-pos-lite'); ?>"
                                     style="width:100%;padding:8px 12px;font-size:13px;border:1px solid #8c8f94;border-radius:3px;background:#fff;">
                             </div>
                             <div>
                                 <button type="button" id="clear-search" class="button" style="padding:8px 12px;font-size:13px;">
-                                    Clear
+                                    <?php esc_html_e('Clear', 'obydullah-restaurant-pos-lite'); ?>
                                 </button>
                             </div>
                         </div>
@@ -133,18 +144,20 @@ class Restaurant_POS_Lite_Products
                         <table class="wp-list-table widefat fixed striped table-view-list">
                             <thead>
                                 <tr>
-                                    <th>Image</th>
-                                    <th>Name</th>
-                                    <th>Category</th>
-                                    <th>Status</th>
-                                    <th style="text-align:center;">Actions</th>
+                                    <th><?php esc_html_e('Image', 'obydullah-restaurant-pos-lite'); ?></th>
+                                    <th><?php esc_html_e('Name', 'obydullah-restaurant-pos-lite'); ?></th>
+                                    <th><?php esc_html_e('Category', 'obydullah-restaurant-pos-lite'); ?></th>
+                                    <th><?php esc_html_e('Status', 'obydullah-restaurant-pos-lite'); ?></th>
+                                    <th style="text-align:center;">
+                                        <?php esc_html_e('Actions', 'obydullah-restaurant-pos-lite'); ?>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody id="product-list">
                                 <tr>
                                     <td colspan="5" class="loading-products" style="text-align:center;">
                                         <span class="spinner is-active"></span>
-                                        Loading products...
+                                        <?php esc_html_e('Loading products...', 'obydullah-restaurant-pos-lite'); ?>
                                     </td>
                                 </tr>
                             </tbody>
@@ -154,38 +167,50 @@ class Restaurant_POS_Lite_Products
                         <div class="tablenav bottom"
                             style="margin-top:20px;display:flex;justify-content:space-between;align-items:center;">
                             <div class="tablenav-pages">
-                                <span class="displaying-num" id="displaying-num">0 items</span>
+                                <span class="displaying-num" id="displaying-num">0
+                                    <?php esc_html_e('items', 'obydullah-restaurant-pos-lite'); ?></span>
                                 <span class="pagination-links">
                                     <a class="first-page button" href="#">
-                                        <span class="screen-reader-text">First page</span>
+                                        <span
+                                            class="screen-reader-text"><?php esc_html_e('First page', 'obydullah-restaurant-pos-lite'); ?></span>
                                         <span aria-hidden="true">«</span>
                                     </a>
                                     <a class="prev-page button" href="#">
-                                        <span class="screen-reader-text">Previous page</span>
+                                        <span
+                                            class="screen-reader-text"><?php esc_html_e('Previous page', 'obydullah-restaurant-pos-lite'); ?></span>
                                         <span aria-hidden="true">‹</span>
                                     </a>
                                     <span class="paging-input">
-                                        <label for="current-page-selector" class="screen-reader-text">Current Page</label>
+                                        <label for="current-page-selector"
+                                            class="screen-reader-text"><?php esc_html_e('Current Page', 'obydullah-restaurant-pos-lite'); ?></label>
                                         <input class="current-page" id="current-page-selector" type="text" name="paged"
                                             value="1" size="3" aria-describedby="table-paging">
-                                        <span class="tablenav-paging-text"> of <span class="total-pages">1</span></span>
+                                        <span class="tablenav-paging-text">
+                                            <?php esc_html_e('of', 'obydullah-restaurant-pos-lite'); ?> <span
+                                                class="total-pages">1</span></span>
                                     </span>
                                     <a class="next-page button" href="#">
-                                        <span class="screen-reader-text">Next page</span>
+                                        <span
+                                            class="screen-reader-text"><?php esc_html_e('Next page', 'obydullah-restaurant-pos-lite'); ?></span>
                                         <span aria-hidden="true">›</span>
                                     </a>
                                     <a class="last-page button" href="#">
-                                        <span class="screen-reader-text">Last page</span>
+                                        <span
+                                            class="screen-reader-text"><?php esc_html_e('Last page', 'obydullah-restaurant-pos-lite'); ?></span>
                                         <span aria-hidden="true">»</span>
                                     </a>
                                 </span>
                             </div>
                             <div class="tablenav-pages" style="float:none;">
-                                <select id="per-page-select" style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;">
-                                    <option value="10">10 per page</option>
-                                    <option value="20">20 per page</option>
-                                    <option value="50">50 per page</option>
-                                    <option value="100">100 per page</option>
+                                <select id="per-page-select" style="padding:4px 16px;border:1px solid #ddd;border-radius:4px;">
+                                    <option value="10">10 <?php esc_html_e('per page', 'obydullah-restaurant-pos-lite'); ?>
+                                    </option>
+                                    <option value="20">20 <?php esc_html_e('per page', 'obydullah-restaurant-pos-lite'); ?>
+                                    </option>
+                                    <option value="50">50 <?php esc_html_e('per page', 'obydullah-restaurant-pos-lite'); ?>
+                                    </option>
+                                    <option value="100">100 <?php esc_html_e('per page', 'obydullah-restaurant-pos-lite'); ?>
+                                    </option>
                                 </select>
                             </div>
                         </div>
@@ -212,13 +237,13 @@ class Restaurant_POS_Lite_Products
                             url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                             type: 'GET',
                             data: {
-                                action: 'get_categories_for_products',
-                                nonce: '<?php echo esc_attr(wp_create_nonce("get_categories_for_products")); ?>'
+                                action: 'orpl_get_categories_for_products',
+                                nonce: '<?php echo esc_attr(wp_create_nonce("orpl_get_categories_for_products")); ?>'
                             },
                             success: function (response) {
                                 if (response.success) {
                                     let select = $('#product-category');
-                                    select.empty().append('<option value="">Select Category</option>');
+                                    select.empty().append('<option value=""><?php echo esc_js(__('Select Category', 'obydullah-restaurant-pos-lite')); ?></option>');
 
                                     $.each(response.data, function (_, category) {
                                         select.append(
@@ -234,25 +259,25 @@ class Restaurant_POS_Lite_Products
                         currentPage = page;
 
                         let tbody = $('#product-list');
-                        tbody.html('<tr><td colspan="5" class="loading-products" style="text-align:center;"><span class="spinner is-active"></span> Loading products...</td></tr>');
+                        tbody.html('<tr><td colspan="5" class="loading-products" style="text-align:center;"><span class="spinner is-active"></span> <?php echo esc_js(__('Loading products...', 'obydullah-restaurant-pos-lite')); ?></td></tr>');
 
                         $.ajax({
                             url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                             type: 'GET',
                             data: {
-                                action: 'get_products',
+                                action: 'orpl_get_products',
                                 page: currentPage,
                                 per_page: perPage,
                                 search: searchTerm,
-                                nonce: '<?php echo esc_attr(wp_create_nonce("get_products")); ?>'
+                                nonce: '<?php echo esc_attr(wp_create_nonce("orpl_get_products")); ?>'
                             },
                             success: function (response) {
                                 tbody.empty();
                                 if (response.success) {
                                     if (!response.data.products.length) {
                                         let message = searchTerm ?
-                                            'No products found matching "' + searchTerm + '".' :
-                                            'No products found.';
+                                            '<?php echo esc_js(__('No products found matching', 'obydullah-restaurant-pos-lite')); ?> "' + searchTerm + '".' :
+                                            '<?php echo esc_js(__('No products found.', 'obydullah-restaurant-pos-lite')); ?>';
                                         tbody.append('<tr><td colspan="5" style="text-align:center;padding:20px;color:#666;">' + message + '</td></tr>');
                                         updatePagination(response.data.pagination);
                                         return;
@@ -269,7 +294,7 @@ class Restaurant_POS_Lite_Products
                                             );
                                         } else {
                                             imageTd.append(
-                                                $('<div>').addClass('no-image').text('No Image')
+                                                $('<div>').addClass('no-image').text('<?php echo esc_js(__('No Image', 'obydullah-restaurant-pos-lite')); ?>')
                                             );
                                         }
                                         row.append(imageTd);
@@ -289,8 +314,8 @@ class Restaurant_POS_Lite_Products
 
                                         // Actions column
                                         row.append($('<td style="text-align:center;">')
-                                            .append('<button class="button button-small edit-product" style="margin-right:5px;">Edit</button>')
-                                            .append('<button class="button button-small button-link-delete delete-product">Delete</button>')
+                                            .append('<button class="button button-small edit-product" style="margin-right:5px;"><?php echo esc_js(__('Edit', 'obydullah-restaurant-pos-lite')); ?></button>')
+                                            .append('<button class="button button-small button-link-delete delete-product"><?php echo esc_js(__('Delete', 'obydullah-restaurant-pos-lite')); ?></button>')
                                         );
 
                                         tbody.append(row);
@@ -302,7 +327,7 @@ class Restaurant_POS_Lite_Products
                                 }
                             },
                             error: function () {
-                                $('#product-list').html('<tr><td colspan="5" style="color:red;text-align:center;">Failed to load products.</td></tr>');
+                                $('#product-list').html('<tr><td colspan="5" style="color:red;text-align:center;"><?php echo esc_js(__('Failed to load products.', 'obydullah-restaurant-pos-lite')); ?></td></tr>');
                             }
                         });
                     }
@@ -312,7 +337,7 @@ class Restaurant_POS_Lite_Products
                         totalItems = pagination.total_items;
 
                         // Update displaying text
-                        $('#displaying-num').text(pagination.total_items + ' items');
+                        $('#displaying-num').text(pagination.total_items + ' <?php echo esc_js(__('items', 'obydullah-restaurant-pos-lite')); ?>');
 
                         // Update page input and total pages
                         $('#current-page-selector').val(currentPage);
@@ -398,17 +423,17 @@ class Restaurant_POS_Lite_Products
                         }
 
                         let id = $('#product-id').val();
-                        let action = id ? 'edit_product' : 'add_product';
+                        let action = id ? 'orpl_edit_product' : 'orpl_add_product';
                         let name = $('#product-name').val().trim();
                         let fk_category_id = $('#product-category').val();
                         let status = $('#product-status').val();
 
                         if (!name) {
-                            alert('Please enter a product name');
+                            alert('<?php echo esc_js(__('Please enter a product name', 'obydullah-restaurant-pos-lite')); ?>');
                             return false;
                         }
                         if (!fk_category_id) {
-                            alert('Please select a category');
+                            alert('<?php echo esc_js(__('Please select a category', 'obydullah-restaurant-pos-lite')); ?>');
                             return false;
                         }
 
@@ -420,7 +445,7 @@ class Restaurant_POS_Lite_Products
                         let formData = new FormData(this);
                         formData.append('action', action);
                         formData.append('id', id);
-                        formData.append('nonce', '<?php echo esc_attr(wp_create_nonce("add_product")); ?>');
+                        formData.append('nonce', '<?php echo esc_attr(wp_create_nonce("orpl_add_product")); ?>');
 
                         $.ajax({
                             url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
@@ -431,13 +456,13 @@ class Restaurant_POS_Lite_Products
                             success: function (res) {
                                 if (res.success) {
                                     resetForm();
-                                    loadProducts(currentPage); // Reload current page
+                                    loadProducts(currentPage);
                                 } else {
-                                    alert('Error: ' + res.data);
+                                    alert('<?php echo esc_js(__('Error:', 'obydullah-restaurant-pos-lite')); ?> ' + res.data);
                                 }
                             },
                             error: function () {
-                                alert('Request failed. Please try again.');
+                                alert('<?php echo esc_js(__('Request failed. Please try again.', 'obydullah-restaurant-pos-lite')); ?>');
                             },
                             complete: function () {
                                 // Reset submitting state
@@ -460,9 +485,9 @@ class Restaurant_POS_Lite_Products
                             url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                             type: 'GET',
                             data: {
-                                action: 'get_products',
+                                action: 'orpl_get_products',
                                 id: productId,
-                                nonce: '<?php echo esc_attr(wp_create_nonce("get_products")); ?>'
+                                nonce: '<?php echo esc_attr(wp_create_nonce("orpl_get_products")); ?>'
                             },
                             success: function (response) {
                                 if (response.success && response.data.products.length > 0) {
@@ -480,8 +505,8 @@ class Restaurant_POS_Lite_Products
                                             $('#image-preview').hide();
                                         }
 
-                                        $('#form-title').text('Edit Product');
-                                        $('#submit-product').find('.btn-text').text('Update Product');
+                                        $('#form-title').text('<?php echo esc_js(__('Edit Product', 'obydullah-restaurant-pos-lite')); ?>');
+                                        $('#submit-product').find('.btn-text').text('<?php echo esc_js(__('Update Product', 'obydullah-restaurant-pos-lite')); ?>');
                                         $('#cancel-edit').show();
                                     }
                                 }
@@ -490,26 +515,26 @@ class Restaurant_POS_Lite_Products
                     });
 
                     $(document).on('click', '.delete-product', function () {
-                        if (!confirm('Are you sure you want to delete this product?')) return;
+                        if (!confirm('<?php echo esc_js(__('Are you sure you want to delete this product?', 'obydullah-restaurant-pos-lite')); ?>')) return;
 
                         let button = $(this);
                         let originalText = button.text();
                         let id = $(this).closest('tr').data('product-id');
 
                         // Disable button and show loading
-                        button.prop('disabled', true).text('Deleting...');
+                        button.prop('disabled', true).text('<?php echo esc_js(__('Deleting...', 'obydullah-restaurant-pos-lite')); ?>');
 
                         $.post('<?php echo esc_url(admin_url('admin-ajax.php')); ?>', {
-                            action: 'delete_product',
+                            action: 'orpl_delete_product',
                             id: id,
-                            nonce: '<?php echo esc_attr(wp_create_nonce("delete_product")); ?>'
+                            nonce: '<?php echo esc_attr(wp_create_nonce("orpl_delete_product")); ?>'
                         }, function (res) {
                             if (res.success) {
-                                loadProducts(currentPage); // Reload current page
+                                loadProducts(currentPage);
                             } else {
                                 alert(res.data);
                             }
-                        }).fail(() => alert('Delete request failed. Please try again.'))
+                        }).fail(() => alert('<?php echo esc_js(__('Delete request failed. Please try again.', 'obydullah-restaurant-pos-lite')); ?>'))
                             .always(function () {
                                 // Re-enable button
                                 button.prop('disabled', false).text(originalText);
@@ -524,11 +549,11 @@ class Restaurant_POS_Lite_Products
                         if (loading) {
                             button.prop('disabled', true).addClass('button-loading');
                             spinner.show();
-                            btnText.text(button.hasClass('button-loading') ? 'Saving...' : 'Updating...');
+                            btnText.text(button.hasClass('button-loading') ? '<?php echo esc_js(__('Saving...', 'obydullah-restaurant-pos-lite')); ?>' : '<?php echo esc_js(__('Updating...', 'obydullah-restaurant-pos-lite')); ?>');
                         } else {
                             button.prop('disabled', false).removeClass('button-loading');
                             spinner.hide();
-                            btnText.text(button.find('.btn-text').text().includes('Update') ? 'Update Product' : 'Save Product');
+                            btnText.text(button.find('.btn-text').text().includes('Update') ? '<?php echo esc_js(__('Update Product', 'obydullah-restaurant-pos-lite')); ?>' : '<?php echo esc_js(__('Save Product', 'obydullah-restaurant-pos-lite')); ?>');
                         }
                     }
 
@@ -539,8 +564,8 @@ class Restaurant_POS_Lite_Products
                         $('#product-status').val('active');
                         $('#product-image').val('');
                         $('#image-preview').hide();
-                        $('#form-title').text('Add New Product');
-                        $('#submit-product').find('.btn-text').text('Save Product');
+                        $('#form-title').text('<?php echo esc_js(__('Add New Product', 'obydullah-restaurant-pos-lite')); ?>');
+                        $('#submit-product').find('.btn-text').text('<?php echo esc_js(__('Save Product', 'obydullah-restaurant-pos-lite')); ?>');
                         $('#cancel-edit').hide();
                         $('#product-name').focus();
 
@@ -552,138 +577,148 @@ class Restaurant_POS_Lite_Products
         </div>
         <?php
     }
+
     /** Get categories for product form */
     public function ajax_get_categories_for_products()
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
-        if (!wp_verify_nonce($nonce, 'get_categories_for_products')) {
-            wp_send_json_error('Security verification failed');
+        if (!wp_verify_nonce($nonce, 'orpl_get_categories_for_products')) {
+            wp_send_json_error(__('Security verification failed', 'obydullah-restaurant-pos-lite'));
         }
 
         global $wpdb;
-        $table_name = $wpdb->prefix . 'pos_categories';
+        $table_name = $wpdb->prefix . 'orpl_categories';
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-        $categories = $wpdb->get_results(
-            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            "SELECT id, name FROM $table_name WHERE status = 'active' ORDER BY name ASC"
-        );
+        // Get categories with caching
+        $cache_key = 'orpl_active_categories';
+        $categories = wp_cache_get($cache_key, 'obydullah-restaurant-pos-lite');
+
+        if (false === $categories) {
+            $categories = $wpdb->get_results(
+                $wpdb->prepare("SELECT id, name FROM $table_name WHERE status = 'active' ORDER BY name ASC")
+            );
+
+            // Cache for 5 minutes
+            wp_cache_set($cache_key, $categories, 'obydullah-restaurant-pos-lite', 300);
+        }
 
         wp_send_json_success($categories);
     }
 
-/** Get all products with pagination and search */
-public function ajax_get_products() {
-    // Verify nonce - sanitize the input first
-    $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
-    if (!wp_verify_nonce($nonce, 'get_products')) {
-        wp_send_json_error('Security verification failed');
-    }
-
-    global $wpdb;
-    $products_table = $wpdb->prefix . 'pos_products';
-    $categories_table = $wpdb->prefix . 'pos_categories';
-
-    // Get parameters
-    $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
-    $per_page = isset($_GET['per_page']) ? intval($_GET['per_page']) : 10;
-    $search = isset($_GET['search']) ? sanitize_text_field(wp_unslash($_GET['search'])) : '';
-    
-    // Check if specific product is requested
-    $product_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-
-    if ($product_id > 0) {
-        // Return single product for editing
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-        $products = $wpdb->get_results($wpdb->prepare(
-            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            "SELECT p.*, c.name as category_name 
-            FROM $products_table p 
-            LEFT JOIN $categories_table c ON p.fk_category_id = c.id 
-            WHERE p.id = %d",
-            $product_id
-        ));
-        
-        wp_send_json_success(['products' => $products]);
-    } else {
-        // Build query based on search
-        if (!empty($search)) {
-            // With search
-            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-            $total_items = $wpdb->get_var($wpdb->prepare(
-                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                "SELECT COUNT(*) FROM $products_table p WHERE p.name LIKE %s",
-                '%' . $wpdb->esc_like($search) . '%'
-            ));
-
-            // Calculate pagination
-            $total_pages = ceil($total_items / $per_page);
-            $offset = ($page - 1) * $per_page;
-
-            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-            $products = $wpdb->get_results($wpdb->prepare(
-                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                "SELECT p.*, c.name as category_name 
-                FROM $products_table p 
-                LEFT JOIN $categories_table c ON p.fk_category_id = c.id 
-                WHERE p.name LIKE %s 
-                ORDER BY p.created_at DESC 
-                LIMIT %d OFFSET %d",
-                '%' . $wpdb->esc_like($search) . '%',
-                $per_page,
-                $offset
-            ));
-        } else {
-            // Without search
-            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-            $total_items = $wpdb->get_var(
-                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                "SELECT COUNT(*) FROM $products_table p"
-            );
-
-            // Calculate pagination
-            $total_pages = ceil($total_items / $per_page);
-            $offset = ($page - 1) * $per_page;
-
-            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-            $products = $wpdb->get_results($wpdb->prepare(
-                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                "SELECT p.*, c.name as category_name 
-                FROM $products_table p 
-                LEFT JOIN $categories_table c ON p.fk_category_id = c.id 
-                ORDER BY p.created_at DESC 
-                LIMIT %d OFFSET %d",
-                $per_page,
-                $offset
-            ));
+    /** Get all products with pagination and search */
+    public function ajax_get_products()
+    {
+        // Verify nonce - sanitize the input first
+        $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
+        if (!wp_verify_nonce($nonce, 'orpl_get_products')) {
+            wp_send_json_error(__('Security verification failed', 'obydullah-restaurant-pos-lite'));
         }
 
-        $response_data = [
-            'products' => $products,
-            'pagination' => [
-                'current_page' => $page,
-                'per_page' => $per_page,
-                'total_items' => $total_items,
-                'total_pages' => $total_pages
-            ]
-        ];
+        global $wpdb;
+        $products_table = $wpdb->prefix . 'orpl_products';
+        $categories_table = $wpdb->prefix . 'orpl_categories';
 
-        wp_send_json_success($response_data);
+        // Get parameters
+        $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+        $per_page = isset($_GET['per_page']) ? intval($_GET['per_page']) : 10;
+        $search = isset($_GET['search']) ? sanitize_text_field(wp_unslash($_GET['search'])) : '';
+
+        // Check if specific product is requested
+        $product_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
+        if ($product_id > 0) {
+            // Return single product for editing
+            $products = $wpdb->get_results($wpdb->prepare(
+                "SELECT p.*, c.name as category_name 
+                FROM $products_table p 
+                LEFT JOIN $categories_table c ON p.fk_category_id = c.id 
+                WHERE p.id = %d",
+                $product_id
+            ));
+
+            wp_send_json_success(['products' => $products]);
+        } else {
+            // Generate cache key based on search and pagination
+            $cache_key = 'orpl_products_' . md5($search . '_' . $page . '_' . $per_page);
+            $cached_data = wp_cache_get($cache_key, 'obydullah-restaurant-pos-lite');
+
+            if (false !== $cached_data) {
+                wp_send_json_success($cached_data);
+            }
+
+            // Build query based on search
+            if (!empty($search)) {
+                // With search
+                $total_items = $wpdb->get_var($wpdb->prepare(
+                    "SELECT COUNT(*) FROM $products_table p WHERE p.name LIKE %s",
+                    '%' . $wpdb->esc_like($search) . '%'
+                ));
+
+                // Calculate pagination
+                $total_pages = ceil($total_items / $per_page);
+                $offset = ($page - 1) * $per_page;
+
+                $products = $wpdb->get_results($wpdb->prepare(
+                    "SELECT p.*, c.name as category_name 
+                    FROM $products_table p 
+                    LEFT JOIN $categories_table c ON p.fk_category_id = c.id 
+                    WHERE p.name LIKE %s 
+                    ORDER BY p.created_at DESC 
+                    LIMIT %d OFFSET %d",
+                    '%' . $wpdb->esc_like($search) . '%',
+                    $per_page,
+                    $offset
+                ));
+            } else {
+                // Without search
+                $total_items = $wpdb->get_var(
+                    $wpdb->prepare("SELECT COUNT(*) FROM $products_table p")
+                );
+
+                // Calculate pagination
+                $total_pages = ceil($total_items / $per_page);
+                $offset = ($page - 1) * $per_page;
+
+                $products = $wpdb->get_results($wpdb->prepare(
+                    "SELECT p.*, c.name as category_name 
+                    FROM $products_table p 
+                    LEFT JOIN $categories_table c ON p.fk_category_id = c.id 
+                    ORDER BY p.created_at DESC 
+                    LIMIT %d OFFSET %d",
+                    $per_page,
+                    $offset
+                ));
+            }
+
+            $response_data = [
+                'products' => $products,
+                'pagination' => [
+                    'current_page' => $page,
+                    'per_page' => $per_page,
+                    'total_items' => $total_items,
+                    'total_pages' => $total_pages
+                ]
+            ];
+
+            // Cache the results for 2 minutes
+            wp_cache_set($cache_key, $response_data, 'obydullah-restaurant-pos-lite', 120);
+
+            wp_send_json_success($response_data);
+        }
     }
-}
 
     /** Add product */
     public function ajax_add_product()
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
-        if (!wp_verify_nonce($nonce, 'add_product')) {
-            wp_send_json_error('Security verification failed');
+        if (!wp_verify_nonce($nonce, 'orpl_add_product')) {
+            wp_send_json_error(__('Security verification failed', 'obydullah-restaurant-pos-lite'));
         }
 
         global $wpdb;
-        $table = $wpdb->prefix . 'pos_products';
+        $table = $wpdb->prefix . 'orpl_products';
 
         // Unslash and sanitize input
         $name = sanitize_text_field(wp_unslash($_POST['name'] ?? ''));
@@ -693,22 +728,26 @@ public function ajax_get_products() {
 
         // Validate required fields
         if (empty($name)) {
-            wp_send_json_error('Product name is required');
+            wp_send_json_error(__('Product name is required', 'obydullah-restaurant-pos-lite'));
         }
         if ($fk_category_id <= 0) {
-            wp_send_json_error('Please select a valid category');
+            wp_send_json_error(__('Please select a valid category', 'obydullah-restaurant-pos-lite'));
         }
 
-        // Check if product name already exists
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-        $existing = $wpdb->get_var($wpdb->prepare(
-            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            "SELECT id FROM $table WHERE name = %s",
-            $name
-        ));
+        // Check if product name already exists with caching
+        $cache_key = 'orpl_product_exists_' . md5($name);
+        $existing = wp_cache_get($cache_key, 'obydullah-restaurant-pos-lite');
+
+        if (false === $existing) {
+            $existing = $wpdb->get_var($wpdb->prepare(
+                "SELECT id FROM $table WHERE name = %s",
+                $name
+            ));
+            wp_cache_set($cache_key, $existing, 'obydullah-restaurant-pos-lite', 300);
+        }
 
         if ($existing) {
-            wp_send_json_error('Product name already exists');
+            wp_send_json_error(__('Product name already exists', 'obydullah-restaurant-pos-lite'));
         }
 
         // Handle image upload
@@ -720,7 +759,6 @@ public function ajax_get_products() {
             }
         }
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
         $result = $wpdb->insert($table, [
             'name' => $name,
             'fk_category_id' => $fk_category_id,
@@ -729,10 +767,13 @@ public function ajax_get_products() {
         ], ['%s', '%d', '%s', '%s']);
 
         if ($result === false) {
-            wp_send_json_error('Failed to add product');
+            wp_send_json_error(__('Failed to add product', 'obydullah-restaurant-pos-lite'));
         }
 
-        wp_send_json_success('Product added successfully');
+        // Clear product caches
+        $this->clear_product_caches();
+
+        wp_send_json_success(__('Product added successfully', 'obydullah-restaurant-pos-lite'));
     }
 
     /** Edit product */
@@ -740,12 +781,12 @@ public function ajax_get_products() {
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
-        if (!wp_verify_nonce($nonce, 'add_product')) {
-            wp_send_json_error('Security verification failed');
+        if (!wp_verify_nonce($nonce, 'orpl_edit_product')) {
+            wp_send_json_error(__('Security verification failed', 'obydullah-restaurant-pos-lite'));
         }
 
         global $wpdb;
-        $table = $wpdb->prefix . 'pos_products';
+        $table = $wpdb->prefix . 'orpl_products';
 
         $id = intval($_POST['id'] ?? 0);
         // Unslash and sanitize input
@@ -755,20 +796,24 @@ public function ajax_get_products() {
             sanitize_text_field(wp_unslash($_POST['status'])) : 'active';
 
         if (!$id || empty($name) || $fk_category_id <= 0) {
-            wp_send_json_error('Invalid data provided');
+            wp_send_json_error(__('Invalid data provided', 'obydullah-restaurant-pos-lite'));
         }
 
-        // Check if product name already exists (excluding current product)
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-        $existing = $wpdb->get_var($wpdb->prepare(
-            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            "SELECT id FROM $table WHERE name = %s AND id != %d",
-            $name,
-            $id
-        ));
+        // Check if product name already exists (excluding current product) with caching
+        $cache_key = 'orpl_product_exists_' . md5($name . '_' . $id);
+        $existing = wp_cache_get($cache_key, 'obydullah-restaurant-pos-lite');
+
+        if (false === $existing) {
+            $existing = $wpdb->get_var($wpdb->prepare(
+                "SELECT id FROM $table WHERE name = %s AND id != %d",
+                $name,
+                $id
+            ));
+            wp_cache_set($cache_key, $existing, 'obydullah-restaurant-pos-lite', 300);
+        }
 
         if ($existing) {
-            wp_send_json_error('Product name already exists');
+            wp_send_json_error(__('Product name already exists', 'obydullah-restaurant-pos-lite'));
         }
 
         // Prepare update data
@@ -788,43 +833,66 @@ public function ajax_get_products() {
             }
         }
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
         $result = $wpdb->update($table, $update_data, ['id' => $id], $format, ['%d']);
 
-
         if ($result === false) {
-            wp_send_json_error('Failed to update product');
+            wp_send_json_error(__('Failed to update product', 'obydullah-restaurant-pos-lite'));
         }
 
-        wp_send_json_success('Product updated successfully');
+        // Clear product caches
+        $this->clear_product_caches();
+
+        wp_send_json_success(__('Product updated successfully', 'obydullah-restaurant-pos-lite'));
     }
-
-
 
     /** Delete product */
     public function ajax_delete_product()
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
-        if (!wp_verify_nonce($nonce, 'delete_product')) {
-            wp_send_json_error('Security verification failed');
+        if (!wp_verify_nonce($nonce, 'orpl_delete_product')) {
+            wp_send_json_error(__('Security verification failed', 'obydullah-restaurant-pos-lite'));
         }
 
         global $wpdb;
-        $table = $wpdb->prefix . 'pos_products';
+        $table = $wpdb->prefix . 'orpl_products';
         $id = intval($_POST['id'] ?? 0);
 
         if (!$id) {
-            wp_send_json_error('Invalid product ID');
+            wp_send_json_error(__('Invalid product ID', 'obydullah-restaurant-pos-lite'));
         }
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
         $result = $wpdb->delete($table, ['id' => $id], ['%d']);
 
         if ($result === false) {
-            wp_send_json_error('Failed to delete product');
+            wp_send_json_error(__('Failed to delete product', 'obydullah-restaurant-pos-lite'));
         }
 
-        wp_send_json_success('Product deleted successfully');
+        // Clear product caches
+        $this->clear_product_caches();
+
+        wp_send_json_success(__('Product deleted successfully', 'obydullah-restaurant-pos-lite'));
+    }
+
+    /**
+     * Clear all product-related caches
+     */
+    private function clear_product_caches()
+    {
+        global $wpdb;
+        $wpdb->query(
+            $wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", '_transient_orpl_products_%')
+        );
+        $wpdb->query(
+            $wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", '_transient_timeout_orpl_products_%')
+        );
+
+        // Clear product existence caches
+        $wpdb->query(
+            $wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", '_transient_orpl_product_exists_%')
+        );
+        $wpdb->query(
+            $wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", '_transient_timeout_orpl_product_exists_%')
+        );
     }
 }

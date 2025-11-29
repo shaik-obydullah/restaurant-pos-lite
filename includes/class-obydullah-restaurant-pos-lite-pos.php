@@ -2,23 +2,47 @@
 /**
  * Point of Sales (POS)
  *
- * @package Restaurant_POS_Lite
+ * @package Obydullah_Restaurant_POS_Lite
  * @since   1.0.0
  */
-if (!defined('ABSPATH'))
+if (!defined('ABSPATH')) {
     exit;
+}
 
-class Restaurant_POS_Lite_POS
+class Obydullah_Restaurant_POS_Lite_POS
 {
+    const CACHE_GROUP = 'orpl_pos';
+    const CACHE_EXPIRATION = 10 * MINUTE_IN_SECONDS;
+
     private $helpers;
+    private $sales_table;
+    private $sale_details_table;
+    private $stocks_table;
+    private $accounting_table;
+    private $products_table;
+    private $categories_table;
+    private $customers_table;
 
     public function __construct()
     {
-        $this->helpers = new Restaurant_POS_Lite_Helpers();
-        add_action('wp_ajax_get_categories_for_pos', [$this, 'ajax_get_categories_for_pos']);
-        add_action('wp_ajax_get_products_by_category', [$this, 'ajax_get_products_by_category']);
-        add_action('wp_ajax_get_customers_for_pos', [$this, 'ajax_get_customers_for_pos']);
-        add_action('wp_ajax_process_sale', [$this, 'ajax_process_sale']);
+        global $wpdb;
+        $this->helpers = new Obydullah_Restaurant_POS_Lite_Helpers();
+
+        // Define table names
+        $this->sales_table = $wpdb->prefix . 'orpl_sales';
+        $this->sale_details_table = $wpdb->prefix . 'orpl_sale_details';
+        $this->stocks_table = $wpdb->prefix . 'orpl_stocks';
+        $this->accounting_table = $wpdb->prefix . 'orpl_accounting';
+        $this->products_table = $wpdb->prefix . 'orpl_products';
+        $this->categories_table = $wpdb->prefix . 'orpl_categories';
+        $this->customers_table = $wpdb->prefix . 'orpl_customers';
+
+        add_action('wp_ajax_orpl_get_categories_for_pos', [$this, 'ajax_get_categories_for_pos']);
+        add_action('wp_ajax_orpl_get_products_by_category', [$this, 'ajax_get_products_by_category']);
+        add_action('wp_ajax_orpl_get_customers_for_pos', [$this, 'ajax_get_customers_for_pos']);
+        add_action('wp_ajax_orpl_process_sale', [$this, 'ajax_process_sale']);
+        add_action('wp_ajax_orpl_get_saved_sales', [$this, 'ajax_get_saved_sales']);
+        add_action('wp_ajax_orpl_load_saved_sale', [$this, 'ajax_load_saved_sale']);
     }
 
     /**
@@ -33,24 +57,38 @@ class Restaurant_POS_Lite_POS
         $shop_info = $this->helpers->get_shop_info();
         ?>
         <div class="wrap">
-            <h1 style="margin-bottom:20px;"><?php esc_html_e('Restaurant POS System', 'restaurant-pos-lite'); ?></h1>
+            <h1 style="margin-bottom:20px;"><?php esc_html_e('Restaurant POS System', 'obydullah-restaurant-pos-lite'); ?></h1>
+
+            <!-- Saved Sales Panel -->
+            <div id="saved-sales-panel"
+                style="display: none; margin-bottom: 20px; background: white; padding: 15px; border-radius: 5px; border: 1px solid #ddd;">
+                <h3 style="margin-top: 0;"><?php esc_html_e('Saved Sales', 'obydullah-restaurant-pos-lite'); ?></h3>
+                <div id="saved-sales-list" style="max-height: 200px; overflow-y: auto;">
+                    <!-- Saved sales will be loaded here -->
+                </div>
+                <button id="close-saved-sales" class="button"
+                    style="margin-top: 10px;"><?php esc_html_e('Close', 'obydullah-restaurant-pos-lite'); ?></button>
+            </div>
 
             <div id="pos-container" style="display: flex; height: calc(100vh - 120px); min-height: 600px; background: #f5f5f5;">
-                <!-- Products Panel -->
+                <!-- Stock Items Panel -->
                 <div style="flex: 3; border-right: 2px solid #ccc; padding: 20px; overflow-y: auto; background-color: #f9f9f9;">
-                    <h2 style="margin-top: 0; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
-                        <?php esc_html_e('Products', 'restaurant-pos-lite'); ?>
-                    </h2>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h2 style="margin: 0; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
+                            <?php esc_html_e('Stock Items', 'obydullah-restaurant-pos-lite'); ?>
+                        </h2>
+                        <button id="show-saved-sales"
+                            class="button"><?php esc_html_e('Load Saved Sale', 'obydullah-restaurant-pos-lite'); ?></button>
+                    </div>
 
                     <!-- Customer Selection -->
                     <div
                         style="margin-bottom: 20px; background: white; padding: 15px; border-radius: 5px; border: 1px solid #ddd;">
                         <label
-                            style="display: block; margin-bottom: 8px; font-weight: bold;"><?php esc_html_e('Select Customer', 'restaurant-pos-lite'); ?></label>
+                            style="display: block; margin-bottom: 8px; font-weight: bold;"><?php esc_html_e('Select Customer', 'obydullah-restaurant-pos-lite'); ?></label>
                         <select id="customer-select"
                             style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                            <option value=""><?php esc_html_e('Walk-in Customer', 'restaurant-pos-lite'); ?></option>
-                            <!-- Customers will be loaded via AJAX -->
+                            <option value=""><?php esc_html_e('Walk-in Customer', 'obydullah-restaurant-pos-lite'); ?></option>
                         </select>
                     </div>
 
@@ -62,10 +100,9 @@ class Restaurant_POS_Lite_POS
                     <!-- Product Grid -->
                     <div id="product-grid"
                         style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;">
-                        <!-- Products will be loaded via AJAX -->
                         <div style="text-align: center; padding: 40px; color: #666;">
                             <div class="spinner is-active" style="float: none; margin: 0 auto;"></div>
-                            <p><?php esc_html_e('Loading stocks...', 'restaurant-pos-lite'); ?></p>
+                            <p><?php esc_html_e('Loading stock items...', 'obydullah-restaurant-pos-lite'); ?></p>
                         </div>
                     </div>
                 </div>
@@ -73,7 +110,7 @@ class Restaurant_POS_Lite_POS
                 <!-- Cart & Checkout Panel -->
                 <div style="flex: 2; padding: 20px; background-color: #f5f5f5;">
                     <h2 style="margin-top: 0; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
-                        <?php esc_html_e('Current Sale', 'restaurant-pos-lite'); ?>
+                        <?php esc_html_e('Current Sale', 'obydullah-restaurant-pos-lite'); ?>
                     </h2>
 
                     <!-- Cart Items -->
@@ -82,23 +119,23 @@ class Restaurant_POS_Lite_POS
                             <thead>
                                 <tr style="background-color: #e0e0e0;">
                                     <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">
-                                        <?php esc_html_e('Item', 'restaurant-pos-lite'); ?>
+                                        <?php esc_html_e('Item', 'obydullah-restaurant-pos-lite'); ?>
                                     </th>
                                     <th style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">
-                                        <?php esc_html_e('Qty', 'restaurant-pos-lite'); ?>
+                                        <?php esc_html_e('Qty', 'obydullah-restaurant-pos-lite'); ?>
                                     </th>
                                     <th style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">
-                                        <?php esc_html_e('Price', 'restaurant-pos-lite'); ?>
+                                        <?php esc_html_e('Price', 'obydullah-restaurant-pos-lite'); ?>
                                     </th>
                                     <th style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">
-                                        <?php esc_html_e('Total', 'restaurant-pos-lite'); ?>
+                                        <?php esc_html_e('Total', 'obydullah-restaurant-pos-lite'); ?>
                                     </th>
                                 </tr>
                             </thead>
                             <tbody id="cart-items">
                                 <tr>
                                     <td colspan="4" style="padding: 20px; text-align: center; color: #666;">
-                                        <?php esc_html_e('No items in cart', 'restaurant-pos-lite'); ?>
+                                        <?php esc_html_e('No items in cart', 'obydullah-restaurant-pos-lite'); ?>
                                     </td>
                                 </tr>
                             </tbody>
@@ -109,11 +146,11 @@ class Restaurant_POS_Lite_POS
                     <div style="margin-bottom: 20px;">
                         <div style="display: flex; border-bottom: 1px solid #ddd;">
                             <button id="dineInTab"
-                                style="flex: 1; padding: 12px; background-color: #4CAF50; color: white; border: none; border-radius: 4px 4px 0 0; margin-right: 2px;"><?php esc_html_e('Dine In', 'restaurant-pos-lite'); ?></button>
+                                style="flex: 1; padding: 12px; background-color: #4CAF50; color: white; border: none; border-radius: 4px 4px 0 0; margin-right: 2px;"><?php esc_html_e('Dine In', 'obydullah-restaurant-pos-lite'); ?></button>
                             <button id="takeAwayTab"
-                                style="flex: 1; padding: 12px; background-color: #e0e0e0; border: none; border-radius: 4px 4px 0 0; margin-right: 2px;"><?php esc_html_e('Take Away', 'restaurant-pos-lite'); ?></button>
+                                style="flex: 1; padding: 12px; background-color: #e0e0e0; border: none; border-radius: 4px 4px 0 0; margin-right: 2px;"><?php esc_html_e('Take Away', 'obydullah-restaurant-pos-lite'); ?></button>
                             <button id="pickupTab"
-                                style="flex: 1; padding: 12px; background-color: #e0e0e0; border: none; border-radius: 4px 4px 0 0;"><?php esc_html_e('Pickup', 'restaurant-pos-lite'); ?></button>
+                                style="flex: 1; padding: 12px; background-color: #e0e0e0; border: none; border-radius: 4px 4px 0 0;"><?php esc_html_e('Pickup', 'obydullah-restaurant-pos-lite'); ?></button>
                         </div>
 
                         <!-- Dine In Options -->
@@ -121,17 +158,17 @@ class Restaurant_POS_Lite_POS
                             style="background-color: white; padding: 15px; border-radius: 0 0 5px 5px; border: 1px solid #ddd; border-top: none;">
                             <div style="margin-bottom: 10px;">
                                 <label
-                                    style="display: block; margin-bottom: 5px; font-weight: bold;"><?php esc_html_e('Table Number', 'restaurant-pos-lite'); ?></label>
+                                    style="display: block; margin-bottom: 5px; font-weight: bold;"><?php esc_html_e('Table Number', 'obydullah-restaurant-pos-lite'); ?></label>
                                 <input type="text" id="table-number"
                                     style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"
-                                    placeholder="<?php esc_html_e('Enter table number', 'restaurant-pos-lite'); ?>">
+                                    placeholder="<?php esc_attr_e('Enter table number', 'obydullah-restaurant-pos-lite'); ?>">
                             </div>
                             <div>
                                 <label
-                                    style="display: block; margin-bottom: 5px; font-weight: bold;"><?php esc_html_e('Cooking Instructions', 'restaurant-pos-lite'); ?></label>
+                                    style="display: block; margin-bottom: 5px; font-weight: bold;"><?php esc_html_e('Cooking Instructions', 'obydullah-restaurant-pos-lite'); ?></label>
                                 <textarea id="dinein-instructions"
                                     style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; min-height: 60px;"
-                                    placeholder="<?php esc_html_e('Add special cooking instructions...', 'restaurant-pos-lite'); ?>"></textarea>
+                                    placeholder="<?php esc_attr_e('Add special cooking instructions...', 'obydullah-restaurant-pos-lite'); ?>"></textarea>
                             </div>
                         </div>
 
@@ -140,42 +177,42 @@ class Restaurant_POS_Lite_POS
                             style="background-color: white; padding: 15px; border-radius: 0 0 5px 5px; border: 1px solid #ddd; border-top: none; display: none;">
                             <div style="margin-bottom: 10px;">
                                 <label
-                                    style="display: block; margin-bottom: 5px; font-weight: bold;"><?php esc_html_e('Customer Name', 'restaurant-pos-lite'); ?></label>
+                                    style="display: block; margin-bottom: 5px; font-weight: bold;"><?php esc_html_e('Customer Name', 'obydullah-restaurant-pos-lite'); ?></label>
                                 <input type="text" id="takeaway-name"
                                     style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"
-                                    placeholder="<?php esc_html_e('Enter customer name', 'restaurant-pos-lite'); ?>">
+                                    placeholder="<?php esc_attr_e('Enter customer name', 'obydullah-restaurant-pos-lite'); ?>">
                             </div>
                             <div style="margin-bottom: 10px;">
                                 <label
-                                    style="display: block; margin-bottom: 5px; font-weight: bold;"><?php esc_html_e('Delivery Address', 'restaurant-pos-lite'); ?></label>
+                                    style="display: block; margin-bottom: 5px; font-weight: bold;"><?php esc_html_e('Delivery Address', 'obydullah-restaurant-pos-lite'); ?></label>
                                 <textarea id="takeaway-address"
                                     style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; min-height: 60px;"
-                                    placeholder="<?php esc_html_e('Enter delivery address', 'restaurant-pos-lite'); ?>"></textarea>
+                                    placeholder="<?php esc_attr_e('Enter delivery address', 'obydullah-restaurant-pos-lite'); ?>"></textarea>
                             </div>
 
                             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                                 <div style="flex: 1;">
                                     <label
-                                        style="display: block; margin-bottom: 5px; font-weight: bold;"><?php esc_html_e('Email', 'restaurant-pos-lite'); ?></label>
+                                        style="display: block; margin-bottom: 5px; font-weight: bold;"><?php esc_html_e('Email', 'obydullah-restaurant-pos-lite'); ?></label>
                                     <input type="email" id="takeaway-email"
                                         style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"
-                                        placeholder="<?php esc_html_e('Enter email address', 'restaurant-pos-lite'); ?>">
+                                        placeholder="<?php esc_attr_e('Enter email address', 'obydullah-restaurant-pos-lite'); ?>">
                                 </div>
                                 <div style="flex: 1;">
                                     <label
-                                        style="display: block; margin-bottom: 5px; font-weight: bold;"><?php esc_html_e('Mobile', 'restaurant-pos-lite'); ?></label>
+                                        style="display: block; margin-bottom: 5px; font-weight: bold;"><?php esc_html_e('Mobile', 'obydullah-restaurant-pos-lite'); ?></label>
                                     <input type="text" id="takeaway-mobile"
                                         style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"
-                                        placeholder="<?php esc_html_e('Enter mobile number', 'restaurant-pos-lite'); ?>">
+                                        placeholder="<?php esc_attr_e('Enter mobile number', 'obydullah-restaurant-pos-lite'); ?>">
                                 </div>
                             </div>
 
                             <div style="margin-bottom: 10px;">
                                 <label
-                                    style="display: block; margin-bottom: 5px; font-weight: bold;"><?php esc_html_e('Cooking Instructions', 'restaurant-pos-lite'); ?></label>
+                                    style="display: block; margin-bottom: 5px; font-weight: bold;"><?php esc_html_e('Cooking Instructions', 'obydullah-restaurant-pos-lite'); ?></label>
                                 <textarea id="takeaway-instructions"
                                     style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; min-height: 60px;"
-                                    placeholder="<?php esc_html_e('Enter Cooking Instructions', 'restaurant-pos-lite'); ?>"></textarea>
+                                    placeholder="<?php esc_attr_e('Enter Cooking Instructions', 'obydullah-restaurant-pos-lite'); ?>"></textarea>
                             </div>
                         </div>
 
@@ -184,24 +221,24 @@ class Restaurant_POS_Lite_POS
                             style="background-color: white; padding: 15px; border-radius: 0 0 5px 5px; border: 1px solid #ddd; border-top: none; display: none;">
                             <div style="margin-bottom: 10px;">
                                 <label
-                                    style="display: block; margin-bottom: 5px; font-weight: bold;"><?php esc_html_e('Customer Name', 'restaurant-pos-lite'); ?></label>
+                                    style="display: block; margin-bottom: 5px; font-weight: bold;"><?php esc_html_e('Customer Name', 'obydullah-restaurant-pos-lite'); ?></label>
                                 <input type="text" id="pickup-name"
                                     style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"
-                                    placeholder="<?php esc_html_e('Enter customer name', 'restaurant-pos-lite'); ?>">
+                                    placeholder="<?php esc_attr_e('Enter customer name', 'obydullah-restaurant-pos-lite'); ?>">
                             </div>
                             <div style="margin-bottom: 10px;">
                                 <label
-                                    style="display: block; margin-bottom: 5px; font-weight: bold;"><?php esc_html_e('Mobile', 'restaurant-pos-lite'); ?></label>
+                                    style="display: block; margin-bottom: 5px; font-weight: bold;"><?php esc_html_e('Mobile', 'obydullah-restaurant-pos-lite'); ?></label>
                                 <input type="tel" id="pickup-mobile"
                                     style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"
-                                    placeholder="<?php esc_html_e('Enter mobile number', 'restaurant-pos-lite'); ?>">
+                                    placeholder="<?php esc_attr_e('Enter mobile number', 'obydullah-restaurant-pos-lite'); ?>">
                             </div>
                             <div>
                                 <label
-                                    style="display: block; margin-bottom: 5px; font-weight: bold;"><?php esc_html_e('Cooking Instructions', 'restaurant-pos-lite'); ?></label>
+                                    style="display: block; margin-bottom: 5px; font-weight: bold;"><?php esc_html_e('Cooking Instructions', 'obydullah-restaurant-pos-lite'); ?></label>
                                 <textarea id="pickup-instructions"
                                     style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; min-height: 60px;"
-                                    placeholder="<?php esc_html_e('Add special cooking instructions...', 'restaurant-pos-lite'); ?>"></textarea>
+                                    placeholder="<?php esc_attr_e('Add special cooking instructions...', 'obydullah-restaurant-pos-lite'); ?>"></textarea>
                             </div>
                         </div>
                     </div>
@@ -209,21 +246,21 @@ class Restaurant_POS_Lite_POS
                     <!-- Totals -->
                     <div style="background-color: white; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                            <span><?php esc_html_e('Subtotal:', 'restaurant-pos-lite'); ?></span>
+                            <span><?php esc_html_e('Subtotal:', 'obydullah-restaurant-pos-lite'); ?></span>
                             <span id="subtotal"><?php echo esc_html($this->helpers->format_currency(0)); ?></span>
                         </div>
                         <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                            <span><?php esc_html_e('Discount:', 'restaurant-pos-lite'); ?></span>
+                            <span><?php esc_html_e('Discount:', 'obydullah-restaurant-pos-lite'); ?></span>
                             <div style="display: flex; align-items: center;">
                                 <input type="text" id="discount-amount"
                                     style="width: 80px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; text-align: right;"
                                     placeholder="0.00">
                                 <button id="apply-discount"
-                                    style="margin-left: 5px; padding: 5px 10px; background-color: #2196F3; color: white; border: none; border-radius: 4px;"><?php esc_html_e('Apply', 'restaurant-pos-lite'); ?></button>
+                                    style="margin-left: 5px; padding: 5px 10px; background-color: #2196F3; color: white; border: none; border-radius: 4px;"><?php esc_html_e('Apply', 'obydullah-restaurant-pos-lite'); ?></button>
                             </div>
                         </div>
                         <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                            <span><?php esc_html_e('Delivery Cost:', 'restaurant-pos-lite'); ?></span>
+                            <span><?php esc_html_e('Delivery Cost:', 'obydullah-restaurant-pos-lite'); ?></span>
                             <div style="display: flex; align-items: center;">
                                 <input type="text" id="delivery-cost"
                                     style="width: 80px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; text-align: right;"
@@ -233,21 +270,21 @@ class Restaurant_POS_Lite_POS
                         <!-- VAT Line (only shows if VAT is enabled) -->
                         <div style="display: <?php echo $is_vat_enabled ? 'flex' : 'none'; ?>; justify-content: space-between; margin-bottom: 10px;"
                             id="vat-line">
-                            <span id="vat-label"><?php /* translators: %s: VAT rate percentage */ ?>
-                                <?php printf(esc_html__('VAT (%s%%):', 'restaurant-pos-lite'), esc_html($vat_rate)); ?></span>
+                            <span
+                                id="vat-label"><?php printf(esc_html__('VAT (%s%%):', 'obydullah-restaurant-pos-lite'), esc_html($vat_rate)); ?></span>
                             <span id="vat-amount"><?php echo esc_html($this->helpers->format_currency(0)); ?></span>
                         </div>
 
                         <!-- TAX Line (only shows if TAX is enabled) -->
                         <div style="display: <?php echo esc_attr($this->helpers->is_tax_enabled() ? 'flex' : 'none'); ?>; justify-content: space-between; margin-bottom: 10px;"
                             id="tax-line">
-                            <span id="tax-label"><?php /* translators: %s: TAX rate percentage */ ?>
-                                <?php printf(esc_html__('TAX (%s%%):', 'restaurant-pos-lite'), esc_html($this->helpers->get_tax_rate())); ?></span>
+                            <span
+                                id="tax-label"><?php printf(esc_html__('TAX (%s%%):', 'obydullah-restaurant-pos-lite'), esc_html($this->helpers->get_tax_rate())); ?></span>
                             <span id="tax-amount"><?php echo esc_html($this->helpers->format_currency(0)); ?></span>
                         </div>
                         <div
                             style="display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; border-top: 1px solid #ddd; padding-top: 10px;">
-                            <span><?php esc_html_e('Total:', 'restaurant-pos-lite'); ?></span>
+                            <span><?php esc_html_e('Total:', 'obydullah-restaurant-pos-lite'); ?></span>
                             <span id="total-amount"><?php echo esc_html($this->helpers->format_currency(0)); ?></span>
                         </div>
                     </div>
@@ -255,13 +292,12 @@ class Restaurant_POS_Lite_POS
                     <!-- Action Buttons -->
                     <div style="display: flex; gap: 10px;">
                         <button id="clear-cart"
-                            style="flex: 1; padding: 12px; background-color: #f44336; color: white; border: none; border-radius: 4px; font-size: 16px;"><?php esc_html_e('Cancel', 'restaurant-pos-lite'); ?></button>
+                            style="flex: 1; padding: 12px; background-color: #f44336; color: white; border: none; border-radius: 4px; font-size: 16px;"><?php esc_html_e('Cancel', 'obydullah-restaurant-pos-lite'); ?></button>
                         <button id="save-sale"
-                            style="flex: 1; padding: 12px; background-color: #FF9800; color: white; border: none; border-radius: 4px; font-size: 16px;"><?php esc_html_e('Save Sale', 'restaurant-pos-lite'); ?></button>
+                            style="flex: 1; padding: 12px; background-color: #FF9800; color: white; border: none; border-radius: 4px; font-size: 16px;"><?php esc_html_e('Save Sale', 'obydullah-restaurant-pos-lite'); ?></button>
                         <button id="complete-sale"
-                            style="flex: 1; padding: 12px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; font-size: 16px;"><?php esc_html_e('Complete Sale', 'restaurant-pos-lite'); ?></button>
+                            style="flex: 1; padding: 12px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; font-size: 16px;"><?php esc_html_e('Complete Sale', 'obydullah-restaurant-pos-lite'); ?></button>
                     </div>
-
                 </div>
             </div>
 
@@ -270,7 +306,6 @@ class Restaurant_POS_Lite_POS
                 style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center;">
                 <div
                     style="background: white; padding: 30px; border-radius: 10px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3); max-width: 400px; width: 90%;">
-                    <!-- Professional checkmark icon -->
                     <div
                         style="width: 80px; height: 80px; background: #4CAF50; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
                         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"
@@ -280,11 +315,12 @@ class Restaurant_POS_Lite_POS
                     </div>
 
                     <h2 style="margin: 0 0 10px 0; color: #333; font-size: 24px;">
-                        <?php esc_html_e('Sale Completed Successfully!', 'restaurant-pos-lite'); ?>
+                        <?php esc_html_e('Sale Completed Successfully!', 'obydullah-restaurant-pos-lite'); ?>
                     </h2>
                     <p style="margin: 0 0 25px 0; color: #666; font-size: 16px; line-height: 1.5;">
-                        <?php esc_html_e('Invoice:', 'restaurant-pos-lite'); ?> <strong id="modal-invoice-id">-</strong><br>
-                        <?php esc_html_e('Total:', 'restaurant-pos-lite'); ?> <strong
+                        <?php esc_html_e('Invoice:', 'obydullah-restaurant-pos-lite'); ?> <strong
+                            id="modal-invoice-id">-</strong><br>
+                        <?php esc_html_e('Total:', 'obydullah-restaurant-pos-lite'); ?> <strong
                             id="modal-total-amount"><?php echo esc_html($this->helpers->format_currency(0)); ?></strong>
                     </p>
 
@@ -296,7 +332,7 @@ class Restaurant_POS_Lite_POS
                                 <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
                                 <rect x="6" y="14" width="12" height="8"></rect>
                             </svg>
-                            <?php esc_html_e('Print Receipt', 'restaurant-pos-lite'); ?>
+                            <?php esc_html_e('Print Receipt', 'obydullah-restaurant-pos-lite'); ?>
                         </button>
 
                         <button id="modal-new-order"
@@ -305,7 +341,7 @@ class Restaurant_POS_Lite_POS
                                 <line x1="12" y1="5" x2="12" y2="19"></line>
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
                             </svg>
-                            <?php esc_html_e('New Order', 'restaurant-pos-lite'); ?>
+                            <?php esc_html_e('New Order', 'obydullah-restaurant-pos-lite'); ?>
                         </button>
                     </div>
                 </div>
@@ -318,6 +354,7 @@ class Restaurant_POS_Lite_POS
                 let selectedCustomer = null;
                 let currentOrderType = 'dineIn';
                 let currentCookingInstructions = '';
+                let currentSavedSaleId = null;
 
                 // Currency settings from PHP
                 const currencySettings = {
@@ -406,14 +443,14 @@ class Restaurant_POS_Lite_POS
                         url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                         type: 'GET',
                         data: {
-                            action: 'get_customers_for_pos',
-                            nonce: '<?php echo esc_js(wp_create_nonce("get_customers_for_pos")); ?>'
+                            action: 'orpl_get_customers_for_pos',
+                            nonce: '<?php echo esc_js(wp_create_nonce("orpl_get_customers_for_pos")); ?>'
                         },
                         success: function (response) {
                             if (response.success) {
                                 let select = $('#customer-select');
-                                select.empty(); // Clear existing options
-                                select.append('<option value=""><?php esc_html_e('Walk-in Customer', 'restaurant-pos-lite'); ?></option>');
+                                select.empty();
+                                select.append('<option value=""><?php esc_html_e('Walk-in Customer', 'obydullah-restaurant-pos-lite'); ?></option>');
 
                                 $.each(response.data, function (_, customer) {
                                     select.append(
@@ -431,8 +468,8 @@ class Restaurant_POS_Lite_POS
                         url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                         type: 'GET',
                         data: {
-                            action: 'get_categories_for_pos',
-                            nonce: '<?php echo esc_js(wp_create_nonce("get_categories_for_pos")); ?>'
+                            action: 'orpl_get_categories_for_pos',
+                            nonce: '<?php echo esc_js(wp_create_nonce("orpl_get_categories_for_pos")); ?>'
                         },
                         success: function (response) {
                             if (response.success) {
@@ -441,7 +478,7 @@ class Restaurant_POS_Lite_POS
 
                                 // Add "All" category button
                                 container.append(
-                                    '<button class="category-btn active" data-category-id="all" style="padding: 8px 12px; margin-right: 5px; background-color: #4CAF50; color: white; border: none; border-radius: 4px;"><?php esc_html_e('All', 'restaurant-pos-lite'); ?></button>'
+                                    '<button class="category-btn active" data-category-id="all" style="padding: 8px 12px; margin-right: 5px; background-color: #4CAF50; color: white; border: none; border-radius: 4px;"><?php esc_html_e('All', 'obydullah-restaurant-pos-lite'); ?></button>'
                                 );
 
                                 // Add category buttons
@@ -460,15 +497,15 @@ class Restaurant_POS_Lite_POS
 
                 // Load products by category (or all if categoryId is 'all')
                 function loadProducts(categoryId) {
-                    $('#product-grid').html('<div style="text-align: center; padding: 40px; color: #666;"><div class="spinner is-active" style="float: none; margin: 0 auto;"></div><p><?php esc_html_e('Loading products...', 'restaurant-pos-lite'); ?></p></div>');
+                    $('#product-grid').html('<div style="text-align: center; padding: 40px; color: #666;"><div class="spinner is-active" style="float: none; margin: 0 auto;"></div><p><?php esc_html_e('Loading stock items...', 'obydullah-restaurant-pos-lite'); ?></p></div>');
 
                     $.ajax({
                         url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                         type: 'GET',
                         data: {
-                            action: 'get_products_by_category',
+                            action: 'orpl_get_products_by_category',
                             category_id: categoryId,
-                            nonce: '<?php echo esc_js(wp_create_nonce("get_products_by_category")); ?>'
+                            nonce: '<?php echo esc_js(wp_create_nonce("orpl_get_products_by_category")); ?>'
                         },
                         success: function (response) {
                             let container = $('#product-grid').empty();
@@ -481,7 +518,7 @@ class Restaurant_POS_Lite_POS
                                         '<p style="margin: 5px 0; color: #4CAF50; font-weight: bold; font-size: 15px;">' + formatCurrency(product.sale_cost) + '</p>' +
                                         '<p style="margin: 3px 0; font-size: 11px; color: #666;">Stock: ' + product.quantity + '</p>' +
                                         (outOfStock ?
-                                            '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); background: #f44336; color: white; padding: 3px 12px; font-size: 10px; font-weight: bold; z-index: 2;"><?php esc_html_e('SOLD OUT', 'restaurant-pos-lite'); ?></div>' :
+                                            '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); background: #f44336; color: white; padding: 3px 12px; font-size: 10px; font-weight: bold; z-index: 2;"><?php esc_html_e('SOLD OUT', 'obydullah-restaurant-pos-lite'); ?></div>' :
                                             ''
                                         ) +
                                         '</div>'
@@ -490,7 +527,7 @@ class Restaurant_POS_Lite_POS
                                     container.append(productCard);
                                 });
                             } else {
-                                container.html('<div style="text-align: center; padding: 40px; color: #666;"><p><?php esc_html_e('No products found in this category', 'restaurant-pos-lite'); ?></p></div>');
+                                container.html('<div style="text-align: center; padding: 40px; color: #666;"><p><?php esc_html_e('No stock items found in this category', 'obydullah-restaurant-pos-lite'); ?></p></div>');
                             }
 
                             // Add click handlers for product cards
@@ -532,8 +569,8 @@ class Restaurant_POS_Lite_POS
                             url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                             type: 'GET',
                             data: {
-                                action: 'get_customers_for_pos',
-                                nonce: '<?php echo esc_js(wp_create_nonce("get_customers_for_pos")); ?>'
+                                action: 'orpl_get_customers_for_pos',
+                                nonce: '<?php echo esc_js(wp_create_nonce("orpl_get_customers_for_pos")); ?>'
                             },
                             success: function (response) {
                                 if (response.success) {
@@ -594,7 +631,7 @@ class Restaurant_POS_Lite_POS
                         if (existingItem.quantity < stock) {
                             existingItem.quantity++;
                         } else {
-                            alert('<?php esc_html_e('Not enough stock available!', 'restaurant-pos-lite'); ?>');
+                            alert('<?php esc_html_e('Not enough stock available!', 'obydullah-restaurant-pos-lite'); ?>');
                             return;
                         }
                     } else {
@@ -615,7 +652,7 @@ class Restaurant_POS_Lite_POS
                     let container = $('#cart-items');
 
                     if (cart.length === 0) {
-                        container.html('<tr><td colspan="4" style="padding: 20px; text-align: center; color: #666;"><?php esc_html_e('No items in cart', 'restaurant-pos-lite'); ?></td></tr>');
+                        container.html('<tr><td colspan="4" style="padding: 20px; text-align: center; color: #666;"><?php esc_html_e('No items in cart', 'obydullah-restaurant-pos-lite'); ?></td></tr>');
                     } else {
                         container.empty();
                         let subtotal = 0;
@@ -666,12 +703,13 @@ class Restaurant_POS_Lite_POS
 
                         if (item.quantity > item.stock) {
                             item.quantity = item.stock;
-                            alert('<?php esc_html_e('Not enough stock available!', 'restaurant-pos-lite'); ?>');
+                            alert('<?php esc_html_e('Not enough stock available!', 'obydullah-restaurant-pos-lite'); ?>');
                         }
 
                         updateCartDisplay();
                     }
                 }
+
                 // Update totals with clean VAT and TAX calculations
                 function updateTotals(subtotal) {
                     let discount = parseFloat($('#discount-amount').val()) || 0;
@@ -728,8 +766,9 @@ class Restaurant_POS_Lite_POS
 
                 // Clear cart
                 $('#clear-cart').on('click', function () {
-                    if (confirm('<?php esc_html_e('Clear all items from cart?', 'restaurant-pos-lite'); ?>')) {
+                    if (confirm('<?php esc_html_e('Clear all items from cart?', 'obydullah-restaurant-pos-lite'); ?>')) {
                         cart = [];
+                        currentSavedSaleId = null;
                         updateCartDisplay();
                         $('#discount-amount').val('');
                         $('#delivery-cost').val('0.00');
@@ -754,6 +793,122 @@ class Restaurant_POS_Lite_POS
                     currentCookingInstructions = $(this).val();
                 });
 
+                // Show/hide saved sales panel
+                $('#show-saved-sales').on('click', function () {
+                    loadSavedSales();
+                    $('#saved-sales-panel').show();
+                });
+
+                $('#close-saved-sales').on('click', function () {
+                    $('#saved-sales-panel').hide();
+                });
+
+                // Load saved sales
+                function loadSavedSales() {
+                    $.ajax({
+                        url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
+                        type: 'GET',
+                        data: {
+                            action: 'orpl_get_saved_sales',
+                            nonce: '<?php echo esc_js(wp_create_nonce("orpl_get_saved_sales")); ?>'
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                let container = $('#saved-sales-list').empty();
+
+                                if (response.data.length === 0) {
+                                    container.html('<p style="text-align: center; color: #666;"><?php esc_html_e('No saved sales found.', 'obydullah-restaurant-pos-lite'); ?></p>');
+                                    return;
+                                }
+
+                                $.each(response.data, function (_, sale) {
+                                    let saleItem = $(
+                                        '<div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 4px; background: #f9f9f9;">' +
+                                        '<div style="display: flex; justify-content: space-between; align-items: center;">' +
+                                        '<div>' +
+                                        '<strong>#' + sale.invoice_id + '</strong><br>' +
+                                        '<small>' + sale.customer_name + '</small><br>' +
+                                        '<small>' + formatCurrency(sale.grand_total) + '</small>' +
+                                        '</div>' +
+                                        '<button class="button button-small load-saved-sale" data-sale-id="' + sale.id + '"><?php esc_html_e('Load', 'obydullah-restaurant-pos-lite'); ?></button>' +
+                                        '</div>' +
+                                        '</div>'
+                                    );
+                                    container.append(saleItem);
+                                });
+
+                                // Add click handlers for load buttons
+                                $('.load-saved-sale').on('click', function () {
+                                    let saleId = $(this).data('sale-id');
+                                    loadSavedSale(saleId);
+                                });
+                            }
+                        }
+                    });
+                }
+
+                // Load a specific saved sale
+                function loadSavedSale(saleId) {
+                    $.ajax({
+                        url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
+                        type: 'GET',
+                        data: {
+                            action: 'orpl_load_saved_sale',
+                            sale_id: saleId,
+                            nonce: '<?php echo esc_js(wp_create_nonce("orpl_load_saved_sale")); ?>'
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                // Clear current cart
+                                cart = [];
+                                currentSavedSaleId = saleId;
+
+                                // Load items into cart
+                                $.each(response.data.items, function (_, item) {
+                                    cart.push({
+                                        id: item.fk_product_id,
+                                        name: item.product_name,
+                                        price: parseFloat(item.unit_price),
+                                        quantity: parseInt(item.quantity),
+                                        stock: parseInt(item.stock_quantity)
+                                    });
+                                });
+
+                                // Load customer if exists
+                                if (response.data.sale.fk_customer_id) {
+                                    $('#customer-select').val(response.data.sale.fk_customer_id);
+                                }
+
+                                // Load order type and details
+                                currentOrderType = response.data.sale.sale_type;
+                                switchTab(currentOrderType);
+
+                                // Load form data based on order type
+                                if (currentOrderType === 'dineIn') {
+                                    $('#table-number').val(response.data.sale.note || '');
+                                    $('#dinein-instructions').val(response.data.sale.cooking_instructions || '');
+                                } else if (currentOrderType === 'takeAway') {
+                                    $('#takeaway-instructions').val(response.data.sale.cooking_instructions || '');
+                                } else if (currentOrderType === 'pickup') {
+                                    $('#pickup-instructions').val(response.data.sale.cooking_instructions || '');
+                                }
+
+                                // Load discount and delivery
+                                $('#discount-amount').val(response.data.sale.discount_amount || '');
+                                $('#delivery-cost').val(response.data.sale.shipping_cost || '0.00');
+
+                                // Update display
+                                updateCartDisplay();
+                                $('#saved-sales-panel').hide();
+
+                                alert('<?php esc_html_e('Saved sale loaded. You can now modify and complete it.', 'obydullah-restaurant-pos-lite'); ?>');
+                            } else {
+                                alert('Error: ' + response.data);
+                            }
+                        }
+                    });
+                }
+
                 // Complete Sale button handler
                 $('#complete-sale').on('click', function () {
                     processSale('complete');
@@ -764,10 +919,11 @@ class Restaurant_POS_Lite_POS
                     processSale('save');
                 });
 
+
                 // Process sale function
                 function processSale(action) {
                     if (cart.length === 0) {
-                        alert('<?php esc_html_e('Please add items to cart before processing sale.', 'restaurant-pos-lite'); ?>');
+                        alert('<?php esc_html_e('Please add items to cart before processing sale.', 'obydullah-restaurant-pos-lite'); ?>');
                         return;
                     }
 
@@ -787,7 +943,7 @@ class Restaurant_POS_Lite_POS
                     }
 
                     // Store current cart and form data BEFORE sending AJAX
-                    const currentCartData = [...cart]; // Copy the cart
+                    const currentCartData = [...cart]; // Define currentCartData here
                     const currentFormData = {
                         orderType: currentOrderType,
                         tableNumber: $('#table-number').val().trim(),
@@ -814,44 +970,44 @@ class Restaurant_POS_Lite_POS
                         order_type: currentOrderType,
                         cooking_instructions: cookingInstructions,
                         note: getOrderSpecificNotes(),
-                        action: action
+                        action: action,
+                        saved_sale_id: currentSavedSaleId
                     };
 
                     // Show processing indicator
                     const button = $(`#${action === 'complete' ? 'complete-sale' : 'save-sale'}`);
                     const originalText = button.text();
-                    button.text('<?php esc_html_e('Processing...', 'restaurant-pos-lite'); ?>').prop('disabled', true);
+                    button.text('<?php esc_html_e('Processing...', 'obydullah-restaurant-pos-lite'); ?>').prop('disabled', true);
 
                     // Send AJAX request
                     $.ajax({
                         url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                         type: 'POST',
                         data: {
-                            action: 'process_sale',
+                            action: 'orpl_process_sale',
                             sale_data: JSON.stringify(saleData),
-                            nonce: '<?php echo esc_js(wp_create_nonce("process_sale")); ?>'
+                            nonce: '<?php echo esc_js(wp_create_nonce("orpl_process_sale")); ?>'
                         },
                         success: function (response) {
                             if (response.success) {
-                                // Show success modal with invoice details BEFORE resetting
                                 if (action === 'complete') {
                                     showInvoiceSummary(
                                         response.data.invoice_id,
                                         response.data.sale_id,
-                                        currentCartData, // Pass the cart data
-                                        currentFormData,  // Pass the form data
-                                        saleData          // Pass the sale data
+                                        currentCartData,
+                                        currentFormData,
+                                        saleData
                                     );
                                 } else {
                                     resetPOS();
-                                    alert('<?php esc_html_e('Sale saved successfully!', 'restaurant-pos-lite'); ?>');
+                                    alert('<?php esc_html_e('Sale saved successfully!', 'obydullah-restaurant-pos-lite'); ?>');
                                 }
                             } else {
-                                alert('<?php esc_html_e('Error:', 'restaurant-pos-lite'); ?> ' + response.data);
+                                alert('<?php esc_html_e('Error:', 'obydullah-restaurant-pos-lite'); ?> ' + response.data);
                             }
                         },
                         error: function (xhr, status, error) {
-                            alert('<?php esc_html_e('Error processing sale:', 'restaurant-pos-lite'); ?> ' + error);
+                            alert('<?php esc_html_e('Error processing sale:', 'obydullah-restaurant-pos-lite'); ?> ' + error);
                         },
                         complete: function () {
                             button.text(originalText).prop('disabled', false);
@@ -864,21 +1020,21 @@ class Restaurant_POS_Lite_POS
                     if (currentOrderType === 'dineIn') {
                         const tableNumber = $('#table-number').val().trim();
                         if (!tableNumber) {
-                            alert('<?php esc_html_e('Please enter table number for Dine In order.', 'restaurant-pos-lite'); ?>');
+                            alert('<?php esc_html_e('Please enter table number for Dine In order.', 'obydullah-restaurant-pos-lite'); ?>');
                             $('#table-number').focus();
                             return false;
                         }
                     } else if (currentOrderType === 'takeAway') {
                         const customerName = $('#takeaway-name').val().trim();
                         if (!customerName) {
-                            alert('<?php esc_html_e('Please enter customer name for Take Away order.', 'restaurant-pos-lite'); ?>');
+                            alert('<?php esc_html_e('Please enter customer name for Take Away order.', 'obydullah-restaurant-pos-lite'); ?>');
                             $('#takeaway-name').focus();
                             return false;
                         }
                     } else if (currentOrderType === 'pickup') {
                         const customerName = $('#pickup-name').val().trim();
                         if (!customerName) {
-                            alert('<?php esc_html_e('Please enter customer name for Pickup order.', 'restaurant-pos-lite'); ?>');
+                            alert('<?php esc_html_e('Please enter customer name for Pickup order.', 'obydullah-restaurant-pos-lite'); ?>');
                             $('#pickup-name').focus();
                             return false;
                         }
@@ -892,23 +1048,23 @@ class Restaurant_POS_Lite_POS
 
                     if (currentOrderType === 'dineIn') {
                         const tableNumber = $('#table-number').val().trim();
-                        if (tableNumber) notes.push(`<?php esc_html_e('Table:', 'restaurant-pos-lite'); ?> ${tableNumber}`);
+                        if (tableNumber) notes.push(`<?php esc_html_e('Table:', 'obydullah-restaurant-pos-lite'); ?> ${tableNumber}`);
                     } else if (currentOrderType === 'takeAway') {
                         const customerName = $('#takeaway-name').val().trim();
                         const address = $('#takeaway-address').val().trim();
                         const email = $('#takeaway-email').val().trim();
                         const mobile = $('#takeaway-mobile').val().trim();
 
-                        if (customerName) notes.push(`<?php esc_html_e('Customer:', 'restaurant-pos-lite'); ?> ${customerName}`);
-                        if (address) notes.push(`<?php esc_html_e('Address:', 'restaurant-pos-lite'); ?> ${address}`);
-                        if (email) notes.push(`<?php esc_html_e('Email:', 'restaurant-pos-lite'); ?> ${email}`);
-                        if (mobile) notes.push(`<?php esc_html_e('Mobile:', 'restaurant-pos-lite'); ?> ${mobile}`);
+                        if (customerName) notes.push(`<?php esc_html_e('Customer:', 'obydullah-restaurant-pos-lite'); ?> ${customerName}`);
+                        if (address) notes.push(`<?php esc_html_e('Address:', 'obydullah-restaurant-pos-lite'); ?> ${address}`);
+                        if (email) notes.push(`<?php esc_html_e('Email:', 'obydullah-restaurant-pos-lite'); ?> ${email}`);
+                        if (mobile) notes.push(`<?php esc_html_e('Mobile:', 'obydullah-restaurant-pos-lite'); ?> ${mobile}`);
                     } else if (currentOrderType === 'pickup') {
                         const customerName = $('#pickup-name').val().trim();
                         const mobile = $('#pickup-mobile').val().trim();
 
-                        if (customerName) notes.push(`<?php esc_html_e('Customer:', 'restaurant-pos-lite'); ?> ${customerName}`);
-                        if (mobile) notes.push(`<?php esc_html_e('Mobile:', 'restaurant-pos-lite'); ?> ${mobile}`);
+                        if (customerName) notes.push(`<?php esc_html_e('Customer:', 'obydullah-restaurant-pos-lite'); ?> ${customerName}`);
+                        if (mobile) notes.push(`<?php esc_html_e('Mobile:', 'obydullah-restaurant-pos-lite'); ?> ${mobile}`);
                     }
 
                     return notes.join(' | ');
@@ -917,6 +1073,7 @@ class Restaurant_POS_Lite_POS
                 // Reset POS after successful sale
                 function resetPOS() {
                     cart = [];
+                    currentSavedSaleId = null;
                     updateCartDisplay();
                     $('#discount-amount').val('');
                     $('#delivery-cost').val('0.00');
@@ -932,13 +1089,14 @@ class Restaurant_POS_Lite_POS
                     $('#pickup-instructions').val('');
                     $('#customer-select').val('');
                     selectedCustomer = null;
+                    switchTab('dineIn');
                 }
 
                 // Show success modal after sale completion
                 function showInvoiceSummary(invoiceId, saleId, cartData, formData, saleData) {
                     // Calculate totals from the cart data that was passed
                     const subtotal = cartData.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                    const discount = parseFloat(saleData.discount) || 0;
+                    const discount = parseFloat(saleData.discount) || 0; // Now saleData is defined
                     const deliveryCost = parseFloat(saleData.delivery_cost) || 0;
                     const taxableAmount = subtotal - discount;
 
@@ -968,8 +1126,8 @@ class Restaurant_POS_Lite_POS
                         cartData: cartData,
                         formData: formData,
                         saleData: saleData,
-                        vatSettings: vatSettings,    // Store settings for receipt
-                        taxSettings: taxSettings     // Store settings for receipt
+                        vatSettings: vatSettings,
+                        taxSettings: taxSettings
                     };
 
                     // Update modal content
@@ -982,12 +1140,10 @@ class Restaurant_POS_Lite_POS
                     // Reset POS only after storing all the data
                     resetPOS();
                 }
-
-
                 // Print receipt function
                 function printReceipt() {
                     if (!window.lastSaleInfo) {
-                        alert('<?php esc_html_e('No sale information available for printing.', 'restaurant-pos-lite'); ?>');
+                        alert('<?php esc_html_e('No sale information available for printing.', 'obydullah-restaurant-pos-lite'); ?>');
                         return;
                     }
 
@@ -999,32 +1155,24 @@ class Restaurant_POS_Lite_POS
                     let receiptContent = `
         <div style="width: 300px; font-family: 'Courier New', monospace; font-size: 12px; padding: 20px;">
             <div style="text-align: center; margin-bottom: 15px;">
-                <h2 style="margin: 0 0 5px 0; font-size: 18px;"><?php echo esc_js($this->helpers->get_shop_name()); ?></h2>
-                <?php
-                $shop_info = $this->helpers->get_shop_info();
-                if (!empty($shop_info['address'])) {
-                    echo '<p style="margin: 0; font-size: 11px;">' . esc_js($shop_info['address']) . '</p>';
-                }
-                if (!empty($shop_info['phone'])) {
-                    /* translators: %s: Phone number */
-                    echo '<p style="margin: 0; font-size: 11px;">' . sprintf(esc_html__('Phone: %s', 'restaurant-pos-lite'), esc_html($shop_info['phone'])) . '</p>';
-                }
-                ?>
+                <h2 style="margin: 0 0 5px 0; font-size: 18px;">${shopInfo.name}</h2>
+                ${shopInfo.address ? '<p style="margin: 0; font-size: 11px;">' + shopInfo.address + '</p>' : ''}
+                ${shopInfo.phone ? '<p style="margin: 0; font-size: 11px;"><?php esc_html_e('Phone:', 'obydullah-restaurant-pos-lite'); ?> ' + shopInfo.phone + '</p>' : ''}
             </div>
             
             <hr style="border: 1px dashed #000; margin: 10px 0;">
             
             <div style="margin-bottom: 10px;">
                 <div style="display: flex; justify-content: space-between;">
-                    <span><?php esc_html_e('Invoice #:', 'restaurant-pos-lite'); ?></span>
+                    <span><?php esc_html_e('Invoice #:', 'obydullah-restaurant-pos-lite'); ?></span>
                     <span>${saleInfo.invoiceId}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between;">
-                    <span><?php esc_html_e('Date:', 'restaurant-pos-lite'); ?></span>
+                    <span><?php esc_html_e('Date:', 'obydullah-restaurant-pos-lite'); ?></span>
                     <span>${new Date().toLocaleString()}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between;">
-                    <span><?php esc_html_e('Order Type:', 'restaurant-pos-lite'); ?></span>
+                    <span><?php esc_html_e('Order Type:', 'obydullah-restaurant-pos-lite'); ?></span>
                     <span>${formData.orderType.charAt(0).toUpperCase() + formData.orderType.slice(1)}</span>
                 </div>
                 <div>
@@ -1032,14 +1180,14 @@ class Restaurant_POS_Lite_POS
 
                     // Add customer info based on order type
                     if (formData.orderType === 'dineIn') {
-                        receiptContent += formData.tableNumber ? `<div><?php esc_html_e('Table:', 'restaurant-pos-lite'); ?> ${formData.tableNumber}</div>` : '<div><?php esc_html_e('Walk-in Customer', 'restaurant-pos-lite'); ?></div>';
+                        receiptContent += formData.tableNumber ? `<div><?php esc_html_e('Table:', 'obydullah-restaurant-pos-lite'); ?> ${formData.tableNumber}</div>` : '<div><?php esc_html_e('Walk-in Customer', 'obydullah-restaurant-pos-lite'); ?></div>';
                     } else if (formData.orderType === 'takeAway') {
-                        receiptContent += `<div><?php esc_html_e('Customer:', 'restaurant-pos-lite'); ?> ${formData.takeawayName || '<?php esc_html_e('Walk-in', 'restaurant-pos-lite'); ?>'}</div>`;
-                        if (formData.takeawayAddress) receiptContent += `<div><?php esc_html_e('Address:', 'restaurant-pos-lite'); ?> ${formData.takeawayAddress}</div>`;
-                        if (formData.takeawayMobile) receiptContent += `<div><?php esc_html_e('Mobile:', 'restaurant-pos-lite'); ?> ${formData.takeawayMobile}</div>`;
+                        receiptContent += `<div><?php esc_html_e('Customer:', 'obydullah-restaurant-pos-lite'); ?> ${formData.takeawayName || '<?php esc_html_e('Walk-in', 'obydullah-restaurant-pos-lite'); ?>'}</div>`;
+                        if (formData.takeawayAddress) receiptContent += `<div><?php esc_html_e('Address:', 'obydullah-restaurant-pos-lite'); ?> ${formData.takeawayAddress}</div>`;
+                        if (formData.takeawayMobile) receiptContent += `<div><?php esc_html_e('Mobile:', 'obydullah-restaurant-pos-lite'); ?> ${formData.takeawayMobile}</div>`;
                     } else if (formData.orderType === 'pickup') {
-                        receiptContent += `<div><?php esc_html_e('Customer:', 'restaurant-pos-lite'); ?> ${formData.pickupName || '<?php esc_html_e('Walk-in', 'restaurant-pos-lite'); ?>'}</div>`;
-                        if (formData.pickupMobile) receiptContent += `<div><?php esc_html_e('Mobile:', 'restaurant-pos-lite'); ?> ${formData.pickupMobile}</div>`;
+                        receiptContent += `<div><?php esc_html_e('Customer:', 'obydullah-restaurant-pos-lite'); ?> ${formData.pickupName || '<?php esc_html_e('Walk-in', 'obydullah-restaurant-pos-lite'); ?>'}</div>`;
+                        if (formData.pickupMobile) receiptContent += `<div><?php esc_html_e('Mobile:', 'obydullah-restaurant-pos-lite'); ?> ${formData.pickupMobile}</div>`;
                     }
 
                     receiptContent += `
@@ -1050,9 +1198,9 @@ class Restaurant_POS_Lite_POS
             
             <div style="margin-bottom: 10px;">
                 <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 5px;">
-                    <span style="flex: 2;"><?php esc_html_e('Item', 'restaurant-pos-lite'); ?></span>
-                    <span style="flex: 1; text-align: center;"><?php esc_html_e('Qty x Price', 'restaurant-pos-lite'); ?></span>
-                    <span style="flex: 1; text-align: right;"><?php esc_html_e('Total', 'restaurant-pos-lite'); ?></span>
+                    <span style="flex: 2;"><?php esc_html_e('Item', 'obydullah-restaurant-pos-lite'); ?></span>
+                    <span style="flex: 1; text-align: center;"><?php esc_html_e('Qty x Price', 'obydullah-restaurant-pos-lite'); ?></span>
+                    <span style="flex: 1; text-align: right;"><?php esc_html_e('Total', 'obydullah-restaurant-pos-lite'); ?></span>
                 </div>
     `;
 
@@ -1075,15 +1223,11 @@ class Restaurant_POS_Lite_POS
             
             <div style="margin-bottom: 10px;">
                 <div style="display: flex; justify-content: space-between;">
-                    <span><?php esc_html_e('Subtotal:', 'restaurant-pos-lite'); ?></span>
+                    <span><?php esc_html_e('Subtotal:', 'obydullah-restaurant-pos-lite'); ?></span>
                     <span>${formatCurrency(saleInfo.subtotal)}</span>
                 </div>
-    `;
-
-                    // Always show discount, VAT, and tax lines
-                    receiptContent += `
                 <div style="display: flex; justify-content: space-between;">
-                    <span><?php esc_html_e('Discount:', 'restaurant-pos-lite'); ?></span>
+                    <span><?php esc_html_e('Discount:', 'obydullah-restaurant-pos-lite'); ?></span>
                     <span>${formatCurrency(saleInfo.discount || 0)}</span>
                 </div>
     `;
@@ -1092,7 +1236,7 @@ class Restaurant_POS_Lite_POS
                     if (saleInfo.deliveryCost && saleInfo.deliveryCost > 0) {
                         receiptContent += `
                 <div style="display: flex; justify-content: space-between;">
-                    <span><?php esc_html_e('Delivery Cost:', 'restaurant-pos-lite'); ?></span>
+                    <span><?php esc_html_e('Delivery Cost:', 'obydullah-restaurant-pos-lite'); ?></span>
                     <span>${formatCurrency(saleInfo.deliveryCost)}</span>
                 </div>
         `;
@@ -1101,7 +1245,7 @@ class Restaurant_POS_Lite_POS
                     // Always show VAT (use 0 if undefined)
                     receiptContent += `
                 <div style="display: flex; justify-content: space-between;">
-                    <span><?php esc_html_e('VAT (3%):', 'restaurant-pos-lite'); ?></span>
+              <span><?php printf(esc_html__('VAT (%s%%):', 'obydullah-restaurant-pos-lite'), esc_html($vat_rate)); ?></span>
                     <span>${formatCurrency(saleInfo.vatAmount || 0)}</span>
                 </div>
     `;
@@ -1109,14 +1253,14 @@ class Restaurant_POS_Lite_POS
                     // Always show TAX (use 0 if undefined)
                     receiptContent += `
                 <div style="display: flex; justify-content: space-between;">
-                    <span><?php esc_html_e('TAX (2%):', 'restaurant-pos-lite'); ?></span>
+<span><?php printf(esc_html__('TAX (%s%%):', 'obydullah-restaurant-pos-lite'), esc_html($this->helpers->get_tax_rate())); ?></span>
                     <span>${formatCurrency(saleInfo.taxAmount || 0)}</span>
                 </div>
     `;
 
                     receiptContent += `
                 <div style="display: flex; justify-content: space-between; font-weight: bold; border-top: 1px solid #000; padding-top: 5px;">
-                    <span><?php esc_html_e('TOTAL:', 'restaurant-pos-lite'); ?></span>
+                    <span><?php esc_html_e('TOTAL:', 'obydullah-restaurant-pos-lite'); ?></span>
                     <span>${formatCurrency(saleInfo.total)}</span>
                 </div>
             </div>
@@ -1127,7 +1271,7 @@ class Restaurant_POS_Lite_POS
                         receiptContent += `
             <hr style="border: 1px dashed #000; margin: 10px 0;">
             <div style="margin-bottom: 10px;">
-                <div style="font-weight: bold; margin-bottom: 5px;"><?php esc_html_e('Cooking Instructions:', 'restaurant-pos-lite'); ?></div>
+                <div style="font-weight: bold; margin-bottom: 5px;"><?php esc_html_e('Cooking Instructions:', 'obydullah-restaurant-pos-lite'); ?></div>
                 <div style="font-size: 11px;">${formData.cookingInstructions}</div>
             </div>
         `;
@@ -1135,7 +1279,7 @@ class Restaurant_POS_Lite_POS
 
                     receiptContent += `
             <div style="text-align: center; margin-top: 20px;">
-                <p style="margin: 5px 0; font-size: 10px;">*** <?php esc_html_e('ORDER COMPLETED', 'restaurant-pos-lite'); ?> ***</p>
+                <p style="margin: 5px 0; font-size: 10px;">*** <?php esc_html_e('ORDER COMPLETED', 'obydullah-restaurant-pos-lite'); ?> ***</p>
             </div>
         </div>
     `;
@@ -1147,7 +1291,7 @@ class Restaurant_POS_Lite_POS
         <!DOCTYPE html>
         <html>
         <head>
-            <title><?php esc_html_e('Receipt', 'restaurant-pos-lite'); ?> - ${saleInfo.invoiceId}</title>
+            <title><?php esc_html_e('Receipt', 'obydullah-restaurant-pos-lite'); ?> - ${saleInfo.invoiceId}</title>
             <style>
                 body { 
                     font-family: 'Courier New', monospace; 
@@ -1174,7 +1318,6 @@ class Restaurant_POS_Lite_POS
             $('#success-modal').hide();
         }
 
-
         // Modal button handlers
         $('#modal-print-receipt').on('click', function () {
             printReceipt();
@@ -1196,64 +1339,70 @@ class Restaurant_POS_Lite_POS
         toggleDeliveryCost();
     });
 </script>
-
 <?php
     }
 
-    /** Get categories for POS */
+    /** Get categories for POS with caching */
     public function ajax_get_categories_for_pos()
     {
-        check_ajax_referer('get_categories_for_pos', 'nonce');
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'pos_categories';
+        check_ajax_referer('orpl_get_categories_for_pos', 'nonce');
 
-        $categories = $wpdb->get_results("
-            SELECT id, name 
-            FROM $table_name 
-            WHERE status = 'active' 
-            ORDER BY name ASC
-        ");
+        $cache_key = 'orpl_categories_pos';
+        $categories = wp_cache_get($cache_key, self::CACHE_GROUP);
+
+        if (false === $categories) {
+            global $wpdb;
+
+            $categories = $wpdb->get_results($wpdb->prepare(
+                "SELECT id, name 
+            FROM {$this->categories_table} 
+            WHERE status = %s 
+            ORDER BY name ASC",
+                'active'
+            ));
+
+            wp_cache_set($cache_key, $categories, self::CACHE_GROUP, self::CACHE_EXPIRATION);
+        }
 
         wp_send_json_success($categories);
     }
-
-    /** Get customers for POS */
+    /** Get customers for POS (no cache) */
     public function ajax_get_customers_for_pos()
     {
-        check_ajax_referer('get_customers_for_pos', 'nonce');
+        check_ajax_referer('orpl_get_customers_for_pos', 'nonce');
         global $wpdb;
-        $table_name = $wpdb->prefix . 'pos_customers';
 
-        $customers = $wpdb->get_results("
-            SELECT id, name, email, mobile, address, balance
-            FROM $table_name 
-            WHERE status = 'active' 
-            ORDER BY name ASC
-        ");
+        $customers = $wpdb->get_results($wpdb->prepare(
+            "SELECT id, name, email, mobile, address
+        FROM {$this->customers_table} 
+        WHERE status = %s 
+        ORDER BY name ASC",
+            'active'
+        ));
 
         wp_send_json_success($customers);
     }
 
-    /** Get products by category */
+    /** Get products by category (no cache) */
     public function ajax_get_products_by_category()
     {
-        check_ajax_referer('get_products_by_category', 'nonce');
+        check_ajax_referer('orpl_get_products_by_category', 'nonce');
         global $wpdb;
 
         if (!current_user_can('manage_options')) {
             wp_send_json_error('Unauthorized access');
         }
 
-        $products_table = $wpdb->prefix . 'pos_products';
-        $stocks_table = $wpdb->prefix . 'pos_stocks';
         $category_id = sanitize_text_field(wp_unslash($_GET['category_id'] ?? 'all'));
 
-        $query = "
+        $query = $wpdb->prepare(
+            "
         SELECT p.id, p.name, p.image, s.sale_cost, s.quantity, s.status as stock_status
-        FROM $products_table p 
-        LEFT JOIN $stocks_table s ON p.id = s.fk_product_id 
-        WHERE p.status = 'active'
-    ";
+        FROM {$this->products_table} p 
+        LEFT JOIN {$this->stocks_table} s ON p.id = s.fk_product_id 
+        WHERE p.status = %s",
+            'active'
+        );
 
         $query_params = array();
 
@@ -1264,7 +1413,6 @@ class Restaurant_POS_Lite_POS
 
         $query .= " ORDER BY p.name ASC LIMIT 20";
 
-        // Only prepare if we have parameters
         if (!empty($query_params)) {
             $query = $wpdb->prepare($query, $query_params);
         }
@@ -1274,107 +1422,202 @@ class Restaurant_POS_Lite_POS
         wp_send_json_success($products);
     }
 
-    /** Process sale completion */
-    public function ajax_process_sale()
+    /** Get saved sales */
+    public function ajax_get_saved_sales()
     {
-        check_ajax_referer('process_sale', 'nonce');
-
+        check_ajax_referer('orpl_get_saved_sales', 'nonce');
         global $wpdb;
 
+        $sales = $wpdb->get_results($wpdb->prepare(
+            "SELECT s.id, s.invoice_id, s.grand_total, s.created_at,
+               COALESCE(c.name, 'Walk-in') as customer_name
+        FROM {$this->sales_table} s
+        LEFT JOIN {$this->customers_table} c ON s.fk_customer_id = c.id
+        WHERE s.status = %s
+        ORDER BY s.created_at DESC
+        LIMIT 20",
+            'saveSale'
+        ));
+
+        wp_send_json_success($sales);
+    }
+
+    /** Load saved sale details */
+    public function ajax_load_saved_sale()
+    {
+        check_ajax_referer('orpl_load_saved_sale', 'nonce');
+        global $wpdb;
+
+        $sale_id = intval($_GET['sale_id'] ?? 0);
+
+        if (!$sale_id) {
+            wp_send_json_error('Invalid sale ID');
+        }
+
+        // Get sale details
+        $sale = $wpdb->get_row($wpdb->prepare("
+            SELECT * FROM {$this->sales_table} WHERE id = %d AND status = 'saveSale'
+        ", $sale_id));
+
+        if (!$sale) {
+            wp_send_json_error('Saved sale not found');
+        }
+
+        // Get sale items with current stock
+        $items = $wpdb->get_results($wpdb->prepare("
+            SELECT sd.*, s.quantity as stock_quantity
+            FROM {$this->sale_details_table} sd
+            LEFT JOIN {$this->stocks_table} s ON sd.fk_product_id = s.fk_product_id
+            WHERE sd.fk_sale_id = %d
+        ", $sale_id));
+
+        wp_send_json_success([
+            'sale' => $sale,
+            'items' => $items
+        ]);
+    }
+
+    /** Process sale completion or save */
+    public function ajax_process_sale()
+    {
+        check_ajax_referer('orpl_process_sale', 'nonce');
+        global $wpdb;
+
+
         try {
-            // FIXED: Proper input validation and sanitization
+            // Validate sale data
             if (!isset($_POST['sale_data']) || empty($_POST['sale_data'])) {
-                throw new Exception(__('Sale data is required', 'restaurant-pos-lite'));
+                throw new Exception(__('Sale data is required', 'obydullah-restaurant-pos-lite'));
             }
 
-            $sale_data_raw = sanitize_text_field(wp_unslash($_POST['sale_data']));
+            $sale_data_raw = sanitize_text_field(wp_unslash($_POST['sale_data'] ?? ''));
+
+            // Decode JSON data
             $data = json_decode($sale_data_raw, true);
 
-            if (json_last_error() !== JSON_ERROR_NONE || !$data || !is_array($data)) {
-                throw new Exception(__('Invalid sale data', 'restaurant-pos-lite'));
+            // Check for JSON decoding errors
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new Exception(__('Invalid JSON data: ', 'obydullah-restaurant-pos-lite') . json_last_error_msg());
             }
 
-            // FIXED: Validate required data structure
+            if (!$data || !is_array($data)) {
+                throw new Exception(__('Invalid sale data structure', 'obydullah-restaurant-pos-lite'));
+            }
+
             if (!isset($data['items']) || !is_array($data['items']) || empty($data['items'])) {
-                throw new Exception(__('Sale items are required', 'restaurant-pos-lite'));
+                throw new Exception(__('Sale items are required', 'obydullah-restaurant-pos-lite'));
             }
 
-            // Start transaction
             $wpdb->query('START TRANSACTION');
 
-            // Generate invoice ID - FIXED: Use gmdate() and wp_rand()
-            $invoice_id = 'INV-' . gmdate('Ymd') . '-' . str_pad(wp_rand(1, 9999), 4, '0', STR_PAD_LEFT);
+            // Check if we're updating a saved sale
+            $is_updating_saved_sale = !empty($data['saved_sale_id']);
+            $sale_id = $is_updating_saved_sale ? intval($data['saved_sale_id']) : null;
+            $action = isset($data['action']) ? $data['action'] : 'save';
+
+            // Generate invoice ID
+            if ($is_updating_saved_sale && $action === 'complete') {
+                // For completing saved sale, use existing sale record
+                $existing_sale = $wpdb->get_row($wpdb->prepare(
+                    "SELECT * FROM {$this->sales_table} WHERE id = %d AND status = 'saveSale'",
+                    $sale_id
+                ));
+
+                if (!$existing_sale) {
+                    throw new Exception(__('Saved sale not found', 'obydullah-restaurant-pos-lite'));
+                }
+
+                $invoice_id = $existing_sale->invoice_id;
+            } else {
+                // Generate new invoice ID for new sales
+                $invoice_id = 'INV-' . gmdate('Ymd') . '-' . str_pad(wp_rand(1, 9999), 4, '0', STR_PAD_LEFT);
+            }
 
             // Calculate totals
             $subtotal = 0;
             $buy_price_total = 0;
 
             foreach ($data['items'] as $item) {
-                // FIXED: Validate item structure
                 if (!isset($item['product_id'], $item['price'], $item['quantity'], $item['name'])) {
-                    throw new Exception(__('Invalid item data', 'restaurant-pos-lite'));
+                    throw new Exception(__('Invalid item data', 'obydullah-restaurant-pos-lite'));
                 }
 
-                // FIXED: Sanitize numeric values
                 $item_price = floatval($item['price']);
                 $item_quantity = intval($item['quantity']);
                 $subtotal += $item_price * $item_quantity;
 
-                // Get product net cost (buy price) from stocks table
+                // Get product net cost
                 $stock_data = $wpdb->get_row($wpdb->prepare(
-                    "SELECT net_cost, quantity FROM {$wpdb->prefix}pos_stocks WHERE fk_product_id = %d",
+                    "SELECT net_cost, quantity FROM {$this->stocks_table} WHERE fk_product_id = %d",
                     intval($item['product_id'])
                 ));
 
                 if ($stock_data) {
                     $buy_price_total += floatval($stock_data->net_cost) * $item_quantity;
 
-                    // Check stock availability for completed sales
-                    if ($data['action'] === 'complete' && $stock_data->quantity < $item_quantity) {
-                        /* translators: 1: Product name, 2: Available quantity, 3: Requested quantity */
-                        throw new Exception(sprintf(esc_html__('Insufficient stock for product: %1$s. Available: %2$d, Requested: %3$d', 'restaurant-pos-lite'), esc_html($item['name']), $stock_data->quantity, $item_quantity));
+                    // Check stock availability only for completed sales
+                    if ($action === 'complete' && $stock_data->quantity < $item_quantity) {
+                        throw new Exception(sprintf(
+                            __('Insufficient stock for product: %1$s. Available: %2$d, Requested: %3$d', 'obydullah-restaurant-pos-lite'),
+                            esc_html($item['name']),
+                            $stock_data->quantity,
+                            $item_quantity
+                        ));
                     }
                 }
             }
 
-            // FIXED: Sanitize all numeric inputs
-            $discount = floatval($data['discount'] ?? 0);
-            $delivery_cost = floatval($data['delivery_cost'] ?? 0);
+            // Calculate financials
+            $discount = isset($data['discount']) ? floatval($data['discount']) : 0;
+            $delivery_cost = isset($data['delivery_cost']) ? floatval($data['delivery_cost']) : 0;
             $taxable_amount = $subtotal - $discount;
-            $tax_amount = $taxable_amount * 0.08; // 8% tax
-            $grand_total = $taxable_amount + $tax_amount + $delivery_cost;
-            $paid_amount = ($data['action'] === 'complete') ? $grand_total : 0;
-            $sale_due = $grand_total - $paid_amount;
 
-            // FIXED: Sanitize text inputs
-            $cooking_instructions = sanitize_textarea_field($data['cooking_instructions'] ?? '');
-            $note = sanitize_textarea_field($data['note'] ?? '');
+            $vat_amount = $this->helpers->is_vat_enabled() ? ($taxable_amount * $this->helpers->get_vat_rate() / 100) : 0;
+            $tax_amount = $this->helpers->is_tax_enabled() ? ($taxable_amount * $this->helpers->get_tax_rate() / 100) : 0;
 
-            // Insert sale record
+            $grand_total = $taxable_amount + $vat_amount + $tax_amount + $delivery_cost;
+            $paid_amount = ($action === 'complete') ? $grand_total : 0;
+
+            // Sanitize text inputs
+            $cooking_instructions = isset($data['cooking_instructions']) ? sanitize_textarea_field($data['cooking_instructions']) : '';
+            $note = isset($data['note']) ? sanitize_textarea_field($data['note']) : '';
+
+            // Prepare sale data (sale_due removed)
             $sale_data = [
                 'fk_customer_id' => !empty($data['customer_id']) ? intval($data['customer_id']) : null,
                 'invoice_id' => $invoice_id,
                 'net_price' => $subtotal,
-                'vat_amount' => 0, // Adjust if you have VAT
+                'vat_amount' => $vat_amount,
                 'tax_amount' => $tax_amount,
                 'shipping_cost' => $delivery_cost,
                 'discount_amount' => $discount,
                 'grand_total' => $grand_total,
                 'paid_amount' => $paid_amount,
                 'buy_price' => $buy_price_total,
-                'sale_due' => $sale_due,
-                'sale_type' => sanitize_text_field($data['order_type'] ?? ''),
+                'sale_type' => isset($data['order_type']) ? sanitize_text_field($data['order_type']) : 'dineIn',
                 'cooking_instructions' => $cooking_instructions,
-                'status' => ($data['action'] === 'complete') ? 'completed' : 'saveSale',
+                'status' => ($action === 'complete') ? 'completed' : 'saveSale',
                 'note' => $note,
                 'created_at' => current_time('mysql'),
             ];
 
-            $wpdb->insert("{$wpdb->prefix}pos_sales", $sale_data);
-            $sale_id = $wpdb->insert_id;
+            if ($is_updating_saved_sale && $action === 'complete') {
+                // Update existing saved sale to completed
+                $wpdb->update($this->sales_table, $sale_data, ['id' => $sale_id]);
+            } else {
+                // Insert new sale record
+                $wpdb->insert($this->sales_table, $sale_data);
+                $sale_id = $wpdb->insert_id;
+            }
 
             if (!$sale_id) {
-                throw new Exception(__('Failed to create sale record', 'restaurant-pos-lite'));
+                throw new Exception(__('Failed to create sale record', 'obydullah-restaurant-pos-lite'));
+            }
+
+            // Handle sale details
+            if ($is_updating_saved_sale) {
+                // Delete existing sale details for update
+                $wpdb->delete($this->sale_details_table, ['fk_sale_id' => $sale_id]);
             }
 
             // Insert sale details and update stock
@@ -1383,15 +1626,13 @@ class Restaurant_POS_Lite_POS
                 $item_price = floatval($item['price']);
                 $total_price = $item_price * $item_quantity;
 
-                // Get stock ID and current stock data
                 $stock_data = $wpdb->get_row($wpdb->prepare(
-                    "SELECT id, net_cost, sale_cost, quantity FROM {$wpdb->prefix}pos_stocks WHERE fk_product_id = %d",
+                    "SELECT id, net_cost, sale_cost, quantity FROM {$this->stocks_table} WHERE fk_product_id = %d",
                     intval($item['product_id'])
                 ));
 
                 if (!$stock_data) {
-                    /* translators: %d: Product ID */
-                    throw new Exception(sprintf(esc_html__('Stock not found for product ID: %d', 'restaurant-pos-lite'), intval($item['product_id'])));
+                    throw new Exception(sprintf(__('Stock not found for product ID: %d', 'obydullah-restaurant-pos-lite'), intval($item['product_id'])));
                 }
 
                 // Insert sale detail
@@ -1406,15 +1647,15 @@ class Restaurant_POS_Lite_POS
                     'created_at' => current_time('mysql'),
                 ];
 
-                $wpdb->insert("{$wpdb->prefix}pos_sale_details", $sale_detail_data);
+                $wpdb->insert($this->sale_details_table, $sale_detail_data);
 
-                // Update stock quantity (only for completed sales)
-                if ($data['action'] === 'complete') {
+                // Update stock quantity only for completed sales
+                if ($action === 'complete') {
                     $new_quantity = intval($stock_data->quantity) - $item_quantity;
                     $new_status = $new_quantity <= 0 ? 'outStock' : ($new_quantity <= 10 ? 'lowStock' : 'inStock');
 
                     $wpdb->update(
-                        "{$wpdb->prefix}pos_stocks",
+                        $this->stocks_table,
                         [
                             'quantity' => $new_quantity,
                             'status' => $new_status,
@@ -1425,28 +1666,27 @@ class Restaurant_POS_Lite_POS
                 }
             }
 
-            if ($data['action'] === 'complete') {
+            // Create accounting record only for completed sales
+            if ($action === 'complete') {
                 $accounting_data = [
-                    'out_amount' => $buy_price_total, // Buy Price
-                    'amount_receivable' => $grand_total, // Sale Price
+                    'out_amount' => $buy_price_total,
+                    'amount_receivable' => $grand_total,
                     'description' => 'Stock Out',
                     'created_at' => current_time('mysql')
                 ];
 
-                $wpdb->insert("{$wpdb->prefix}pos_accounting", $accounting_data);
+                $wpdb->insert($this->accounting_table, $accounting_data);
             }
 
-            // Commit transaction
             $wpdb->query('COMMIT');
 
             wp_send_json_success([
                 'sale_id' => $sale_id,
                 'invoice_id' => $invoice_id,
-                'message' => $data['action'] === 'complete' ? __('Sale completed successfully!', 'restaurant-pos-lite') : __('Sale saved successfully!', 'restaurant-pos-lite')
+                'message' => $action === 'complete' ? __('Sale completed successfully!', 'obydullah-restaurant-pos-lite') : __('Sale saved successfully!', 'obydullah-restaurant-pos-lite')
             ]);
 
         } catch (Exception $e) {
-            // Rollback on error
             $wpdb->query('ROLLBACK');
             wp_send_json_error($e->getMessage());
         }

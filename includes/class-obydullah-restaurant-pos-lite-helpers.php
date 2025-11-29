@@ -1,8 +1,8 @@
 <?php
 /**
- * Helper functions for Restaurant POS Lite
+ * Helper functions for Obydullah Restaurant POS Lite
  *
- * @package Restaurant_POS_Lite
+ * @package Obydullah_Restaurant_POS_Lite
  * @since 1.0.0
  */
 
@@ -11,9 +11,9 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Helper functions for Restaurant POS Lite
+ * Helper functions for Obydullah Restaurant POS Lite
  */
-class Restaurant_POS_Lite_Helpers
+class Obydullah_Restaurant_POS_Lite_Helpers
 {
     /**
      * Get all POS settings
@@ -24,15 +24,14 @@ class Restaurant_POS_Lite_Helpers
     public static function get_settings()
     {
         return array(
-            'currency' => get_option('oby_restaurant_pos_lite_currency', '$'),
-            'vat_rate' => get_option('oby_restaurant_pos_lite_vat_rate', '0'),
-            'tax_rate' => get_option('oby_restaurant_pos_lite_tax_rate', '0'),
-            'shop_name' => get_option('oby_restaurant_pos_lite_shop_name', ''),
-            'shop_address' => get_option('oby_restaurant_pos_lite_shop_address', ''),
-            'shop_phone' => get_option('oby_restaurant_pos_lite_shop_phone', ''),
-            'shop_logo' => get_option('oby_restaurant_pos_lite_shop_logo', ''),
-            'currency_position' => get_option('oby_restaurant_pos_lite_currency_position', 'left'),
-            'date_format' => get_option('oby_restaurant_pos_lite_date_format', 'Y-m-d'),
+            'currency' => get_option('orpl_currency', '$'),
+            'vat_rate' => get_option('orpl_vat_rate', '0'),
+            'tax_rate' => get_option('orpl_tax_rate', '0'),
+            'shop_name' => get_option('orpl_shop_name', ''),
+            'shop_address' => get_option('orpl_shop_address', ''),
+            'shop_phone' => get_option('orpl_shop_phone', ''),
+            'currency_position' => get_option('orpl_currency_position', 'left'),
+            'date_format' => get_option('orpl_date_format', 'Y-m-d'),
         );
     }
 
@@ -45,7 +44,7 @@ class Restaurant_POS_Lite_Helpers
      */
     public static function calculate_vat($amount)
     {
-        $vat_rate = floatval(get_option('oby_restaurant_pos_lite_vat_rate', '0'));
+        $vat_rate = floatval(get_option('orpl_vat_rate', '0'));
         return ($amount * $vat_rate) / 100;
     }
 
@@ -58,7 +57,7 @@ class Restaurant_POS_Lite_Helpers
      */
     public static function calculate_tax($amount)
     {
-        $tax_rate = floatval(get_option('oby_restaurant_pos_lite_tax_rate', '0'));
+        $tax_rate = floatval(get_option('orpl_tax_rate', '0'));
         return ($amount * $tax_rate) / 100;
     }
 
@@ -91,7 +90,7 @@ class Restaurant_POS_Lite_Helpers
      */
     public static function is_vat_enabled()
     {
-        $vat_rate = floatval(get_option('oby_restaurant_pos_lite_vat_rate', '0'));
+        $vat_rate = floatval(get_option('orpl_vat_rate', '0'));
         return $vat_rate > 0;
     }
 
@@ -103,7 +102,7 @@ class Restaurant_POS_Lite_Helpers
      */
     public static function is_tax_enabled()
     {
-        $tax_rate = floatval(get_option('oby_restaurant_pos_lite_tax_rate', '0'));
+        $tax_rate = floatval(get_option('orpl_tax_rate', '0'));
         return $tax_rate > 0;
     }
 
@@ -115,7 +114,7 @@ class Restaurant_POS_Lite_Helpers
      */
     public static function get_vat_rate()
     {
-        return floatval(get_option('oby_restaurant_pos_lite_vat_rate', '0'));
+        return floatval(get_option('orpl_vat_rate', '0'));
     }
 
     /**
@@ -126,7 +125,7 @@ class Restaurant_POS_Lite_Helpers
      */
     public static function get_tax_rate()
     {
-        return floatval(get_option('oby_restaurant_pos_lite_tax_rate', '0'));
+        return floatval(get_option('orpl_tax_rate', '0'));
     }
 
     /**
@@ -196,7 +195,6 @@ class Restaurant_POS_Lite_Helpers
             'name' => $settings['shop_name'],
             'address' => $settings['shop_address'],
             'phone' => $settings['shop_phone'],
-            'logo' => $settings['shop_logo'],
         );
     }
 
@@ -211,7 +209,7 @@ class Restaurant_POS_Lite_Helpers
         $settings = self::get_settings();
         return !empty($settings['shop_name'])
             ? $settings['shop_name']
-            : 'Restaurant POS'; // REMOVED TRANSLATION FUNCTION
+            : __('Restaurant POS', 'obydullah-restaurant-pos-lite');
     }
 
     /**
@@ -315,9 +313,8 @@ class Restaurant_POS_Lite_Helpers
             'shop_name' => '',
             'shop_address' => '',
             'shop_phone' => '',
-            'shop_logo' => '',
             'vat_rate' => '0',
-            'tax_rate' => '0', // ADDED TAX RATE TO DEFAULTS
+            'tax_rate' => '0',
         );
     }
 }

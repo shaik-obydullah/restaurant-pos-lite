@@ -2,11 +2,11 @@
 /**
  * Fired during plugin activation
  *
- * @package Restaurant_POS_Lite
+ * @package Obydullah_Restaurant_POS_Lite
  * @since   1.0.0
  */
 
-class Restaurant_POS_Lite_Activator
+class Obydullah_Restaurant_POS_Lite_Activator
 {
     public static function activate()
     {
@@ -19,14 +19,14 @@ class Restaurant_POS_Lite_Activator
 
         $charset_collate = $wpdb->get_charset_collate();
 
-        $table_categories = $wpdb->prefix . 'pos_categories';
-        $table_products = $wpdb->prefix . 'pos_products';
-        $table_stocks = $wpdb->prefix . 'pos_stocks';
-        $table_stock_adjustments = $wpdb->prefix . 'pos_stock_adjustments';
-        $table_customers = $wpdb->prefix . 'pos_customers';
-        $table_sales = $wpdb->prefix . 'pos_sales';
-        $table_sale_details = $wpdb->prefix . 'pos_sale_details';
-        $table_accounting = $wpdb->prefix . 'pos_accounting';
+        $table_categories = $wpdb->prefix . 'orpl_categories';
+        $table_products = $wpdb->prefix . 'orpl_products';
+        $table_stocks = $wpdb->prefix . 'orpl_stocks';
+        $table_stock_adjustments = $wpdb->prefix . 'orpl_stock_adjustments';
+        $table_customers = $wpdb->prefix . 'orpl_customers';
+        $table_sales = $wpdb->prefix . 'orpl_sales';
+        $table_sale_details = $wpdb->prefix . 'orpl_sale_details';
+        $table_accounting = $wpdb->prefix . 'orpl_accounting';
 
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 
@@ -55,7 +55,6 @@ class Restaurant_POS_Lite_Activator
 
         $sql_customers = "CREATE TABLE $table_customers (
             id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-            balance DECIMAL(10,2) NOT NULL DEFAULT 0.00,
             name VARCHAR(255) NOT NULL,
             email VARCHAR(255) NOT NULL,
             mobile VARCHAR(20) DEFAULT NULL,
@@ -91,7 +90,6 @@ class Restaurant_POS_Lite_Activator
             grand_total DECIMAL(10,2) NOT NULL DEFAULT 0.00,
             paid_amount DECIMAL(10,2) DEFAULT NULL,
             buy_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-            sale_due DECIMAL(10,2) NOT NULL DEFAULT 0.00,
             sale_type ENUM('dineIn','takeAway','pickUp') NOT NULL DEFAULT 'dineIn',
             cooking_instructions TEXT DEFAULT NULL,
             status ENUM('saveSale','completed','canceled') NOT NULL DEFAULT 'completed',
@@ -170,11 +168,11 @@ class Restaurant_POS_Lite_Activator
             );
         }
 
-        // Set plugin options
-        update_option('oby_restaurant_pos_lite_version', '1.0.0');
-        update_option('oby_restaurant_pos_lite_currency', 'USD');
-        update_option('oby_restaurant_pos_lite_tax_rate', '0');
-        update_option('oby_restaurant_pos_lite_vat_rate', '0');
+        // Updated option names with 'orpl_' prefix
+        update_option('orpl_version', '1.0.0');
+        update_option('orpl_currency', 'USD');
+        update_option('orpl_tax_rate', '0');
+        update_option('orpl_vat_rate', '0');
 
         flush_rewrite_rules();
     }
