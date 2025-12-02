@@ -13,8 +13,8 @@ class Obydullah_Restaurant_POS_Lite_Categories
     public function __construct()
     {
         add_action('wp_ajax_orpl_add_product_category', [$this, 'ajax_add_orpl_category']);
-        add_action('wp_ajax_orpl_get_product_categories', [$this, 'ajax_get_orpl__categories']);
-        add_action('wp_ajax_orpl_edit_product_category', [$this, 'ajax_edit_category']);
+        add_action('wp_ajax_orpl_get_product_categories', [$this, 'ajax_get_orpl_categories']);
+        add_action('wp_ajax_orpl_edit_product_category', [$this, 'ajax_edit_orpl_category']);
         add_action('wp_ajax_orpl_delete_product_category', [$this, 'ajax_delete_orpl_category']);
     }
 
@@ -23,6 +23,11 @@ class Obydullah_Restaurant_POS_Lite_Categories
      */
     public function render_page()
     {
+        // Create nonces for JavaScript
+        $add_nonce = wp_create_nonce('orpl_add_product_category');
+        $edit_nonce = wp_create_nonce('orpl_edit_product_category');
+        $delete_nonce = wp_create_nonce('orpl_delete_product_category');
+        $get_nonce = wp_create_nonce('orpl_get_product_categories');
         ?>
         <div class="wrap">
             <h1 class="wp-heading-inline" style="margin-bottom:20px;">
@@ -119,6 +124,10 @@ class Obydullah_Restaurant_POS_Lite_Categories
             <script>
                 jQuery(document).ready(function ($) {
                     let isSubmitting = false;
+                    const addNonce = '<?php echo esc_js($add_nonce); ?>';
+                    const editNonce = '<?php echo esc_js($edit_nonce); ?>';
+                    const deleteNonce = '<?php echo esc_js($delete_nonce); ?>';
+                    const getNonce = '<?php echo esc_js($get_nonce); ?>';
 
                     loadORPLCategories();
 
@@ -128,7 +137,7 @@ class Obydullah_Restaurant_POS_Lite_Categories
                             type: 'GET',
                             data: {
                                 action: 'orpl_get_product_categories',
-                                nonce: '<?php echo esc_attr(wp_create_nonce("orpl_get_product_categories")); ?>'
+                                nonce: getNonce
                             },
                             success: function (response) {
                                 let tbody = $('#category-list').empty();
@@ -175,6 +184,7 @@ class Obydullah_Restaurant_POS_Lite_Categories
                         let action = id ? 'orpl_edit_product_category' : 'orpl_add_product_category';
                         let name = $('#category-name').val().trim();
                         let status = $('#category-status').val();
+                        let nonce = id ? editNonce : addNonce;
 
                         if (!name) {
                             alert('<?php echo esc_js(__('Please enter a category name', 'obydullah-restaurant-pos-lite')); ?>');
@@ -190,7 +200,7 @@ class Obydullah_Restaurant_POS_Lite_Categories
                             id: id,
                             name: name,
                             status: status,
-                            nonce: '<?php echo esc_attr(wp_create_nonce("orpl_add_product_category")); ?>'
+                            nonce: nonce
                         }, function (res) {
                             if (res.success) {
                                 resetForm();
@@ -233,7 +243,7 @@ class Obydullah_Restaurant_POS_Lite_Categories
                         $.post('<?php echo esc_url(admin_url('admin-ajax.php')); ?>', {
                             action: 'orpl_delete_product_category',
                             id: id,
-                            nonce: '<?php echo esc_attr(wp_create_nonce("orpl_delete_product_category")); ?>'
+                            nonce: deleteNonce
                         }, function (res) {
                             if (res.success) {
                                 loadORPLCategories();
@@ -282,7 +292,7 @@ class Obydullah_Restaurant_POS_Lite_Categories
     }
 
     /** Get all categories */
-    public function ajax_get_orpl__categories()
+    public function ajax_get_orpl_categories()
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
@@ -299,7 +309,7 @@ class Obydullah_Restaurant_POS_Lite_Categories
 
         if (false === $categories) {
             $categories = $wpdb->get_results(
-                $wpdb->prepare("SELECT id, name, status FROM $table_name ORDER BY id DESC")
+                $wpdb->prepare("SELECT id, name, status FROM {$table_name} ORDER BY id DESC")
             );
 
             // Cache for 5 minutes
@@ -337,9 +347,10 @@ class Obydullah_Restaurant_POS_Lite_Categories
 
         if (false === $existing) {
             $existing = $wpdb->get_var($wpdb->prepare(
-                "SELECT id FROM $table_name WHERE name = %s",
+                "SELECT id FROM {$table_name} WHERE name = %s",
                 $name
             ));
+
             wp_cache_set($cache_key, $existing, 'obydullah-restaurant-pos-lite', 300);
         }
 
@@ -347,7 +358,15 @@ class Obydullah_Restaurant_POS_Lite_Categories
             wp_send_json_error(__('Category name already exists', 'obydullah-restaurant-pos-lite'));
         }
 
-        $result = $wpdb->insert($table_name, ['name' => $name, 'status' => $status], ['%s', '%s']);
+        $result = $wpdb->query(
+            $wpdb->prepare(
+                "INSERT INTO {$table_name}
+        (name, status)
+        VALUES ( %s, %s)",
+                $name,
+                $status
+            )
+        );
 
         if ($result === false) {
             wp_send_json_error(__('Failed to add category', 'obydullah-restaurant-pos-lite'));
@@ -360,7 +379,7 @@ class Obydullah_Restaurant_POS_Lite_Categories
     }
 
     /** Edit category */
-    public function ajax_edit_category()
+    public function ajax_edit_orpl_category()
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
@@ -386,7 +405,7 @@ class Obydullah_Restaurant_POS_Lite_Categories
 
         if (false === $existing) {
             $existing = $wpdb->get_var($wpdb->prepare(
-                "SELECT id FROM $table_name WHERE name = %s AND id != %d",
+                "SELECT id FROM {$table_name} WHERE name = %s AND id != %d",
                 $name,
                 $id
             ));
@@ -403,6 +422,24 @@ class Obydullah_Restaurant_POS_Lite_Categories
             ['id' => $id],
             ['%s', '%s'],
             ['%d']
+        );
+
+        $wpdb->update(
+            "{$table_name}",
+            array(
+                'name' => $name,
+                'status' => $status
+            ),
+            array(
+                'id' => $id
+            ),
+            array(
+                '%s',
+                '%s'
+            ),
+            array(
+                '%d'
+            )
         );
 
         if ($result === false) {
