@@ -53,8 +53,8 @@ class Obydullah_Restaurant_POS_Lite_Handler
     {
         // Main menu
         add_menu_page(
-            __('Restaurant POS', 'obydullah-restaurant-pos-lite'),
-            __('Restaurant POS', 'obydullah-restaurant-pos-lite'),
+            __('OBY Restaurant POS', 'obydullah-restaurant-pos-lite'),
+            __('OBY Restaurant POS', 'obydullah-restaurant-pos-lite'),
             'manage_options',
             'obydullah-restaurant-pos-lite',
             [$this->dashboard, 'render_page'],
