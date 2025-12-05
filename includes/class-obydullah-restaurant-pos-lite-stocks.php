@@ -13,9 +13,9 @@ class Obydullah_Restaurant_POS_Lite_Stocks
 {
     public function __construct()
     {
-        add_action('wp_ajax_orpl_add_stock', [$this, 'ajax_add_stock']);
-        add_action('wp_ajax_orpl_get_stocks', [$this, 'ajax_get_stocks']);
-        add_action('wp_ajax_orpl_delete_stock', [$this, 'ajax_delete_stock']);
+        add_action('wp_ajax_orpl_add_stock', [$this, 'ajax_add_orpl_stock']);
+        add_action('wp_ajax_orpl_get_stocks', [$this, 'ajax_get_orpl_stocks']);
+        add_action('wp_ajax_orpl_delete_stock', [$this, 'ajax_orpl_delete_stock']);
         add_action('wp_ajax_orpl_get_products_for_stocks', [$this, 'ajax_get_products_for_stocks']);
     }
 
@@ -318,10 +318,10 @@ class Obydullah_Restaurant_POS_Lite_Stocks
                     let quantityFilter = '';
 
                     // Load products and stocks on page load
-                    loadProducts();
-                    loadStocks();
+                    loadORPLProducts();
+                    loadORPLStocks();
 
-                    function loadProducts() {
+                    function loadORPLProducts() {
                         $.ajax({
                             url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                             type: 'GET',
@@ -344,7 +344,7 @@ class Obydullah_Restaurant_POS_Lite_Stocks
                         });
                     }
 
-                    function loadStocks(page = 1) {
+                    function loadORPLStocks(page = 1) {
                         currentPage = page;
 
                         let tbody = $('#stock-list');
@@ -455,59 +455,59 @@ class Obydullah_Restaurant_POS_Lite_Stocks
                         searchTerm = $(this).val().trim();
 
                         searchTimeout = setTimeout(() => {
-                            loadStocks(1);
+                            loadORPLStocks(1);
                         }, 500);
                     });
 
                     // Status filter
                     $('#status-filter').on('change', function () {
                         statusFilter = $(this).val();
-                        loadStocks(1);
+                        loadORPLStocks(1);
                     });
 
                     // Quantity filter
                     $('#quantity-filter').on('change', function () {
                         quantityFilter = $(this).val();
-                        loadStocks(1);
+                        loadORPLStocks(1);
                     });
 
                     // Per page change
                     $('#per-page-select').on('change', function () {
                         perPage = parseInt($(this).val());
-                        loadStocks(1);
+                        loadORPLStocks(1);
                     });
 
                     // Refresh button
                     $('#refresh-stocks').on('click', function () {
-                        loadStocks(currentPage);
+                        loadORPLStocks(currentPage);
                     });
 
                     // Pagination handlers
                     $('.first-page').on('click', function (e) {
                         e.preventDefault();
-                        if (currentPage > 1) loadStocks(1);
+                        if (currentPage > 1) loadORPLStocks(1);
                     });
 
                     $('.prev-page').on('click', function (e) {
                         e.preventDefault();
-                        if (currentPage > 1) loadStocks(currentPage - 1);
+                        if (currentPage > 1) loadORPLStocks(currentPage - 1);
                     });
 
                     $('.next-page').on('click', function (e) {
                         e.preventDefault();
-                        if (currentPage < totalPages) loadStocks(currentPage + 1);
+                        if (currentPage < totalPages) loadORPLStocks(currentPage + 1);
                     });
 
                     $('.last-page').on('click', function (e) {
                         e.preventDefault();
-                        if (currentPage < totalPages) loadStocks(totalPages);
+                        if (currentPage < totalPages) loadORPLStocks(totalPages);
                     });
 
                     $('#current-page-selector').on('keypress', function (e) {
                         if (e.which === 13) { // Enter key
                             let page = parseInt($(this).val());
                             if (page >= 1 && page <= totalPages) {
-                                loadStocks(page);
+                                loadORPLStocks(page);
                             }
                         }
                     });
@@ -584,7 +584,7 @@ class Obydullah_Restaurant_POS_Lite_Stocks
                         }, function (res) {
                             if (res.success) {
                                 resetForm();
-                                loadStocks(1); // Reload to first page
+                                loadORPLStocks(1); // Reload to first page
                             } else {
                                 alert('<?php echo esc_js(__('Error:', 'obydullah-restaurant-pos-lite')); ?> ' + res.data);
                             }
@@ -612,7 +612,7 @@ class Obydullah_Restaurant_POS_Lite_Stocks
                             nonce: '<?php echo esc_attr(wp_create_nonce("orpl_delete_stock")); ?>'
                         }, function (res) {
                             if (res.success) {
-                                loadStocks(currentPage);
+                                loadORPLStocks(currentPage);
                             } else {
                                 alert(res.data);
                             }
@@ -672,6 +672,8 @@ class Obydullah_Restaurant_POS_Lite_Stocks
         $products_table = $wpdb->prefix . 'orpl_products';
         $categories_table = $wpdb->prefix . 'orpl_categories';
 
+        $product_status = 'active';
+
         // Get products with caching
         $cache_key = 'orpl_active_products_for_stocks';
         $products = wp_cache_get($cache_key, 'obydullah-restaurant-pos-lite');
@@ -681,8 +683,9 @@ class Obydullah_Restaurant_POS_Lite_Stocks
                 "SELECT p.id, p.name, c.name as category_name 
             FROM {$products_table} p 
             LEFT JOIN {$categories_table} c ON p.fk_category_id = c.id 
-            WHERE p.status = 'active' 
-            ORDER BY p.name ASC"
+            WHERE p.status = %s 
+            ORDER BY p.name ASC",
+                $product_status
             );
             $products = $wpdb->get_results($query);
 
@@ -694,7 +697,7 @@ class Obydullah_Restaurant_POS_Lite_Stocks
     }
 
     /** Get all stocks with pagination and filters */
-    public function ajax_get_stocks()
+    public function ajax_get_orpl_stocks()
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
@@ -803,7 +806,7 @@ class Obydullah_Restaurant_POS_Lite_Stocks
     }
 
     /** Add stock */
-    public function ajax_add_stock()
+    public function ajax_add_orpl_stock()
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_POST['nonce'] ?? ''));
@@ -891,7 +894,7 @@ class Obydullah_Restaurant_POS_Lite_Stocks
         }
     }
     /** Delete stock */
-    public function ajax_delete_stock()
+    public function ajax_orpl_delete_stock()
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_POST['nonce'] ?? ''));
