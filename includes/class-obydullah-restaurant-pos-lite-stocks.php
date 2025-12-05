@@ -367,8 +367,8 @@ class Obydullah_Restaurant_POS_Lite_Stocks
                                 if (response.success) {
                                     if (!response.data.stocks.length) {
                                         tbody.append('<tr><td colspan="6" style="text-align:center;padding:20px;color:#666;"><?php echo esc_js(__('No stock entries found.', 'obydullah-restaurant-pos-lite')); ?></td></tr>');
-                                        updateSummaryCards();
-                                        updatePagination(response.data.pagination);
+                                        updateORPLSummaryCards();
+                                        updateORPLPagination(response.data.pagination);
                                         return;
                                     }
 
@@ -403,8 +403,8 @@ class Obydullah_Restaurant_POS_Lite_Stocks
                                         tbody.append(row);
                                     });
 
-                                    updateSummaryCards(response.data.stocks);
-                                    updatePagination(response.data.pagination);
+                                    updateORPLSummaryCards(response.data.stocks);
+                                    updateORPLPagination(response.data.pagination);
                                 } else {
                                     tbody.append('<tr><td colspan="6" style="color:red;text-align:center;">' + response.data + '</td></tr>');
                                 }
@@ -415,7 +415,7 @@ class Obydullah_Restaurant_POS_Lite_Stocks
                         });
                     }
 
-                    function updateSummaryCards(stocks = []) {
+                    function updateORPLSummaryCards(stocks = []) {
                         let inStock = 0, outStock = 0, lowStock = 0;
 
                         if (stocks.length > 0) {
@@ -432,7 +432,7 @@ class Obydullah_Restaurant_POS_Lite_Stocks
                         $('.summary-card:nth-child(4) .summary-number').text(stocks.length);
                     }
 
-                    function updatePagination(pagination) {
+                    function updateORPLPagination(pagination) {
                         totalPages = pagination.total_pages;
                         totalItems = pagination.total_items;
 
@@ -513,7 +513,7 @@ class Obydullah_Restaurant_POS_Lite_Stocks
                     });
 
                     // Profit calculation
-                    function calculateProfit() {
+                    function calculateORPLProfit() {
                         let netCost = parseFloat($('#net-cost').val()) || 0;
                         let saleCost = parseFloat($('#sale-cost').val()) || 0;
                         let quantity = parseInt($('#stock-quantity').val()) || 0;
@@ -536,7 +536,7 @@ class Obydullah_Restaurant_POS_Lite_Stocks
                     }
 
                     // Event listeners for profit calculation
-                    $('#net-cost, #sale-cost, #stock-quantity').on('input', calculateProfit);
+                    $('#net-cost, #sale-cost, #stock-quantity').on('input', calculateORPLProfit);
 
                     $('#add-stock-form').on('submit', function (e) {
                         e.preventDefault();
@@ -646,13 +646,13 @@ class Obydullah_Restaurant_POS_Lite_Stocks
                         $('#stock-quantity').val('0');
                         $('#stock-status').val('inStock');
 
-                        calculateProfit();
+                        calculateORPLProfit();
                         // Ensure button is enabled
                         setButtonLoading(false);
                     }
 
                     // Initial profit calculation
-                    calculateProfit();
+                    calculateORPLProfit();
                 });
             </script>
         </div>

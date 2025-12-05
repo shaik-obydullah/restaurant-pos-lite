@@ -446,7 +446,6 @@ class Obydullah_Restaurant_POS_Lite_Products
                         formData.append('action', action);
                         formData.append('id', id);
 
-                        // FIX: Use correct nonce based on whether we're adding or editing
                         if (id) {
                             // Editing product - use edit product nonce
                             formData.append('nonce', '<?php echo esc_attr(wp_create_nonce("orpl_edit_product")); ?>');

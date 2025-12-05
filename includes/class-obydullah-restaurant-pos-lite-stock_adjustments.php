@@ -30,11 +30,11 @@ class Obydullah_Restaurant_POS_Lite_Stock_Adjustments
         $this->categories_table = $wpdb->prefix . 'orpl_categories';
         $this->accounting_table = $wpdb->prefix . 'orpl_accounting';
 
-        add_action('wp_ajax_orpl_add_stock_adjustment', [$this, 'ajax_add_stock_adjustment']);
-        add_action('wp_ajax_orpl_get_stock_adjustments', [$this, 'ajax_get_stock_adjustments']);
-        add_action('wp_ajax_orpl_delete_stock_adjustment', [$this, 'ajax_delete_stock_adjustment']);
-        add_action('wp_ajax_orpl_get_products_for_adjustments', [$this, 'ajax_get_products_for_adjustments']);
-        add_action('wp_ajax_orpl_get_current_stock', [$this, 'ajax_get_current_stock']);
+        add_action('wp_ajax_orpl_add_stock_adjustment', [$this, 'ajax_add_orpl_stock_adjustment']);
+        add_action('wp_ajax_orpl_get_stock_adjustments', [$this, 'ajax_get_orpl_stock_adjustments']);
+        add_action('wp_ajax_orpl_delete_stock_adjustment', [$this, 'ajax_delete_orpl_stock_adjustment']);
+        add_action('wp_ajax_orpl_get_products_for_adjustments', [$this, 'ajax_get_orpl_products_for_adjustments']);
+        add_action('wp_ajax_orpl_get_current_stock', [$this, 'ajax_get_current_orpl_stock']);
     }
 
     /**
@@ -277,10 +277,10 @@ class Obydullah_Restaurant_POS_Lite_Stock_Adjustments
                     let dateFilter = '';
 
                     // Load products and adjustments on page load
-                    loadStocks();
-                    loadAdjustments();
+                    loadORPLStocks();
+                    loadORPLAdjustments();
 
-                    function loadStocks() {
+                    function loadORPLStocks() {
                         $.ajax({
                             url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                             type: 'GET',
@@ -303,7 +303,7 @@ class Obydullah_Restaurant_POS_Lite_Stock_Adjustments
                         });
                     }
 
-                    function loadAdjustments(page = 1) {
+                    function loadORPLAdjustments(page = 1) {
                         currentPage = page;
 
                         let tbody = $('#adjustment-list');
@@ -326,7 +326,7 @@ class Obydullah_Restaurant_POS_Lite_Stock_Adjustments
                                 if (response.success) {
                                     if (!response.data.adjustments.length) {
                                         tbody.append('<tr><td colspan="6" style="text-align:center;padding:20px;color:#666;"><?php echo esc_js(__('No adjustments found.', 'obydullah-restaurant-pos-lite')); ?></td></tr>');
-                                        updatePagination(response.data.pagination);
+                                        updateORPLPagination(response.data.pagination);
                                         return;
                                     }
 
@@ -355,7 +355,7 @@ class Obydullah_Restaurant_POS_Lite_Stock_Adjustments
                                         // Note column
                                         row.append($('<td>').text(adjustment.note || '-'));
 
-                                        // Actions column - Only Delete button
+                                        // Actions column
                                         row.append($('<td style="text-align:center;">')
                                             .append('<button class="button button-small button-link-delete delete-adjustment"><?php echo esc_js(__('Delete', 'obydullah-restaurant-pos-lite')); ?></button>')
                                         );
@@ -363,7 +363,7 @@ class Obydullah_Restaurant_POS_Lite_Stock_Adjustments
                                         tbody.append(row);
                                     });
 
-                                    updatePagination(response.data.pagination);
+                                    updateORPLPagination(response.data.pagination);
                                 } else {
                                     tbody.append('<tr><td colspan="6" style="color:red;text-align:center;">' + response.data + '</td></tr>');
                                 }
@@ -374,7 +374,7 @@ class Obydullah_Restaurant_POS_Lite_Stock_Adjustments
                         });
                     }
 
-                    function updatePagination(pagination) {
+                    function updateORPLPagination(pagination) {
                         totalPages = pagination.total_pages;
                         totalItems = pagination.total_items;
 
@@ -397,59 +397,59 @@ class Obydullah_Restaurant_POS_Lite_Stock_Adjustments
                         searchTerm = $(this).val().trim();
 
                         searchTimeout = setTimeout(() => {
-                            loadAdjustments(1);
+                            loadORPLAdjustments(1);
                         }, 500);
                     });
 
                     // Type filter
                     $('#type-filter').on('change', function () {
                         typeFilter = $(this).val();
-                        loadAdjustments(1);
+                        loadORPLAdjustments(1);
                     });
 
                     // Date filter
                     $('#date-filter').on('change', function () {
                         dateFilter = $(this).val();
-                        loadAdjustments(1);
+                        loadORPLAdjustments(1);
                     });
 
                     // Per page change
                     $('#per-page-select').on('change', function () {
                         perPage = parseInt($(this).val());
-                        loadAdjustments(1);
+                        loadORPLAdjustments(1);
                     });
 
                     // Refresh button
                     $('#refresh-adjustments').on('click', function () {
-                        loadAdjustments(currentPage);
+                        loadORPLAdjustments(currentPage);
                     });
 
                     // Pagination handlers
                     $('.first-page').on('click', function (e) {
                         e.preventDefault();
-                        if (currentPage > 1) loadAdjustments(1);
+                        if (currentPage > 1) loadORPLAdjustments(1);
                     });
 
                     $('.prev-page').on('click', function (e) {
                         e.preventDefault();
-                        if (currentPage > 1) loadAdjustments(currentPage - 1);
+                        if (currentPage > 1) loadORPLAdjustments(currentPage - 1);
                     });
 
                     $('.next-page').on('click', function (e) {
                         e.preventDefault();
-                        if (currentPage < totalPages) loadAdjustments(currentPage + 1);
+                        if (currentPage < totalPages) loadORPLAdjustments(currentPage + 1);
                     });
 
                     $('.last-page').on('click', function (e) {
                         e.preventDefault();
-                        if (currentPage < totalPages) loadAdjustments(totalPages);
+                        if (currentPage < totalPages) loadORPLAdjustments(totalPages);
                     });
 
                     $('#current-page-selector').on('keypress', function (e) {
                         if (e.which === 13) { // Enter key
                             let page = parseInt($(this).val());
                             if (page >= 1 && page <= totalPages) {
-                                loadAdjustments(page);
+                                loadORPLAdjustments(page);
                             }
                         }
                     });
@@ -469,18 +469,18 @@ class Obydullah_Restaurant_POS_Lite_Stock_Adjustments
                                 success: function (response) {
                                     if (response.success) {
                                         $('#current-stock').text(response.data.current_stock || 0);
-                                        calculateNewStock();
+                                        calculateNewORPLStock();
                                     }
                                 }
                             });
                         } else {
                             $('#current-stock').text('0');
-                            calculateNewStock();
+                            calculateNewORPLStock();
                         }
                     });
 
                     // Calculate new stock when type or quantity changes
-                    function calculateNewStock() {
+                    function calculateNewORPLStock() {
                         let currentStock = parseInt($('#current-stock').text()) || 0;
                         let adjustmentType = $('#adjustment-type').val();
                         let quantity = parseInt($('#adjustment-quantity').val()) || 0;
@@ -509,7 +509,7 @@ class Obydullah_Restaurant_POS_Lite_Stock_Adjustments
                     }
 
                     // Event listeners for calculation
-                    $('#adjustment-type, #adjustment-quantity').on('change input', calculateNewStock);
+                    $('#adjustment-type, #adjustment-quantity').on('change input', calculateNewORPLStock);
 
                     $('#add-adjustment-form').on('submit', function (e) {
                         e.preventDefault();
@@ -557,7 +557,7 @@ class Obydullah_Restaurant_POS_Lite_Stock_Adjustments
                         }, function (res) {
                             if (res.success) {
                                 resetForm();
-                                loadAdjustments(1); // Reload to first page
+                                loadORPLAdjustments(1); // Reload to first page
                                 // Reload current stock for the selected product
                                 if (fk_product_id) {
                                     $('#adjustment-product').trigger('change');
@@ -589,7 +589,7 @@ class Obydullah_Restaurant_POS_Lite_Stock_Adjustments
                             nonce: '<?php echo esc_attr(wp_create_nonce("orpl_delete_stock_adjustment")); ?>'
                         }, function (res) {
                             if (res.success) {
-                                loadAdjustments(currentPage);
+                                loadORPLAdjustments(currentPage);
                             } else {
                                 alert(res.data);
                             }
@@ -619,12 +619,12 @@ class Obydullah_Restaurant_POS_Lite_Stock_Adjustments
                     function resetForm() {
                         $('#adjustment-quantity').val('1');
                         $('#adjustment-note').val('');
-                        calculateNewStock();
+                        calculateNewORPLStock();
                         setButtonLoading(false);
                     }
 
                     // Initial calculation
-                    calculateNewStock();
+                    calculateNewORPLStock();
                 });
             </script>
         </div>
@@ -632,7 +632,7 @@ class Obydullah_Restaurant_POS_Lite_Stock_Adjustments
     }
 
     /** Get products for adjustments form */
-    public function ajax_get_products_for_adjustments()
+    public function ajax_get_orpl_products_for_adjustments()
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
@@ -644,14 +644,15 @@ class Obydullah_Restaurant_POS_Lite_Stock_Adjustments
 
         $cache_key = 'orpl_products_for_adjustments';
         $products = wp_cache_get($cache_key, self::CACHE_GROUP);
+        $product_status = 'active';
 
         if (false === $products) {
             $query = $wpdb->prepare(
                 "SELECT p.id, p.name, c.name as category_name 
             FROM {$this->products_table} p 
             LEFT JOIN {$this->categories_table} c ON p.fk_category_id = c.id 
-            WHERE p.status = 'active' 
-            ORDER BY p.name ASC"
+            WHERE p.status = '%s' 
+            ORDER BY p.name ASC", $product_status
             );
             $products = $wpdb->get_results($query);
 
@@ -662,7 +663,7 @@ class Obydullah_Restaurant_POS_Lite_Stock_Adjustments
     }
 
     /** Get current stock for a product */
-    public function ajax_get_current_stock()
+    public function ajax_get_current_orpl_stock()
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
@@ -694,7 +695,7 @@ class Obydullah_Restaurant_POS_Lite_Stock_Adjustments
     }
 
     /** Get stock adjustments with pagination and filters */
-    public function ajax_get_stock_adjustments()
+    public function ajax_get_orpl_stock_adjustments()
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
@@ -797,7 +798,7 @@ class Obydullah_Restaurant_POS_Lite_Stock_Adjustments
     }
 
     /** Add stock adjustment with full accounting */
-    public function ajax_add_stock_adjustment()
+    public function ajax_add_orpl_stock_adjustment()
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_POST['nonce'] ?? ''));
@@ -839,7 +840,7 @@ class Obydullah_Restaurant_POS_Lite_Stock_Adjustments
                 throw new Exception(__('Failed to add adjustment record', 'obydullah-restaurant-pos-lite'));
             }
 
-            // Get current stock data for accounting calculation - ✅ FIXED: Use proper table name
+            // Get current stock data for accounting calculation
             $current_stock_data = $wpdb->get_row($wpdb->prepare(
                 "SELECT quantity, net_cost FROM {$this->stocks_table} WHERE fk_product_id = %d",
                 $fk_product_id
@@ -921,7 +922,7 @@ class Obydullah_Restaurant_POS_Lite_Stock_Adjustments
     }
 
     /** Delete stock adjustment */
-    public function ajax_delete_stock_adjustment()
+    public function ajax_delete_orpl_stock_adjustment()
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_POST['nonce'] ?? ''));
