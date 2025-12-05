@@ -21,10 +21,10 @@ class Obydullah_Restaurant_POS_Lite_Customers
         global $wpdb;
         $this->customers_table = $wpdb->prefix . 'orpl_customers';
 
-        add_action('wp_ajax_orpl_add_customer', [$this, 'ajax_add_customer']);
-        add_action('wp_ajax_orpl_get_customers', [$this, 'ajax_get_customers']);
-        add_action('wp_ajax_orpl_edit_customer', [$this, 'ajax_edit_customer']);
-        add_action('wp_ajax_orpl_delete_customer', [$this, 'ajax_delete_customer']);
+        add_action('wp_ajax_orpl_add_customer', [$this, 'ajax_add_orpl_customer']);
+        add_action('wp_ajax_orpl_get_customers', [$this, 'ajax_get_orpl_customers']);
+        add_action('wp_ajax_orpl_edit_customer', [$this, 'ajax_edit_orpl_customer']);
+        add_action('wp_ajax_orpl_delete_customer', [$this, 'ajax_delete_orpl_customer']);
     }
 
     /**
@@ -277,9 +277,9 @@ class Obydullah_Restaurant_POS_Lite_Customers
                     let statusFilter = '';
 
                     // Load customers on page load
-                    loadCustomers();
+                    loadORPLCustomers();
 
-                    function loadCustomers(page = 1) {
+                    function loadORPLCustomers(page = 1) {
                         currentPage = page;
 
                         let tbody = $('#customer-list');
@@ -301,8 +301,8 @@ class Obydullah_Restaurant_POS_Lite_Customers
                                 if (response.success) {
                                     if (!response.data.customers.length) {
                                         tbody.append('<tr><td colspan="6" style="text-align:center;padding:20px;color:#666;"><?php echo esc_js(__('No customers found.', 'obydullah-restaurant-pos-lite')); ?></td></tr>');
-                                        updateSummaryCards();
-                                        updatePagination(response.data.pagination);
+                                        updateSummaryORPLCards();
+                                        updateORPLPagination(response.data.pagination);
                                         return;
                                     }
 
@@ -337,8 +337,8 @@ class Obydullah_Restaurant_POS_Lite_Customers
                                         tbody.append(row);
                                     });
 
-                                    updateSummaryCards(response.data.customers);
-                                    updatePagination(response.data.pagination);
+                                    updateSummaryORPLCards(response.data.customers);
+                                    updateORPLPagination(response.data.pagination);
                                 } else {
                                     tbody.append('<tr><td colspan="6" style="color:red;text-align:center;">' + response.data + '</td></tr>');
                                 }
@@ -349,7 +349,7 @@ class Obydullah_Restaurant_POS_Lite_Customers
                         });
                     }
 
-                    function updateSummaryCards(customers = []) {
+                    function updateSummaryORPLCards(customers = []) {
                         let active = 0, inactive = 0;
 
                         if (customers.length > 0) {
@@ -364,7 +364,7 @@ class Obydullah_Restaurant_POS_Lite_Customers
                         $('.summary-card:nth-child(3) .summary-number').text(customers.length);
                     }
 
-                    function updatePagination(pagination) {
+                    function updateORPLPagination(pagination) {
                         totalPages = pagination.total_pages;
                         totalItems = pagination.total_items;
 
@@ -387,53 +387,53 @@ class Obydullah_Restaurant_POS_Lite_Customers
                         searchTerm = $(this).val().trim();
 
                         searchTimeout = setTimeout(() => {
-                            loadCustomers(1);
+                            loadORPLCustomers(1);
                         }, 500);
                     });
 
                     // Status filter
                     $('#status-filter').on('change', function () {
                         statusFilter = $(this).val();
-                        loadCustomers(1);
+                        loadORPLCustomers(1);
                     });
 
                     // Per page change
                     $('#per-page-select').on('change', function () {
                         perPage = parseInt($(this).val());
-                        loadCustomers(1);
+                        loadORPLCustomers(1);
                     });
 
                     // Refresh button
                     $('#refresh-customers').on('click', function () {
-                        loadCustomers(currentPage);
+                        loadORPLCustomers(currentPage);
                     });
 
                     // Pagination handlers
                     $('.first-page').on('click', function (e) {
                         e.preventDefault();
-                        if (currentPage > 1) loadCustomers(1);
+                        if (currentPage > 1) loadORPLCustomers(1);
                     });
 
                     $('.prev-page').on('click', function (e) {
                         e.preventDefault();
-                        if (currentPage > 1) loadCustomers(currentPage - 1);
+                        if (currentPage > 1) loadORPLCustomers(currentPage - 1);
                     });
 
                     $('.next-page').on('click', function (e) {
                         e.preventDefault();
-                        if (currentPage < totalPages) loadCustomers(currentPage + 1);
+                        if (currentPage < totalPages) loadORPLCustomers(currentPage + 1);
                     });
 
                     $('.last-page').on('click', function (e) {
                         e.preventDefault();
-                        if (currentPage < totalPages) loadCustomers(totalPages);
+                        if (currentPage < totalPages) loadORPLCustomers(totalPages);
                     });
 
                     $('#current-page-selector').on('keypress', function (e) {
                         if (e.which === 13) { // Enter key
                             let page = parseInt($(this).val());
                             if (page >= 1 && page <= totalPages) {
-                                loadCustomers(page);
+                                loadORPLCustomers(page);
                             }
                         }
                     });
@@ -483,7 +483,7 @@ class Obydullah_Restaurant_POS_Lite_Customers
                         }, function (res) {
                             if (res.success) {
                                 resetForm();
-                                loadCustomers(currentPage);
+                                loadORPLCustomers(currentPage);
                             } else {
                                 alert('<?php echo esc_js(__('Error:', 'obydullah-restaurant-pos-lite')); ?> ' + res.data);
                             }
@@ -548,7 +548,7 @@ class Obydullah_Restaurant_POS_Lite_Customers
                             nonce: '<?php echo esc_attr(wp_create_nonce("orpl_delete_customer")); ?>'
                         }, function (res) {
                             if (res.success) {
-                                loadCustomers(currentPage);
+                                loadORPLCustomers(currentPage);
                             } else {
                                 alert(res.data);
                             }
@@ -602,7 +602,7 @@ class Obydullah_Restaurant_POS_Lite_Customers
     }
 
     /** Get customers with pagination and filters */
-    public function ajax_get_customers()
+    public function ajax_get_orpl_customers()
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
@@ -724,7 +724,7 @@ class Obydullah_Restaurant_POS_Lite_Customers
     }
 
     /** Add customer */
-    public function ajax_add_customer()
+    public function ajax_add_orpl_customer()
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_POST['nonce'] ?? ''));
@@ -785,7 +785,7 @@ class Obydullah_Restaurant_POS_Lite_Customers
         wp_send_json_success(__('Customer added successfully', 'obydullah-restaurant-pos-lite'));
     }
     /** Edit customer */
-    public function ajax_edit_customer()
+    public function ajax_edit_orpl_customer()
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
@@ -845,7 +845,7 @@ class Obydullah_Restaurant_POS_Lite_Customers
     }
 
     /** Delete customer */
-    public function ajax_delete_customer()
+    public function ajax_delete_orpl_customer()
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_POST['nonce'] ?? ''));
