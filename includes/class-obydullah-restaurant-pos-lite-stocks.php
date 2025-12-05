@@ -597,6 +597,8 @@ class Obydullah_Restaurant_POS_Lite_Stocks
                             if (res.success) {
                                 resetForm();
                                 loadORPLStocks(1); // Reload to first page
+                                // Reload product dropdown to remove the added product
+                                loadORPLProducts();
                             } else {
                                 alert('<?php echo esc_js(__('Error:', 'obydullah-restaurant-pos-lite')); ?> ' + res.data);
                             }
@@ -607,7 +609,6 @@ class Obydullah_Restaurant_POS_Lite_Stocks
                                 setButtonLoading(false);
                             });
                     });
-
                     $(document).on('click', '.delete-stock', function () {
                         if (!confirm('<?php echo esc_js(__('Are you sure you want to delete this stock entry?', 'obydullah-restaurant-pos-lite')); ?>')) return;
 
@@ -683,19 +684,22 @@ class Obydullah_Restaurant_POS_Lite_Stocks
         global $wpdb;
         $products_table = $wpdb->prefix . 'orpl_products';
         $categories_table = $wpdb->prefix . 'orpl_categories';
+        $stocks_table = $wpdb->prefix . 'orpl_stocks';
 
         $product_status = 'active';
 
         // Get products with caching
-        $cache_key = 'orpl_active_products_for_stocks';
+        $cache_key = 'orpl_products_without_stock';
         $products = wp_cache_get($cache_key, 'obydullah-restaurant-pos-lite');
 
         if (false === $products) {
+            // Get products that don't have stock entries
             $query = $wpdb->prepare(
                 "SELECT p.id, p.name, c.name as category_name 
             FROM {$products_table} p 
             LEFT JOIN {$categories_table} c ON p.fk_category_id = c.id 
-            WHERE p.status = %s 
+            LEFT JOIN {$stocks_table} s ON p.id = s.fk_product_id 
+            WHERE p.status = %s AND s.id IS NULL 
             ORDER BY p.name ASC",
                 $product_status
             );
@@ -857,6 +861,17 @@ class Obydullah_Restaurant_POS_Lite_Stocks
         if ($quantity <= 0) {
             wp_send_json_error(__('Quantity must be greater than 0', 'obydullah-restaurant-pos-lite'));
         }
+
+        // Check if stock already exists for this product
+        $existing_stock = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$stock_table} WHERE fk_product_id = %d",
+            $fk_product_id
+        ));
+
+        if ($existing_stock > 0) {
+            wp_send_json_error(__('Stock already exists for this product. Please use Stock Adjustments to modify quantity.', 'obydullah-restaurant-pos-lite'));
+        }
+
         // Calculate total investment
         $total_investment = $net_cost * $quantity;
 
@@ -878,13 +893,11 @@ class Obydullah_Restaurant_POS_Lite_Stocks
                 throw new Exception(__('Failed to add stock', 'obydullah-restaurant-pos-lite'));
             }
 
-            // Add accounting record
             $accounting_result = $wpdb->insert($accounting_table, [
-                'in_amount' => $total_investment,
-                'amount_payable' => $net_cost * $quantity,
-                'description' => 'Stock In',
+                'out_amount' => $total_investment,
+                'description' => 'Stock Purchase',
                 'created_at' => current_time('mysql')
-            ], ['%f', '%f', '%s', '%s']);
+            ], ['%f', '%s', '%s']); 
 
             if ($accounting_result === false) {
                 throw new Exception(__('Failed to create accounting record', 'obydullah-restaurant-pos-lite'));
@@ -955,6 +968,14 @@ class Obydullah_Restaurant_POS_Lite_Stocks
         );
         $wpdb->query(
             $wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", '_transient_timeout_orpl_active_products_for_stocks%')
+        );
+
+        // Clear products without stock cache
+        $wpdb->query(
+            $wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", '_transient_orpl_products_without_stock%')
+        );
+        $wpdb->query(
+            $wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", '_transient_timeout_orpl_products_without_stock%')
         );
     }
 }

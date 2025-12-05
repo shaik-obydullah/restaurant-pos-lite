@@ -21,9 +21,9 @@ class Obydullah_Restaurant_POS_Lite_Sales
 	 */
 	public function __construct()
 	{
-		add_action('wp_ajax_orpl_get_sales', array($this, 'ajax_get_sales'));
-		add_action('wp_ajax_orpl_delete_sale', array($this, 'ajax_delete_sale'));
-		add_action('wp_ajax_orpl_print_sale', array($this, 'ajax_print_sale'));
+		add_action('wp_ajax_orpl_get_sales', array($this, 'ajax_get_orpl_sales'));
+		add_action('wp_ajax_orpl_delete_sale', array($this, 'ajax_delete_orpl_sale'));
+		add_action('wp_ajax_orpl_print_sale', array($this, 'ajax_print_orpl_sale'));
 	}
 
 	/**
@@ -147,7 +147,7 @@ class Obydullah_Restaurant_POS_Lite_Sales
 					<!-- Sale Type Filter -->
 					<div class="type-filter">
 						<select id="sale-type"
-							style="padding:6px 10px;font-size:13px;border:1px solid #8c8f94;border-radius:3px;">
+							style="padding:6px 25px;font-size:13px;border:1px solid #8c8f94;border-radius:3px;">
 							<option value=""><?php esc_html_e('All Types', 'obydullah-restaurant-pos-lite'); ?></option>
 							<option value="dineIn"><?php esc_html_e('Dine In', 'obydullah-restaurant-pos-lite'); ?></option>
 							<option value="takeAway"><?php esc_html_e('Take Away', 'obydullah-restaurant-pos-lite'); ?>
@@ -159,7 +159,7 @@ class Obydullah_Restaurant_POS_Lite_Sales
 					<!-- Status Filter -->
 					<div class="status-filter">
 						<select id="sale-status"
-							style="padding:6px 10px;font-size:13px;border:1px solid #8c8f94;border-radius:3px;">
+							style="padding:6px 25px;font-size:13px;border:1px solid #8c8f94;border-radius:3px;">
 							<option value=""><?php esc_html_e('All Status', 'obydullah-restaurant-pos-lite'); ?></option>
 							<option value="completed"><?php esc_html_e('Completed', 'obydullah-restaurant-pos-lite'); ?>
 							</option>
@@ -278,7 +278,7 @@ class Obydullah_Restaurant_POS_Lite_Sales
 					}
 
 					// Load initial sales
-					loadSales();
+					loadORPLSales();
 
 					// Search functionality
 					$('#search-sales').on('click', function () {
@@ -288,7 +288,7 @@ class Obydullah_Restaurant_POS_Lite_Sales
 						saleType = $('#sale-type').val();
 						saleStatus = $('#sale-status').val();
 						currentPage = 1;
-						loadSales();
+						loadORPLSales();
 					});
 
 					// Reset filters
@@ -304,7 +304,7 @@ class Obydullah_Restaurant_POS_Lite_Sales
 						saleType = '';
 						saleStatus = '';
 						currentPage = 1;
-						loadSales();
+						loadORPLSales();
 					});
 
 					// Enter key in search
@@ -317,40 +317,40 @@ class Obydullah_Restaurant_POS_Lite_Sales
 					// Per page change
 					$('#per-page-select').on('change', function () {
 						perPage = parseInt($(this).val());
-						loadSales(1);
+						loadORPLSales(1);
 					});
 
 					// Pagination handlers
 					$('.first-page').on('click', function (e) {
 						e.preventDefault();
-						if (currentPage > 1) loadSales(1);
+						if (currentPage > 1) loadORPLSales(1);
 					});
 
 					$('.prev-page').on('click', function (e) {
 						e.preventDefault();
-						if (currentPage > 1) loadSales(currentPage - 1);
+						if (currentPage > 1) loadORPLSales(currentPage - 1);
 					});
 
 					$('.next-page').on('click', function (e) {
 						e.preventDefault();
-						if (currentPage < totalPages) loadSales(currentPage + 1);
+						if (currentPage < totalPages) loadORPLSales(currentPage + 1);
 					});
 
 					$('.last-page').on('click', function (e) {
 						e.preventDefault();
-						if (currentPage < totalPages) loadSales(totalPages);
+						if (currentPage < totalPages) loadORPLSales(totalPages);
 					});
 
 					$('#current-page-selector').on('keypress', function (e) {
 						if (e.which === 13) { // Enter key
 							let page = parseInt($(this).val());
 							if (page >= 1 && page <= totalPages) {
-								loadSales(page);
+								loadORPLSales(page);
 							}
 						}
 					});
 
-					function loadSales(page = 1) {
+					function loadORPLSales(page = 1) {
 						currentPage = page;
 
 						let tbody = $('#sales-list');
@@ -616,10 +616,6 @@ class Obydullah_Restaurant_POS_Lite_Sales
 	</table>
 	
 	${sale.note ? `<div style="margin-top: 20px;"><strong><?php echo esc_js(__('Note:', 'obydullah-restaurant-pos-lite')); ?></strong> ${sale.note}</div>` : ''}
-	
-	<div class="thank-you">
-		<p><?php echo esc_js(__('Thank you for your business!', 'obydullah-restaurant-pos-lite')); ?></p>
-	</div>
 </body>
 </html>
 									`;
@@ -655,7 +651,7 @@ class Obydullah_Restaurant_POS_Lite_Sales
 					nonce: '<?php echo esc_js(wp_create_nonce('orpl_delete_sale')); ?>'
 				}, function (res) {
 					if (res.success) {
-						loadSales(currentPage);
+						loadORPLSales(currentPage);
 					} else {
 						alert(res.data);
 					}
@@ -672,7 +668,7 @@ class Obydullah_Restaurant_POS_Lite_Sales
 	}
 
 	/** Get sales with pagination and search */
-	public function ajax_get_sales()
+	public function ajax_get_orpl_sales()
 	{
 		// Check nonce
 		if (!wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['nonce'] ?? '')), 'orpl_get_sales')) {
@@ -728,7 +724,7 @@ class Obydullah_Restaurant_POS_Lite_Sales
 		}
 
 		// Get total count
-		$count_query = "SELECT COUNT(*) FROM $sales_table s WHERE $where_clause";
+		$count_query = "SELECT COUNT(*) FROM {$sales_table} s WHERE $where_clause";
 		if (!empty($prepare_args)) {
 			$count_query = $wpdb->prepare($count_query, $prepare_args);
 		}
@@ -737,9 +733,9 @@ class Obydullah_Restaurant_POS_Lite_Sales
 		// Get sales data with customer information
 		$query = "
         SELECT s.*, c.name as customer_name 
-        FROM $sales_table s 
-        LEFT JOIN $customers_table c ON s.fk_customer_id = c.id 
-        WHERE $where_clause 
+        FROM {$sales_table} s 
+        LEFT JOIN {$customers_table} c ON s.fk_customer_id = c.id 
+        WHERE {$where_clause} 
         ORDER BY s.created_at DESC 
         LIMIT %d OFFSET %d
     ";
@@ -772,7 +768,7 @@ class Obydullah_Restaurant_POS_Lite_Sales
 	}
 
 	/** Print sale (get sale details for printing) */
-	public function ajax_print_sale()
+	public function ajax_print_orpl_sale()
 	{
 		// Check nonce
 		if (!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'] ?? '')), 'orpl_print_sale')) {
@@ -796,8 +792,8 @@ class Obydullah_Restaurant_POS_Lite_Sales
 			$wpdb->prepare(
 				"
 					SELECT s.*, c.name as customer_name, c.mobile as customer_mobile, c.email as customer_email, c.address as customer_address
-					FROM $sales_table s 
-					LEFT JOIN $customers_table c ON s.fk_customer_id = c.id 
+					FROM {$sales_table} s 
+					LEFT JOIN {$customers_table} c ON s.fk_customer_id = c.id 
 					WHERE s.id = %d
 				",
 				$sale_id
@@ -813,8 +809,8 @@ class Obydullah_Restaurant_POS_Lite_Sales
 			$wpdb->prepare(
 				"
 					SELECT sd.*, p.name as product_name 
-					FROM $sale_details_table sd 
-					LEFT JOIN $products_table p ON sd.fk_product_id = p.id 
+					FROM {$sale_details_table} sd 
+					LEFT JOIN {$products_table} p ON sd.fk_product_id = p.id 
 					WHERE sd.fk_sale_id = %d
 					ORDER BY sd.id ASC
 				",
@@ -828,7 +824,7 @@ class Obydullah_Restaurant_POS_Lite_Sales
 	}
 
 	/** Delete sale */
-	public function ajax_delete_sale()
+	public function ajax_delete_orpl_sale()
 	{
 		// Check nonce
 		if (!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'] ?? '')), 'orpl_delete_sale')) {

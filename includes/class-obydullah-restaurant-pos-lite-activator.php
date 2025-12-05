@@ -12,7 +12,6 @@ class Obydullah_Restaurant_POS_Lite_Activator
     {
         global $wpdb;
 
-        // Check permissions
         if (!current_user_can('activate_plugins')) {
             wp_die('You do not have sufficient permissions to activate this plugin.');
         }
@@ -102,13 +101,14 @@ class Obydullah_Restaurant_POS_Lite_Activator
 
         $sql_stock_adjustments = "CREATE TABLE $table_stock_adjustments (
             id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-            fk_product_id BIGINT(20) UNSIGNED NOT NULL,
+            fk_stock_id BIGINT(20) UNSIGNED NOT NULL,
             adjustment_type ENUM('increase','decrease') NOT NULL,
             quantity INT(11) NOT NULL,
             note TEXT DEFAULT NULL,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
-            KEY fk_product_id (fk_product_id)
+            KEY fk_stock_id (fk_stock_id),
+            FOREIGN KEY (fk_stock_id) REFERENCES {$table_stocks}(id) ON DELETE CASCADE
         ) $charset_collate;";
 
         $sql_sale_details = "CREATE TABLE $table_sale_details (
@@ -132,8 +132,6 @@ class Obydullah_Restaurant_POS_Lite_Activator
             id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
             in_amount DECIMAL(10,2) DEFAULT NULL,
             out_amount DECIMAL(10,2) DEFAULT NULL,
-            amount_payable DECIMAL(10,2) DEFAULT NULL,
-            amount_receivable DECIMAL(10,2) DEFAULT NULL,
             description TEXT DEFAULT NULL,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id)
@@ -160,7 +158,6 @@ class Obydullah_Restaurant_POS_Lite_Activator
         );
 
         foreach ($default_categories as $category) {
-            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
             $wpdb->insert(
                 $table_categories,
                 $category,
@@ -168,7 +165,6 @@ class Obydullah_Restaurant_POS_Lite_Activator
             );
         }
 
-        // Updated option names with 'orpl_' prefix
         update_option('orpl_version', '1.0.0');
         update_option('orpl_currency', 'USD');
         update_option('orpl_tax_rate', '0');

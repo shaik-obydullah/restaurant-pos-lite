@@ -13,9 +13,9 @@ class Obydullah_Restaurant_POS_Lite_Accounting
 {
     public function __construct()
     {
-        add_action('wp_ajax_orpl_add_accounting_entry', array($this, 'ajax_add_accounting_entry'));
-        add_action('wp_ajax_orpl_get_accounting_entries', array($this, 'ajax_get_accounting_entries'));
-        add_action('wp_ajax_orpl_delete_accounting_entry', array($this, 'ajax_delete_accounting_entry'));
+        add_action('wp_ajax_orpl_add_accounting_entry', array($this, 'ajax_add_orpl_accounting_entry'));
+        add_action('wp_ajax_orpl_get_accounting_entries', array($this, 'ajax_get_orpl_accounting_entries'));
+        add_action('wp_ajax_orpl_delete_accounting_entry', array($this, 'ajax_delete_orpl_accounting_entry'));
     }
 
     /**
@@ -95,22 +95,6 @@ class Obydullah_Restaurant_POS_Lite_Accounting
                     <p class="summary-number" style="font-size:32px;font-weight:bold;margin:0;color:#d63638;"
                         id="total-expense"><?php echo esc_html($this->format_currency(0)); ?></p>
                 </div>
-                <div class="summary-card"
-                    style="background:#fff;padding:20px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.05);border-left:4px solid #2271b1;">
-                    <h3 style="margin:0 0 10px 0;font-size:14px;color:#666;">
-                        <?php esc_html_e('Total Payable', 'obydullah-restaurant-pos-lite'); ?>
-                    </h3>
-                    <p class="summary-number" style="font-size:32px;font-weight:bold;margin:0;color:#2271b1;"
-                        id="total-payable"><?php echo esc_html($this->format_currency(0)); ?></p>
-                </div>
-                <div class="summary-card"
-                    style="background:#fff;padding:20px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.05);border-left:4px solid #ffb900;">
-                    <h3 style="margin:0 0 10px 0;font-size:14px;color:#666;">
-                        <?php esc_html_e('Total Receivable', 'obydullah-restaurant-pos-lite'); ?>
-                    </h3>
-                    <p class="summary-number" style="font-size:32px;font-weight:bold;margin:0;color:#ffb900;"
-                        id="total-receivable"><?php echo esc_html($this->format_currency(0)); ?></p>
-                </div>
             </div>
 
             <div id="col-container" class="wp-clearfix" style="display:flex;gap:24px;">
@@ -125,37 +109,24 @@ class Obydullah_Restaurant_POS_Lite_Accounting
                             <?php wp_nonce_field('orpl_add_accounting_entry', 'accounting_nonce'); ?>
 
                             <div style="display:flex;flex-direction:column;gap:15px;">
-                                <!-- Entry Type -->
-                                <div class="form-field form-required">
-                                    <label for="entry-type"
+                                <!-- Income Amount -->
+                                <div class="form-field">
+                                    <label for="in-amount"
                                         style="display:block;font-weight:600;margin-bottom:6px;font-size:12px;color:#1d2327;text-transform:uppercase;letter-spacing:0.5px;">
-                                        <?php esc_html_e('Entry Type', 'obydullah-restaurant-pos-lite'); ?> <span
-                                            style="color:#d63638;">*</span>
+                                        <?php esc_html_e('Income Amount', 'obydullah-restaurant-pos-lite'); ?>
                                     </label>
-                                    <select name="entry_type" id="entry-type" required
-                                        style="width:100%;padding:8px 10px;font-size:13px;border:1px solid #8c8f94;border-radius:3px;background:#fff;cursor:pointer;">
-                                        <option value=""><?php esc_html_e('Select Type', 'obydullah-restaurant-pos-lite'); ?>
-                                        </option>
-                                        <option value="income"><?php esc_html_e('Income', 'obydullah-restaurant-pos-lite'); ?>
-                                        </option>
-                                        <option value="expense"><?php esc_html_e('Expense', 'obydullah-restaurant-pos-lite'); ?>
-                                        </option>
-                                        <option value="payable"><?php esc_html_e('Payable', 'obydullah-restaurant-pos-lite'); ?>
-                                        </option>
-                                        <option value="receivable">
-                                            <?php esc_html_e('Receivable', 'obydullah-restaurant-pos-lite'); ?>
-                                        </option>
-                                    </select>
+                                    <input name="in_amount" id="in-amount" type="number" step="0.01" min="0" value="0.00"
+                                        style="width:100%;padding:8px 10px;font-size:13px;border:1px solid #8c8f94;border-radius:3px;background:#fff;transition:border-color 0.2s ease;"
+                                        placeholder="0.00">
                                 </div>
 
-                                <!-- Amount -->
-                                <div class="form-field form-required">
-                                    <label for="entry-amount"
+                                <!-- Expense Amount -->
+                                <div class="form-field">
+                                    <label for="out-amount"
                                         style="display:block;font-weight:600;margin-bottom:6px;font-size:12px;color:#1d2327;text-transform:uppercase;letter-spacing:0.5px;">
-                                        <?php esc_html_e('Amount', 'obydullah-restaurant-pos-lite'); ?> <span
-                                            style="color:#d63638;">*</span>
+                                        <?php esc_html_e('Expense Amount', 'obydullah-restaurant-pos-lite'); ?>
                                     </label>
-                                    <input name="amount" id="entry-amount" type="number" step="0.01" min="0" value="" required
+                                    <input name="out_amount" id="out-amount" type="number" step="0.01" min="0" value="0.00"
                                         style="width:100%;padding:8px 10px;font-size:13px;border:1px solid #8c8f94;border-radius:3px;background:#fff;transition:border-color 0.2s ease;"
                                         placeholder="0.00">
                                 </div>
@@ -226,15 +197,14 @@ class Obydullah_Restaurant_POS_Lite_Accounting
                                     <th><?php esc_html_e('Description', 'obydullah-restaurant-pos-lite'); ?></th>
                                     <th><?php esc_html_e('Income', 'obydullah-restaurant-pos-lite'); ?></th>
                                     <th><?php esc_html_e('Expense', 'obydullah-restaurant-pos-lite'); ?></th>
-                                    <th><?php esc_html_e('Payable', 'obydullah-restaurant-pos-lite'); ?></th>
-                                    <th><?php esc_html_e('Receivable', 'obydullah-restaurant-pos-lite'); ?></th>
                                     <th style="text-align:center;">
-                                        <?php esc_html_e('Actions', 'obydullah-restaurant-pos-lite'); ?></th>
+                                        <?php esc_html_e('Actions', 'obydullah-restaurant-pos-lite'); ?>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody id="accounting-list">
                                 <tr>
-                                    <td colspan="7" class="loading-entries" style="text-align:center;">
+                                    <td colspan="5" class="loading-entries" style="text-align:center;">
                                         <span class="spinner is-active"></span>
                                         <?php esc_html_e('Loading accounting entries...', 'obydullah-restaurant-pos-lite'); ?>
                                     </td>
@@ -317,8 +287,6 @@ class Obydullah_Restaurant_POS_Lite_Accounting
                     function updateSummaryCards(totals) {
                         $('#total-income').text(totals.total_income || formatCurrency(0));
                         $('#total-expense').text(totals.total_expense || formatCurrency(0));
-                        $('#total-payable').text(totals.total_payable || formatCurrency(0));
-                        $('#total-receivable').text(totals.total_receivable || formatCurrency(0));
                     }
 
                     function updatePagination(pagination) {
@@ -354,13 +322,11 @@ class Obydullah_Restaurant_POS_Lite_Accounting
                     }
 
                     function resetForm() {
-                        $('#entry-type').val('');
-                        $('#entry-amount').val('');
+                        $('#in-amount').val('0.00');
+                        $('#out-amount').val('0.00');
                         $('#entry-description').val('');
                         $('#entry-date').val('<?php echo esc_js($current_date); ?>');
-                        $('#entry-type').focus();
-
-                        // Ensure button is enabled
+                        $('#in-amount').focus();
                         setButtonLoading(false);
                     }
 
@@ -425,7 +391,7 @@ class Obydullah_Restaurant_POS_Lite_Accounting
                         currentPage = page;
 
                         let tbody = $('#accounting-list');
-                        tbody.html('<tr><td colspan="7" class="loading-entries" style="text-align:center;"><span class="spinner is-active"></span> <?php echo esc_js(__('Loading accounting entries...', 'obydullah-restaurant-pos-lite')); ?></td></tr>');
+                        tbody.html('<tr><td colspan="5" class="loading-entries" style="text-align:center;"><span class="spinner is-active"></span> <?php echo esc_js(__('Loading accounting entries...', 'obydullah-restaurant-pos-lite')); ?></td></tr>');
 
                         $.ajax({
                             url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
@@ -448,56 +414,86 @@ class Obydullah_Restaurant_POS_Lite_Accounting
                                     updateSummaryCards(response.data.totals);
 
                                     if (!response.data.entries.length) {
-                                        tbody.append('<tr><td colspan="7" style="text-align:center;padding:20px;color:#666;"><?php echo esc_js(__('No accounting entries found.', 'obydullah-restaurant-pos-lite')); ?></td></tr>');
+                                        tbody.append('<tr><td colspan="5" style="text-align:center;padding:20px;color:#666;"><?php echo esc_js(__('No accounting entries found.', 'obydullah-restaurant-pos-lite')); ?></td></tr>');
                                         return;
                                     }
 
                                     $.each(response.data.entries, function (_, entry) {
                                         let row = $('<tr>').attr('data-entry-id', entry.id);
 
-                                        // Date column - use formatted date from server
+                                        // Date column
                                         let formattedDate = entry.formatted_date || new Date(entry.created_at).toLocaleDateString();
                                         row.append($('<td>').text(formattedDate));
 
                                         // Description column
                                         let description = entry.description || '-';
-                                        row.append($('<td>').append(
-                                            $('<span>').addClass('entry-description').attr('title', description).text(description)
-                                        ));
+                                        let isLong = description.length > 100;
+                                        let shortDesc = isLong ? description.substring(0, 100) + '...' : description;
 
-                                        // Income column - use formatted amount from server
+                                        let descCell = $('<td>').append(
+                                            $('<div>').addClass('entry-description')
+                                                .css({
+                                                    'max-width': '300px',
+                                                    'max-height': '60px',
+                                                    'overflow': 'hidden',
+                                                    'word-wrap': 'break-word',
+                                                    'cursor': isLong ? 'pointer' : 'default'
+                                                })
+                                                .attr('data-full-text', description)
+                                                .attr('data-expanded', 'false')
+                                                .text(shortDesc)
+                                        );
+
+                                        // Add click to expand if text is long
+                                        if (isLong) {
+                                            descCell.find('.entry-description').on('click', function () {
+                                                let $this = $(this);
+                                                let expanded = $this.attr('data-expanded') === 'true';
+
+                                                if (expanded) {
+                                                    $this.text(shortDesc)
+                                                        .css('max-height', '60px')
+                                                        .attr('data-expanded', 'false');
+                                                } else {
+                                                    $this.text(description)
+                                                        .css('max-height', 'none')
+                                                        .attr('data-expanded', 'true');
+                                                }
+                                            });
+                                        }
+
+                                        row.append(descCell);
+                                        // Income column
                                         let incomeAmount = parseFloat(entry.in_amount || 0);
                                         let formattedIncome = entry.formatted_in_amount || formatCurrency(incomeAmount);
                                         row.append($('<td>').append(
                                             $('<span>').addClass(incomeAmount > 0 ? 'amount-positive' : 'amount-zero')
+                                                .css({
+                                                    'font-size': '12px',
+                                                    'font-weight': 'bold',
+                                                    'padding': '4px 8px',
+                                                    'border-radius': '3px',
+                                                    'background': incomeAmount > 0 ? '#e6f4ea' : 'transparent'
+                                                })
                                                 .text(formattedIncome)
                                         ));
 
-                                        // Expense column - use formatted amount from server
+                                        // Expense column
                                         let expenseAmount = parseFloat(entry.out_amount || 0);
                                         let formattedExpense = entry.formatted_out_amount || formatCurrency(expenseAmount);
                                         row.append($('<td>').append(
                                             $('<span>').addClass(expenseAmount > 0 ? 'amount-negative' : 'amount-zero')
+                                                .css({
+                                                    'font-size': '12px',
+                                                    'font-weight': 'bold',
+                                                    'padding': '4px 8px',
+                                                    'border-radius': '3px',
+                                                    'background': expenseAmount > 0 ? '#fcf0f1' : 'transparent'
+                                                })
                                                 .text(formattedExpense)
                                         ));
 
-                                        // Payable column - use formatted amount from server
-                                        let payableAmount = parseFloat(entry.amount_payable || 0);
-                                        let formattedPayable = entry.formatted_payable || formatCurrency(payableAmount);
-                                        row.append($('<td>').append(
-                                            $('<span>').addClass(payableAmount > 0 ? 'amount-negative' : 'amount-zero')
-                                                .text(formattedPayable)
-                                        ));
-
-                                        // Receivable column - use formatted amount from server
-                                        let receivableAmount = parseFloat(entry.amount_receivable || 0);
-                                        let formattedReceivable = entry.formatted_receivable || formatCurrency(receivableAmount);
-                                        row.append($('<td>').append(
-                                            $('<span>').addClass(receivableAmount > 0 ? 'amount-positive' : 'amount-zero')
-                                                .text(formattedReceivable)
-                                        ));
-
-                                        // Actions column - Only delete button
+                                        // Actions column
                                         row.append($('<td style="text-align:center;">')
                                             .append('<button class="button button-small button-link-delete delete-entry"><?php echo esc_js(__('Delete', 'obydullah-restaurant-pos-lite')); ?></button>')
                                         );
@@ -505,11 +501,11 @@ class Obydullah_Restaurant_POS_Lite_Accounting
                                         tbody.append(row);
                                     });
                                 } else {
-                                    tbody.append('<tr><td colspan="7" style="color:red;text-align:center;">' + response.data + '</td></tr>');
+                                    tbody.append('<tr><td colspan="5" style="color:red;text-align:center;">' + response.data + '</td></tr>');
                                 }
                             },
                             error: function () {
-                                $('#accounting-list').html('<tr><td colspan="7" style="color:red;text-align:center;"><?php echo esc_js(__('Failed to load accounting entries.', 'obydullah-restaurant-pos-lite')); ?></td></tr>');
+                                $('#accounting-list').html('<tr><td colspan="5" style="color:red;text-align:center;"><?php echo esc_js(__('Failed to load accounting entries.', 'obydullah-restaurant-pos-lite')); ?></td></tr>');
                             }
                         });
                     }
@@ -522,17 +518,13 @@ class Obydullah_Restaurant_POS_Lite_Accounting
                             return false;
                         }
 
-                        let entryType = $('#entry-type').val();
-                        let amount = parseFloat($('#entry-amount').val());
+                        let inAmount = parseFloat($('#in-amount').val()) || 0;
+                        let outAmount = parseFloat($('#out-amount').val()) || 0;
                         let description = $('#entry-description').val();
                         let entryDate = $('#entry-date').val();
 
-                        if (!entryType) {
-                            alert('<?php echo esc_js(__('Please select entry type', 'obydullah-restaurant-pos-lite')); ?>');
-                            return false;
-                        }
-                        if (!amount || amount <= 0) {
-                            alert('<?php echo esc_js(__('Please enter a valid amount', 'obydullah-restaurant-pos-lite')); ?>');
+                        if (inAmount === 0 && outAmount === 0) {
+                            alert('<?php echo esc_js(__('Please enter either income or expense amount', 'obydullah-restaurant-pos-lite')); ?>');
                             return false;
                         }
 
@@ -542,8 +534,8 @@ class Obydullah_Restaurant_POS_Lite_Accounting
 
                         $.post('<?php echo esc_url(admin_url('admin-ajax.php')); ?>', {
                             action: 'orpl_add_accounting_entry',
-                            entry_type: entryType,
-                            amount: amount,
+                            in_amount: inAmount,
+                            out_amount: outAmount,
                             description: description,
                             entry_date: entryDate,
                             nonce: '<?php echo esc_js(wp_create_nonce('orpl_add_accounting_entry')); ?>'
@@ -556,7 +548,6 @@ class Obydullah_Restaurant_POS_Lite_Accounting
                             }
                         }).fail(() => alert('<?php echo esc_js(__('Request failed. Please try again.', 'obydullah-restaurant-pos-lite')); ?>'))
                             .always(function () {
-                                // Reset submitting state
                                 isSubmitting = false;
                                 setButtonLoading(false);
                             });
@@ -569,7 +560,6 @@ class Obydullah_Restaurant_POS_Lite_Accounting
                         let originalText = button.text();
                         let id = $(this).closest('tr').data('entry-id');
 
-                        // Disable button and show loading
                         button.prop('disabled', true).text('<?php echo esc_js(__('Deleting...', 'obydullah-restaurant-pos-lite')); ?>');
 
                         $.post('<?php echo esc_url(admin_url('admin-ajax.php')); ?>', {
@@ -584,7 +574,6 @@ class Obydullah_Restaurant_POS_Lite_Accounting
                             }
                         }).fail(() => alert('<?php echo esc_js(__('Delete request failed. Please try again.', 'obydullah-restaurant-pos-lite')); ?>'))
                             .always(function () {
-                                // Re-enable button
                                 button.prop('disabled', false).text(originalText);
                             });
                     });
@@ -595,7 +584,7 @@ class Obydullah_Restaurant_POS_Lite_Accounting
     }
 
     /** Get accounting entries with pagination and date filter */
-    public function ajax_get_accounting_entries()
+    public function ajax_get_orpl_accounting_entries()
     {
         // Check nonce
         if (!wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['nonce'] ?? '')), 'orpl_get_accounting_entries')) {
@@ -632,14 +621,14 @@ class Obydullah_Restaurant_POS_Lite_Accounting
         }
 
         // Get total count
-        $count_query = "SELECT COUNT(*) FROM $accounting_table WHERE $where_clause";
+        $count_query = "SELECT COUNT(*) FROM {$accounting_table} WHERE $where_clause";
         if (!empty($prepare_args)) {
             $count_query = $wpdb->prepare($count_query, $prepare_args);
         }
         $total = $wpdb->get_var($count_query);
 
         // Get entries data
-        $query = "SELECT * FROM $accounting_table WHERE $where_clause ORDER BY created_at DESC LIMIT %d OFFSET %d";
+        $query = "SELECT * FROM {$accounting_table} WHERE $where_clause ORDER BY created_at DESC LIMIT %d OFFSET %d";
 
         // Always add pagination parameters
         $pagination_args = array($per_page, $offset);
@@ -658,18 +647,14 @@ class Obydullah_Restaurant_POS_Lite_Accounting
                 $entry->formatted_date = $this->format_date($entry->created_at);
                 $entry->formatted_in_amount = $this->format_currency($entry->in_amount);
                 $entry->formatted_out_amount = $this->format_currency($entry->out_amount);
-                $entry->formatted_payable = $this->format_currency($entry->amount_payable);
-                $entry->formatted_receivable = $this->format_currency($entry->amount_receivable);
             }
         }
 
-        // Calculate totals - use the same WHERE clause but without pagination
+        // Calculate totals - SIMPLIFIED: only in_amount and out_amount
         $totals_query = "SELECT 
-        COALESCE(SUM(in_amount), 0) as total_income,
-        COALESCE(SUM(out_amount), 0) as total_expense,
-        COALESCE(SUM(amount_payable), 0) as total_payable,
-        COALESCE(SUM(amount_receivable), 0) as total_receivable
-    FROM $accounting_table WHERE $where_clause";
+            COALESCE(SUM(in_amount), 0) as total_income,
+            COALESCE(SUM(out_amount), 0) as total_expense
+            FROM {$accounting_table} WHERE $where_clause";
 
         if (!empty($prepare_args)) {
             $totals_query = $wpdb->prepare($totals_query, $prepare_args);
@@ -679,10 +664,7 @@ class Obydullah_Restaurant_POS_Lite_Accounting
         // Format totals
         $formatted_totals = array(
             'total_income' => $this->format_currency($totals->total_income),
-            'total_expense' => $this->format_currency($totals->total_expense),
-            'total_payable' => $this->format_currency($totals->total_payable),
-            'total_receivable' => $this->format_currency($totals->total_receivable),
-            'raw_totals' => $totals,
+            'total_expense' => $this->format_currency($totals->total_expense)
         );
 
         // Calculate showing range
@@ -703,7 +685,7 @@ class Obydullah_Restaurant_POS_Lite_Accounting
     }
 
     /** Add accounting entry */
-    public function ajax_add_accounting_entry()
+    public function ajax_add_orpl_accounting_entry()
     {
         // Check nonce
         if (!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'] ?? '')), 'orpl_add_accounting_entry')) {
@@ -718,61 +700,32 @@ class Obydullah_Restaurant_POS_Lite_Accounting
         global $wpdb;
         $table = $this->get_table_name();
 
-        $entry_type = sanitize_text_field(wp_unslash($_POST['entry_type'] ?? ''));
-        $amount = floatval($_POST['amount'] ?? 0);
+        $in_amount = floatval($_POST['in_amount'] ?? 0);
+        $out_amount = floatval($_POST['out_amount'] ?? 0);
         $description = sanitize_textarea_field(wp_unslash($_POST['description'] ?? ''));
         $entry_date = sanitize_text_field(wp_unslash($_POST['entry_date'] ?? ''));
 
-        // Validate required fields
-        if (empty($entry_type)) {
-            wp_send_json_error(__('Entry type is required', 'obydullah-restaurant-pos-lite'));
-        }
-        if ($amount <= 0) {
-            wp_send_json_error(__('Valid amount is required', 'obydullah-restaurant-pos-lite'));
+        // Validate that at least one amount is entered
+        if ($in_amount === 0 && $out_amount === 0) {
+            wp_send_json_error(__('Please enter either income or expense amount', 'obydullah-restaurant-pos-lite'));
         }
 
-        // Prepare data based on entry type
-        $data = array();
+        // Prepare data - SIMPLIFIED for 4 columns
+        $data = array(
+            'in_amount' => $in_amount,
+            'out_amount' => $out_amount,
+            'description' => $description
+        );
 
-        // Set the appropriate amount field based on entry type
-        switch ($entry_type) {
-            case 'income':
-                $data['in_amount'] = $amount;
-                $data['out_amount'] = 0;
-                $data['amount_payable'] = 0;
-                $data['amount_receivable'] = 0;
-                break;
-            case 'expense':
-                $data['in_amount'] = 0;
-                $data['out_amount'] = $amount;
-                $data['amount_payable'] = 0;
-                $data['amount_receivable'] = 0;
-                break;
-            case 'payable':
-                $data['in_amount'] = 0;
-                $data['out_amount'] = 0;
-                $data['amount_payable'] = $amount;
-                $data['amount_receivable'] = 0;
-                break;
-            case 'receivable':
-                $data['in_amount'] = 0;
-                $data['out_amount'] = 0;
-                $data['amount_payable'] = 0;
-                $data['amount_receivable'] = $amount;
-                break;
-            default:
-                wp_send_json_error(__('Invalid entry type', 'obydullah-restaurant-pos-lite'));
-        }
-
-        // Add description
-        $data['description'] = $description;
+        $format = array('%f', '%f', '%s');
 
         // Set custom date if provided
         if (!empty($entry_date)) {
             $data['created_at'] = $entry_date . ' ' . gmdate('H:i:s');
+            $format[] = '%s';
         }
 
-        $result = $wpdb->insert($table, $data, array('%f', '%f', '%f', '%f', '%s', '%s'));
+        $result = $wpdb->insert($table, $data, $format);
 
         if (false === $result) {
             wp_send_json_error(__('Failed to add accounting entry', 'obydullah-restaurant-pos-lite'));
@@ -782,7 +735,7 @@ class Obydullah_Restaurant_POS_Lite_Accounting
     }
 
     /** Delete accounting entry */
-    public function ajax_delete_accounting_entry()
+    public function ajax_delete_orpl_accounting_entry()
     {
         // Check nonce
         if (!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'] ?? '')), 'orpl_delete_accounting_entry')) {

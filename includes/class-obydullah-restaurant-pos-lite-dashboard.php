@@ -98,12 +98,13 @@ class Obydullah_Restaurant_POS_Lite_Dashboard
      */
     private function get_stock_value()
     {
+        $status = 'outStock';
         $result = $this->wpdb->get_var(
             $this->wpdb->prepare(
                 "SELECT SUM(quantity * net_cost) AS total_value 
              FROM {$this->table_stocks} 
              WHERE status != %s",
-                'outStock'
+                $status
             )
         );
 
@@ -118,12 +119,14 @@ class Obydullah_Restaurant_POS_Lite_Dashboard
     private function get_today_sales_count()
     {
         $today = current_time('Y-m-d');
+        $status = 'completed';
 
         $result = $this->wpdb->get_var(
             $this->wpdb->prepare(
                 "SELECT COUNT(*) 
              FROM {$this->table_sales} 
-             WHERE status = 'completed' AND DATE(created_at) = %s",
+             WHERE status = '%s' AND DATE(created_at) = %s",
+                $status,
                 $today
             )
         );
@@ -140,12 +143,14 @@ class Obydullah_Restaurant_POS_Lite_Dashboard
     {
         $first_day = current_time('Y-m-01');
         $last_day = current_time('Y-m-t');
+        $status = 'completed';
 
         $result = $this->wpdb->get_var(
             $this->wpdb->prepare(
                 "SELECT COUNT(*) 
              FROM {$this->table_sales} 
-             WHERE status = 'completed' AND DATE(created_at) BETWEEN %s AND %s",
+             WHERE status = '%s' AND DATE(created_at) BETWEEN %s AND %s",
+                $status,
                 $first_day,
                 $last_day
             )
@@ -162,12 +167,14 @@ class Obydullah_Restaurant_POS_Lite_Dashboard
     private function get_today_income()
     {
         $today = current_time('Y-m-d');
+        $status = 'completed';
 
         $result = $this->wpdb->get_var(
             $this->wpdb->prepare(
                 "SELECT SUM(paid_amount)
              FROM {$this->table_sales} 
-             WHERE status = 'completed' AND DATE(created_at) = %s",
+             WHERE status = '%s' AND DATE(created_at) = %s",
+                $status,
                 $today
             )
         );
@@ -184,15 +191,17 @@ class Obydullah_Restaurant_POS_Lite_Dashboard
     {
         $first_day = current_time('Y-m-01');
         $last_day = current_time('Y-m-t');
+        $status = 'completed';
 
         $result = $this->wpdb->get_var(
             $this->wpdb->prepare(
                 "SELECT SUM(paid_amount) 
             FROM {$this->table_sales} 
             WHERE DATE(created_at) BETWEEN %s AND %s 
-            AND status = 'completed'",
+            AND status = '%s'",
                 $first_day,
-                $last_day
+                $last_day,
+                $status
             )
         );
 
@@ -244,36 +253,63 @@ class Obydullah_Restaurant_POS_Lite_Dashboard
     }
 
     /**
-     * Get weekly sales trend data
+     * Get hourly sales heatmap data for today
      *
      * @return array
      */
-    private function get_weekly_sales_trend()
+    private function get_hourly_sales_heatmap()
     {
-        $weekly_sales = array();
-
-        // Get sales for the last 7 days using WordPress timezone.
-        for ($i = 6; $i >= 0; $i--) {
-            $date = gmdate('Y-m-d', strtotime("-$i days", current_time('timestamp')));
-            $day_name = gmdate('D', strtotime($date));
-
-            $result = $this->wpdb->get_var(
-                $this->wpdb->prepare(
-                    "SELECT SUM(paid_amount) as daily_sales
+        $today = current_time('Y-m-d');
+        
+        // Get hourly sales data for today
+        $results = $this->wpdb->get_results(
+            $this->wpdb->prepare(
+                "SELECT 
+                    HOUR(created_at) as hour,
+                    COUNT(*) as order_count,
+                    SUM(paid_amount) as revenue
                 FROM {$this->table_sales} 
                 WHERE DATE(created_at) = %s 
-                AND status = 'completed'",
-                    $date
-                )
-            );
-
-            $weekly_sales[] = array(
-                'day' => $day_name,
-                'sales' => $result ? floatval($result) : 0,
+                AND status = 'completed'
+                GROUP BY HOUR(created_at)
+                ORDER BY hour ASC",
+                $today
+            )
+        );
+        
+        // Create array for all 24 hours with default values
+        $hourly_data = array();
+        for ($i = 0; $i < 24; $i++) {
+            $hour_label = '';
+            if ($i == 0) {
+                $hour_label = '12 AM';
+            } elseif ($i < 12) {
+                $hour_label = $i . ' AM';
+            } elseif ($i == 12) {
+                $hour_label = '12 PM';
+            } else {
+                $hour_label = ($i - 12) . ' PM';
+            }
+            
+            $hourly_data[$i] = array(
+                'hour' => $i,
+                'order_count' => 0,
+                'revenue' => 0,
+                'label' => $hour_label,
+                'period' => $i < 12 ? 'AM' : 'PM'
             );
         }
-
-        return $weekly_sales;
+        
+        // Fill with actual data from database
+        foreach ($results as $row) {
+            $hour = intval($row->hour);
+            if (isset($hourly_data[$hour])) {
+                $hourly_data[$hour]['order_count'] = intval($row->order_count);
+                $hourly_data[$hour]['revenue'] = floatval($row->revenue);
+            }
+        }
+        
+        return array_values($hourly_data);
     }
 
     /**
@@ -285,6 +321,9 @@ class Obydullah_Restaurant_POS_Lite_Dashboard
     {
         $thirty_days_ago = gmdate('Y-m-d', strtotime('-30 days', current_time('timestamp')));
 
+        $status = 'completed';
+        $limit = 5;
+
         $query = $this->wpdb->prepare(
             "SELECT 
             p.name as product_name,
@@ -294,12 +333,14 @@ class Obydullah_Restaurant_POS_Lite_Dashboard
         FROM {$this->table_sale_details} sd
         INNER JOIN {$this->table_sales} s ON sd.fk_sale_id = s.id
         INNER JOIN {$this->table_products} p ON sd.fk_product_id = p.id
-        WHERE s.status = 'completed'
+        WHERE s.status = '%s'
         AND DATE(s.created_at) >= %s
         GROUP BY p.id, p.name
         ORDER BY total_revenue DESC
-        LIMIT 5",
-            $thirty_days_ago
+        LIMIT %d",
+            $status,
+            $thirty_days_ago,
+            $limit
         );
 
         $result = $this->wpdb->get_results($query);
@@ -327,17 +368,20 @@ class Obydullah_Restaurant_POS_Lite_Dashboard
             'expense' => $this->get_month_expense(),
         );
 
-        $weekly_sales = $this->get_weekly_sales_trend();
+        $hourly_sales = $this->get_hourly_sales_heatmap();
         $top_products = $this->get_top_products();
 
-        // Calculate bar heights (max height 80% for the highest value).
+        // Calculate bar heights for income vs expense
         $max_value = max($income_expense['income'], $income_expense['expense']);
         $income_height = $max_value > 0 ? ($income_expense['income'] / $max_value) * 80 : 0;
         $expense_height = $max_value > 0 ? ($income_expense['expense'] / $max_value) * 80 : 0;
 
-        // Calculate weekly sales max for chart scaling.
-        $weekly_sales_values = array_column($weekly_sales, 'sales');
-        $weekly_sales_max = !empty($weekly_sales_values) ? max($weekly_sales_values) : 0;
+        // Calculate max values for hourly heatmap
+        $hourly_order_counts = array_column($hourly_sales, 'order_count');
+        $hourly_revenues = array_column($hourly_sales, 'revenue');
+        $max_order_count = !empty($hourly_order_counts) ? max($hourly_order_counts) : 0;
+        $max_revenue = !empty($hourly_revenues) ? max($hourly_revenues) : 0;
+        $total_today_revenue = array_sum($hourly_revenues);
         ?>
         <div class="wrap">
             <h1><?php esc_html_e('Restaurant POS Dashboard', 'obydullah-restaurant-pos-lite'); ?></h1>
@@ -473,21 +517,75 @@ class Obydullah_Restaurant_POS_Lite_Dashboard
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Hourly Sales Heatmap Chart -->
                     <div class="chart-container">
-                        <h3><?php esc_html_e('Weekly Sales Trend', 'obydullah-restaurant-pos-lite'); ?></h3>
-                        <div class="line-chart">
-                            <?php foreach ($weekly_sales as $day_data): ?>
-                                <?php
-                                $height = $weekly_sales_max > 0 ? ($day_data['sales'] / $weekly_sales_max) * 80 : 0;
-                                ?>
-                                <div class="line-chart-bar">
-                                    <div class="line-chart-value" style="height: <?php echo esc_attr($height); ?>%">
-                                        <span
-                                            class="line-tooltip"><?php echo esc_html($this->format_currency($day_data['sales'])); ?></span>
-                                    </div>
-                                    <span class="line-chart-label"><?php echo esc_html($day_data['day']); ?></span>
+                        <h3><?php esc_html_e('Today\'s Hourly Sales Heatmap', 'obydullah-restaurant-pos-lite'); ?></h3>
+                        <div class="hourly-heatmap">
+                            <div class="heatmap-header">
+                                <div class="heatmap-time-periods">
+                                    <span class="time-period am-period">AM</span>
+                                    <span class="time-period pm-period">PM</span>
                                 </div>
-                            <?php endforeach; ?>
+                                <div class="heatmap-stats">
+                                    <span class="heatmap-stat">
+                                        <strong><?php echo esc_html($this->format_number($dashboard_data['today_sale'])); ?></strong>
+                                        <?php esc_html_e('Orders', 'obydullah-restaurant-pos-lite'); ?>
+                                    </span>
+                                    <span class="heatmap-stat">
+                                        <strong><?php echo esc_html($this->format_currency($total_today_revenue)); ?></strong>
+                                        <?php esc_html_e('Revenue', 'obydullah-restaurant-pos-lite'); ?>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="heatmap-grid">
+                                <?php foreach ($hourly_sales as $hour_data): ?>
+                                    <?php
+                                    // Calculate intensity based on revenue (green intensity)
+                                    $revenue_intensity = $max_revenue > 0 ? ($hour_data['revenue'] / $max_revenue) * 100 : 0;
+                                    $bg_color = $revenue_intensity > 0 ? 
+                                        'hsl(120, ' . min(100, 30 + $revenue_intensity * 0.7) . '%, ' . max(30, 90 - $revenue_intensity * 0.5) . '%)' : 
+                                        '#f0f0f0';
+                                    
+                                    // Calculate height based on order count
+                                    $order_height = $max_order_count > 0 ? ($hour_data['order_count'] / $max_order_count) * 80 : 0;
+                                    ?>
+                                    <div class="heatmap-hour" style="background-color: <?php echo esc_attr($bg_color); ?>">
+                                        <div class="heatmap-bar" style="height: <?php echo esc_attr($order_height); ?>%">
+                                            <div class="heatmap-tooltip">
+                                                <div class="tooltip-time"><?php echo esc_html($hour_data['label']); ?></div>
+                                                <div class="tooltip-orders">
+                                                    <span class="tooltip-label"><?php esc_html_e('Orders:', 'obydullah-restaurant-pos-lite'); ?></span>
+                                                    <span class="tooltip-value"><?php echo esc_html($this->format_number($hour_data['order_count'])); ?></span>
+                                                </div>
+                                                <div class="tooltip-revenue">
+                                                    <span class="tooltip-label"><?php esc_html_e('Revenue:', 'obydullah-restaurant-pos-lite'); ?></span>
+                                                    <span class="tooltip-value"><?php echo esc_html($this->format_currency($hour_data['revenue'])); ?></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="heatmap-label"><?php echo esc_html($hour_data['label']); ?></div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                            <div class="heatmap-legend">
+                                <div class="legend-item">
+                                    <span class="legend-color" style="background-color: #f0f0f0;"></span>
+                                    <span class="legend-text"><?php esc_html_e('No Sales', 'obydullah-restaurant-pos-lite'); ?></span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-color" style="background-color: hsl(120, 30%, 90%);"></span>
+                                    <span class="legend-text"><?php esc_html_e('Low', 'obydullah-restaurant-pos-lite'); ?></span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-color" style="background-color: hsl(120, 65%, 70%);"></span>
+                                    <span class="legend-text"><?php esc_html_e('Medium', 'obydullah-restaurant-pos-lite'); ?></span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-color" style="background-color: hsl(120, 100%, 40%);"></span>
+                                    <span class="legend-text"><?php esc_html_e('High', 'obydullah-restaurant-pos-lite'); ?></span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

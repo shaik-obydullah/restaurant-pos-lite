@@ -28,7 +28,6 @@ class Obydullah_Restaurant_POS_Lite_POS
         global $wpdb;
         $this->helpers = new Obydullah_Restaurant_POS_Lite_Helpers();
 
-        // Define table names
         $this->sales_table = $wpdb->prefix . 'orpl_sales';
         $this->sale_details_table = $wpdb->prefix . 'orpl_sale_details';
         $this->stocks_table = $wpdb->prefix . 'orpl_stocks';
@@ -368,7 +367,6 @@ class Obydullah_Restaurant_POS_Lite_POS
                     phone: '<?php echo esc_js($shop_info['phone']); ?>'
                 };
 
-                // Separate VAT and TAX settings for clarity
                 const vatSettings = {
                     rate: <?php echo esc_js($vat_rate); ?>,
                     enabled: <?php echo $is_vat_enabled ? 'true' : 'false'; ?>
@@ -536,7 +534,6 @@ class Obydullah_Restaurant_POS_Lite_POS
                     });
                 }
 
-                // Initialize product card click handlers
                 function initializeProductCardHandlers() {
                     // Add click handlers for entire product cards
                     $('.product-card').on('click', function (e) {
@@ -943,7 +940,7 @@ class Obydullah_Restaurant_POS_Lite_POS
                     }
 
                     // Store current cart and form data BEFORE sending AJAX
-                    const currentCartData = [...cart]; // Define currentCartData here
+                    const currentCartData = [...cart];
                     const currentFormData = {
                         orderType: currentOrderType,
                         tableNumber: $('#table-number').val().trim(),
@@ -1096,7 +1093,7 @@ class Obydullah_Restaurant_POS_Lite_POS
                 function showInvoiceSummary(invoiceId, saleId, cartData, formData, saleData) {
                     // Calculate totals from the cart data that was passed
                     const subtotal = cartData.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                    const discount = parseFloat(saleData.discount) || 0; // Now saleData is defined
+                    const discount = parseFloat(saleData.discount) || 0;
                     const deliveryCost = parseFloat(saleData.delivery_cost) || 0;
                     const taxableAmount = subtotal - discount;
 
@@ -1349,6 +1346,7 @@ class Obydullah_Restaurant_POS_Lite_POS
 
         $cache_key = 'orpl_categories_pos';
         $categories = wp_cache_get($cache_key, self::CACHE_GROUP);
+        $category_status = 'active';
 
         if (false === $categories) {
             global $wpdb;
@@ -1358,7 +1356,7 @@ class Obydullah_Restaurant_POS_Lite_POS
             FROM {$this->categories_table} 
             WHERE status = %s 
             ORDER BY name ASC",
-                'active'
+                $category_status
             ));
 
             wp_cache_set($cache_key, $categories, self::CACHE_GROUP, self::CACHE_EXPIRATION);
@@ -1371,13 +1369,14 @@ class Obydullah_Restaurant_POS_Lite_POS
     {
         check_ajax_referer('orpl_get_customers_for_pos', 'nonce');
         global $wpdb;
+        $customer_status = 'active';
 
         $customers = $wpdb->get_results($wpdb->prepare(
             "SELECT id, name, email, mobile, address
         FROM {$this->customers_table} 
         WHERE status = %s 
         ORDER BY name ASC",
-            'active'
+            $customer_status
         ));
 
         wp_send_json_success($customers);
@@ -1394,6 +1393,7 @@ class Obydullah_Restaurant_POS_Lite_POS
         }
 
         $category_id = sanitize_text_field(wp_unslash($_GET['category_id'] ?? 'all'));
+        $product_status = 'active';
 
         $query = $wpdb->prepare(
             "
@@ -1401,7 +1401,7 @@ class Obydullah_Restaurant_POS_Lite_POS
         FROM {$this->products_table} p 
         LEFT JOIN {$this->stocks_table} s ON p.id = s.fk_product_id 
         WHERE p.status = %s",
-            'active'
+            $product_status
         );
 
         $query_params = array();
@@ -1427,6 +1427,7 @@ class Obydullah_Restaurant_POS_Lite_POS
     {
         check_ajax_referer('orpl_get_saved_sales', 'nonce');
         global $wpdb;
+        $sale_status = 'saveSale';
 
         $sales = $wpdb->get_results($wpdb->prepare(
             "SELECT s.id, s.invoice_id, s.grand_total, s.created_at,
@@ -1436,7 +1437,7 @@ class Obydullah_Restaurant_POS_Lite_POS
         WHERE s.status = %s
         ORDER BY s.created_at DESC
         LIMIT 20",
-            'saveSale'
+            $sale_status
         ));
 
         wp_send_json_success($sales);
@@ -1447,6 +1448,7 @@ class Obydullah_Restaurant_POS_Lite_POS
     {
         check_ajax_referer('orpl_load_saved_sale', 'nonce');
         global $wpdb;
+        $sale_status = 'saveSale';
 
         $sale_id = intval($_GET['sale_id'] ?? 0);
 
@@ -1456,8 +1458,8 @@ class Obydullah_Restaurant_POS_Lite_POS
 
         // Get sale details
         $sale = $wpdb->get_row($wpdb->prepare("
-            SELECT * FROM {$this->sales_table} WHERE id = %d AND status = 'saveSale'
-        ", $sale_id));
+            SELECT * FROM {$this->sales_table} WHERE id = %d AND status = '%s'
+        ", $sale_id, $sale_status));
 
         if (!$sale) {
             wp_send_json_error('Saved sale not found');
@@ -1482,7 +1484,7 @@ class Obydullah_Restaurant_POS_Lite_POS
     {
         check_ajax_referer('orpl_process_sale', 'nonce');
         global $wpdb;
-
+        $sale_status = 'saveSale';
 
         try {
             // Validate sale data
@@ -1519,8 +1521,9 @@ class Obydullah_Restaurant_POS_Lite_POS
             if ($is_updating_saved_sale && $action === 'complete') {
                 // For completing saved sale, use existing sale record
                 $existing_sale = $wpdb->get_row($wpdb->prepare(
-                    "SELECT * FROM {$this->sales_table} WHERE id = %d AND status = 'saveSale'",
-                    $sale_id
+                    "SELECT * FROM {$this->sales_table} WHERE id = %d AND status = '%s'",
+                    $sale_id,
+                    $sale_status
                 ));
 
                 if (!$existing_sale) {
@@ -1578,11 +1581,14 @@ class Obydullah_Restaurant_POS_Lite_POS
             $grand_total = $taxable_amount + $vat_amount + $tax_amount + $delivery_cost;
             $paid_amount = ($action === 'complete') ? $grand_total : 0;
 
+            // Calculate income (selling price - buying price)
+            $income = $grand_total - $buy_price_total;
+
             // Sanitize text inputs
             $cooking_instructions = isset($data['cooking_instructions']) ? sanitize_textarea_field($data['cooking_instructions']) : '';
             $note = isset($data['note']) ? sanitize_textarea_field($data['note']) : '';
 
-            // Prepare sale data (sale_due removed)
+            // Prepare sale data
             $sale_data = [
                 'fk_customer_id' => !empty($data['customer_id']) ? intval($data['customer_id']) : null,
                 'invoice_id' => $invoice_id,
@@ -1601,12 +1607,41 @@ class Obydullah_Restaurant_POS_Lite_POS
                 'created_at' => current_time('mysql'),
             ];
 
+            // Define formats for sale data
+            $sale_formats = [
+                '%d',  // fk_customer_id (integer or NULL)
+                '%s',  // invoice_id (string)
+                '%f',  // net_price (float)
+                '%f',  // vat_amount (float)
+                '%f',  // tax_amount (float)
+                '%f',  // shipping_cost (float)
+                '%f',  // discount_amount (float)
+                '%f',  // grand_total (float)
+                '%f',  // paid_amount (float)
+                '%f',  // buy_price (float)
+                '%s',  // sale_type (string)
+                '%s',  // cooking_instructions (string)
+                '%s',  // status (string)
+                '%s',  // note (string)
+                '%s',  // created_at (datetime string)
+            ];
+
             if ($is_updating_saved_sale && $action === 'complete') {
                 // Update existing saved sale to completed
-                $wpdb->update($this->sales_table, $sale_data, ['id' => $sale_id]);
+                $wpdb->update(
+                    $this->sales_table,
+                    $sale_data,
+                    ['id' => $sale_id],  // WHERE clause
+                    $sale_formats,        // Data formats
+                    ['%d']                // WHERE format (id is integer)
+                );
             } else {
                 // Insert new sale record
-                $wpdb->insert($this->sales_table, $sale_data);
+                $wpdb->insert(
+                    $this->sales_table,
+                    $sale_data,
+                    $sale_formats
+                );
                 $sale_id = $wpdb->insert_id;
             }
 
@@ -1617,7 +1652,11 @@ class Obydullah_Restaurant_POS_Lite_POS
             // Handle sale details
             if ($is_updating_saved_sale) {
                 // Delete existing sale details for update
-                $wpdb->delete($this->sale_details_table, ['fk_sale_id' => $sale_id]);
+                $wpdb->delete(
+                    $this->sale_details_table,
+                    ['fk_sale_id' => $sale_id],
+                    ['%d']  // WHERE format (fk_sale_id is integer)
+                );
             }
 
             // Insert sale details and update stock
@@ -1647,7 +1686,23 @@ class Obydullah_Restaurant_POS_Lite_POS
                     'created_at' => current_time('mysql'),
                 ];
 
-                $wpdb->insert($this->sale_details_table, $sale_detail_data);
+                // Define formats for sale detail data
+                $sale_detail_formats = [
+                    '%d',  // fk_sale_id (integer)
+                    '%d',  // fk_product_id (integer)
+                    '%d',  // fk_stock_id (integer)
+                    '%s',  // product_name (string)
+                    '%d',  // quantity (integer)
+                    '%f',  // unit_price (float)
+                    '%f',  // total_price (float)
+                    '%s',  // created_at (datetime string)
+                ];
+
+                $wpdb->insert(
+                    $this->sale_details_table,
+                    $sale_detail_data,
+                    $sale_detail_formats
+                );
 
                 // Update stock quantity only for completed sales
                 if ($action === 'complete') {
@@ -1661,21 +1716,43 @@ class Obydullah_Restaurant_POS_Lite_POS
                             'status' => $new_status,
                             'updated_at' => current_time('mysql')
                         ],
-                        ['id' => $stock_data->id]
+                        ['id' => $stock_data->id],
+                        [
+                            '%d',  // quantity (integer)
+                            '%s',  // status (string)
+                            '%s',  // updated_at (datetime string)
+                        ],
+                        ['%d']  // WHERE format (id is integer)
                     );
                 }
             }
 
             // Create accounting record only for completed sales
             if ($action === 'complete') {
+                // For accounting:
+                // - out_amount = buy_price_total (cost of goods sold)
+                // - in_amount = grand_total (revenue from sale)
+                // Income is calculated as: in_amount - out_amount
+
                 $accounting_data = [
-                    'out_amount' => $buy_price_total,
-                    'amount_receivable' => $grand_total,
-                    'description' => 'Stock Out',
+                    'in_amount' => $grand_total,     // Revenue from sale
+                    'out_amount' => $buy_price_total, // Cost of goods sold
+                    'description' => sprintf('Sale #%s completed (Income: %s)', $invoice_id, number_format($income, 2)),
                     'created_at' => current_time('mysql')
                 ];
 
-                $wpdb->insert($this->accounting_table, $accounting_data);
+                $accounting_formats = [
+                    '%f',  // in_amount (float)
+                    '%f',  // out_amount (float)
+                    '%s',  // description (string)
+                    '%s',  // created_at (datetime string)
+                ];
+
+                $wpdb->insert(
+                    $this->accounting_table,
+                    $accounting_data,
+                    $accounting_formats
+                );
             }
 
             $wpdb->query('COMMIT');
@@ -1683,6 +1760,7 @@ class Obydullah_Restaurant_POS_Lite_POS
             wp_send_json_success([
                 'sale_id' => $sale_id,
                 'invoice_id' => $invoice_id,
+                'income' => $income,
                 'message' => $action === 'complete' ? __('Sale completed successfully!', 'obydullah-restaurant-pos-lite') : __('Sale saved successfully!', 'obydullah-restaurant-pos-lite')
             ]);
 
