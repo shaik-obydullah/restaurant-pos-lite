@@ -384,8 +384,21 @@ class Obydullah_Restaurant_POS_Lite_Stocks
                                         // Sale Price column
                                         row.append($('<td>').text(parseFloat(stock.sale_cost).toFixed(2)));
 
-                                        // Quantity column
-                                        row.append($('<td>').text(stock.quantity));
+                                        // Quantity column with conditional styling
+                                        let quantityCell = $('<td>').text(stock.quantity);
+                                        let quantityNum = parseInt(stock.quantity);
+
+                                        if (quantityNum === 0) {
+                                            quantityCell.css({
+                                                'color': '#d63638',
+                                            });
+                                        } else if (quantityNum < 10) {
+                                            quantityCell.css({
+                                                'color': '#dba617',
+                                            });
+                                        }
+
+                                        row.append(quantityCell);
 
                                         // Status column
                                         let statusClass = 'status-' + stock.status;
@@ -402,7 +415,6 @@ class Obydullah_Restaurant_POS_Lite_Stocks
 
                                         tbody.append(row);
                                     });
-
                                     updateORPLSummaryCards(response.data.stocks);
                                     updateORPLPagination(response.data.pagination);
                                 } else {
@@ -564,8 +576,8 @@ class Obydullah_Restaurant_POS_Lite_Stocks
                             alert('<?php echo esc_js(__('Please enter a valid sale price', 'obydullah-restaurant-pos-lite')); ?>');
                             return false;
                         }
-                        if (quantity < 0) {
-                            alert('<?php echo esc_js(__('Please enter a valid quantity', 'obydullah-restaurant-pos-lite')); ?>');
+                        if (quantity <= 0) {
+                            alert('<?php echo esc_js(__('Please enter a valid quantity greater than 0', 'obydullah-restaurant-pos-lite')); ?>');
                             return false;
                         }
 
@@ -643,7 +655,7 @@ class Obydullah_Restaurant_POS_Lite_Stocks
                         $('#stock-product').val('');
                         $('#net-cost').val('0.00');
                         $('#sale-cost').val('0.00');
-                        $('#stock-quantity').val('0');
+                        $('#stock-quantity').val('1');
                         $('#stock-status').val('inStock');
 
                         calculateORPLProfit();
@@ -842,10 +854,9 @@ class Obydullah_Restaurant_POS_Lite_Stocks
         if ($sale_cost <= 0) {
             wp_send_json_error(__('Sale price must be greater than 0', 'obydullah-restaurant-pos-lite'));
         }
-        if ($quantity < 0) {
-            wp_send_json_error(__('Quantity cannot be negative', 'obydullah-restaurant-pos-lite'));
+        if ($quantity <= 0) {
+            wp_send_json_error(__('Quantity must be greater than 0', 'obydullah-restaurant-pos-lite'));
         }
-
         // Calculate total investment
         $total_investment = $net_cost * $quantity;
 
