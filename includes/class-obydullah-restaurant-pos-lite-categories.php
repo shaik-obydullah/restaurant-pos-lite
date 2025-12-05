@@ -358,13 +358,15 @@ class Obydullah_Restaurant_POS_Lite_Categories
             wp_send_json_error(__('Category name already exists', 'obydullah-restaurant-pos-lite'));
         }
 
-        $result = $wpdb->query(
-            $wpdb->prepare(
-                "INSERT INTO {$table_name}
-        (name, status)
-        VALUES ( %s, %s)",
-                $name,
-                $status
+        $result = $wpdb->insert(
+            $table_name,
+            array(
+                'name' => $name,
+                'status' => $status
+            ),
+            array(
+                '%s',
+                '%s'
             )
         );
 
@@ -417,14 +419,6 @@ class Obydullah_Restaurant_POS_Lite_Categories
         }
 
         $result = $wpdb->update(
-            $table_name,
-            ['name' => $name, 'status' => $status],
-            ['id' => $id],
-            ['%s', '%s'],
-            ['%d']
-        );
-
-        $wpdb->update(
             "{$table_name}",
             array(
                 'name' => $name,
@@ -469,7 +463,11 @@ class Obydullah_Restaurant_POS_Lite_Categories
             wp_send_json_error('Invalid category ID');
         }
 
-        $result = $wpdb->delete($table_name, ['id' => $id], ['%d']);
+        $result = $wpdb->delete(
+            $table_name,
+            array('id' => $id),
+            array('%d')
+        );
 
         if ($result === false) {
             wp_send_json_error('Failed to delete category');

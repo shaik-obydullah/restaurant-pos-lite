@@ -12,11 +12,11 @@ class Obydullah_Restaurant_POS_Lite_Products
 {
     public function __construct()
     {
-        add_action('wp_ajax_orpl_add_product', [$this, 'ajax_add_product']);
-        add_action('wp_ajax_orpl_get_products', [$this, 'ajax_get_products']);
-        add_action('wp_ajax_orpl_edit_product', [$this, 'ajax_edit_product']);
-        add_action('wp_ajax_orpl_delete_product', [$this, 'ajax_delete_product']);
-        add_action('wp_ajax_orpl_get_categories_for_products', [$this, 'ajax_get_categories_for_products']);
+        add_action('wp_ajax_orpl_add_product', [$this, 'ajax_add_orpl_product']);
+        add_action('wp_ajax_orpl_get_products', [$this, 'ajax_get_orpl_products']);
+        add_action('wp_ajax_orpl_edit_product', [$this, 'ajax_edit_orpl_product']);
+        add_action('wp_ajax_orpl_delete_product', [$this, 'ajax_delete_orpl_product']);
+        add_action('wp_ajax_orpl_get_categories_for_products', [$this, 'ajax_get_orpl_categories_for_products']);
     }
 
     /**
@@ -229,10 +229,10 @@ class Obydullah_Restaurant_POS_Lite_Products
                     let searchTimeout = null;
 
                     // Load categories and products on page load
-                    loadCategories();
-                    loadProducts();
+                    loadORPLCategories();
+                    loadORPLProducts();
 
-                    function loadCategories() {
+                    function loadORPLCategories() {
                         $.ajax({
                             url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                             type: 'GET',
@@ -255,7 +255,7 @@ class Obydullah_Restaurant_POS_Lite_Products
                         });
                     }
 
-                    function loadProducts(page = 1) {
+                    function loadORPLProducts(page = 1) {
                         currentPage = page;
 
                         let tbody = $('#product-list');
@@ -279,7 +279,7 @@ class Obydullah_Restaurant_POS_Lite_Products
                                             '<?php echo esc_js(__('No products found matching', 'obydullah-restaurant-pos-lite')); ?> "' + searchTerm + '".' :
                                             '<?php echo esc_js(__('No products found.', 'obydullah-restaurant-pos-lite')); ?>';
                                         tbody.append('<tr><td colspan="5" style="text-align:center;padding:20px;color:#666;">' + message + '</td></tr>');
-                                        updatePagination(response.data.pagination);
+                                        updateORPLPagination(response.data.pagination);
                                         return;
                                     }
 
@@ -321,7 +321,7 @@ class Obydullah_Restaurant_POS_Lite_Products
                                         tbody.append(row);
                                     });
 
-                                    updatePagination(response.data.pagination);
+                                    updateORPLPagination(response.data.pagination);
                                 } else {
                                     tbody.append('<tr><td colspan="5" style="color:red;text-align:center;">' + response.data + '</td></tr>');
                                 }
@@ -332,7 +332,7 @@ class Obydullah_Restaurant_POS_Lite_Products
                         });
                     }
 
-                    function updatePagination(pagination) {
+                    function updateORPLPagination(pagination) {
                         totalPages = pagination.total_pages;
                         totalItems = pagination.total_items;
 
@@ -354,7 +354,7 @@ class Obydullah_Restaurant_POS_Lite_Products
                         searchTerm = $(this).val().trim();
 
                         searchTimeout = setTimeout(function () {
-                            loadProducts(1); // Reset to first page when searching
+                            loadORPLProducts(1); // Reset to first page when searching
                         }, 500); // 500ms delay
                     });
 
@@ -362,41 +362,41 @@ class Obydullah_Restaurant_POS_Lite_Products
                     $('#clear-search').on('click', function () {
                         $('#product-search').val('');
                         searchTerm = '';
-                        loadProducts(1);
+                        loadORPLProducts(1);
                     });
 
                     // Per page change
                     $('#per-page-select').on('change', function () {
                         perPage = parseInt($(this).val());
-                        loadProducts(1);
+                        loadORPLProducts(1);
                     });
 
                     // Pagination handlers
                     $('.first-page').on('click', function (e) {
                         e.preventDefault();
-                        if (currentPage > 1) loadProducts(1);
+                        if (currentPage > 1) loadORPLProducts(1);
                     });
 
                     $('.prev-page').on('click', function (e) {
                         e.preventDefault();
-                        if (currentPage > 1) loadProducts(currentPage - 1);
+                        if (currentPage > 1) loadORPLProducts(currentPage - 1);
                     });
 
                     $('.next-page').on('click', function (e) {
                         e.preventDefault();
-                        if (currentPage < totalPages) loadProducts(currentPage + 1);
+                        if (currentPage < totalPages) loadORPLProducts(currentPage + 1);
                     });
 
                     $('.last-page').on('click', function (e) {
                         e.preventDefault();
-                        if (currentPage < totalPages) loadProducts(totalPages);
+                        if (currentPage < totalPages) loadORPLProducts(totalPages);
                     });
 
                     $('#current-page-selector').on('keypress', function (e) {
                         if (e.which === 13) { // Enter key
                             let page = parseInt($(this).val());
                             if (page >= 1 && page <= totalPages) {
-                                loadProducts(page);
+                                loadORPLProducts(page);
                             }
                         }
                     });
@@ -445,7 +445,15 @@ class Obydullah_Restaurant_POS_Lite_Products
                         let formData = new FormData(this);
                         formData.append('action', action);
                         formData.append('id', id);
-                        formData.append('nonce', '<?php echo esc_attr(wp_create_nonce("orpl_add_product")); ?>');
+
+                        // FIX: Use correct nonce based on whether we're adding or editing
+                        if (id) {
+                            // Editing product - use edit product nonce
+                            formData.append('nonce', '<?php echo esc_attr(wp_create_nonce("orpl_edit_product")); ?>');
+                        } else {
+                            // Adding product - use add product nonce
+                            formData.append('nonce', '<?php echo esc_attr(wp_create_nonce("orpl_add_product")); ?>');
+                        }
 
                         $.ajax({
                             url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
@@ -456,7 +464,7 @@ class Obydullah_Restaurant_POS_Lite_Products
                             success: function (res) {
                                 if (res.success) {
                                     resetForm();
-                                    loadProducts(currentPage);
+                                    loadORPLProducts(currentPage);
                                 } else {
                                     alert('<?php echo esc_js(__('Error:', 'obydullah-restaurant-pos-lite')); ?> ' + res.data);
                                 }
@@ -471,7 +479,7 @@ class Obydullah_Restaurant_POS_Lite_Products
                             }
                         });
                     });
-
+                    
                     $('#cancel-edit').on('click', function () {
                         resetForm();
                     });
@@ -530,7 +538,7 @@ class Obydullah_Restaurant_POS_Lite_Products
                             nonce: '<?php echo esc_attr(wp_create_nonce("orpl_delete_product")); ?>'
                         }, function (res) {
                             if (res.success) {
-                                loadProducts(currentPage);
+                                loadORPLProducts(currentPage);
                             } else {
                                 alert(res.data);
                             }
@@ -579,7 +587,7 @@ class Obydullah_Restaurant_POS_Lite_Products
     }
 
     /** Get categories for product form */
-    public function ajax_get_categories_for_products()
+    public function ajax_get_orpl_categories_for_products()
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
@@ -589,6 +597,7 @@ class Obydullah_Restaurant_POS_Lite_Products
 
         global $wpdb;
         $table_name = $wpdb->prefix . 'orpl_categories';
+        $category_status = 'active';
 
         // Get categories with caching
         $cache_key = 'orpl_active_categories';
@@ -596,7 +605,10 @@ class Obydullah_Restaurant_POS_Lite_Products
 
         if (false === $categories) {
             $categories = $wpdb->get_results(
-                $wpdb->prepare("SELECT id, name FROM $table_name WHERE status = 'active' ORDER BY name ASC")
+                $wpdb->prepare(
+                    "SELECT id, name FROM {$table_name} WHERE status = %s ORDER BY name ASC",
+                    $category_status
+                )
             );
 
             // Cache for 5 minutes
@@ -607,7 +619,7 @@ class Obydullah_Restaurant_POS_Lite_Products
     }
 
     /** Get all products with pagination and search */
-    public function ajax_get_products()
+    public function ajax_get_orpl_products()
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
@@ -631,8 +643,8 @@ class Obydullah_Restaurant_POS_Lite_Products
             // Return single product for editing
             $products = $wpdb->get_results($wpdb->prepare(
                 "SELECT p.*, c.name as category_name 
-                FROM $products_table p 
-                LEFT JOIN $categories_table c ON p.fk_category_id = c.id 
+                FROM {$products_table} p 
+                LEFT JOIN {$categories_table} c ON p.fk_category_id = c.id 
                 WHERE p.id = %d",
                 $product_id
             ));
@@ -651,7 +663,7 @@ class Obydullah_Restaurant_POS_Lite_Products
             if (!empty($search)) {
                 // With search
                 $total_items = $wpdb->get_var($wpdb->prepare(
-                    "SELECT COUNT(*) FROM $products_table p WHERE p.name LIKE %s",
+                    "SELECT COUNT(*) FROM {$products_table} p WHERE p.name LIKE %s",
                     '%' . $wpdb->esc_like($search) . '%'
                 ));
 
@@ -661,8 +673,8 @@ class Obydullah_Restaurant_POS_Lite_Products
 
                 $products = $wpdb->get_results($wpdb->prepare(
                     "SELECT p.*, c.name as category_name 
-                    FROM $products_table p 
-                    LEFT JOIN $categories_table c ON p.fk_category_id = c.id 
+                    FROM {$products_table} p 
+                    LEFT JOIN {$categories_table} c ON p.fk_category_id = c.id 
                     WHERE p.name LIKE %s 
                     ORDER BY p.created_at DESC 
                     LIMIT %d OFFSET %d",
@@ -673,7 +685,7 @@ class Obydullah_Restaurant_POS_Lite_Products
             } else {
                 // Without search
                 $total_items = $wpdb->get_var(
-                    $wpdb->prepare("SELECT COUNT(*) FROM $products_table p")
+                    $wpdb->prepare("SELECT COUNT(*) FROM {$products_table} p")
                 );
 
                 // Calculate pagination
@@ -682,8 +694,8 @@ class Obydullah_Restaurant_POS_Lite_Products
 
                 $products = $wpdb->get_results($wpdb->prepare(
                     "SELECT p.*, c.name as category_name 
-                    FROM $products_table p 
-                    LEFT JOIN $categories_table c ON p.fk_category_id = c.id 
+                    FROM {$products_table} p 
+                    LEFT JOIN {$categories_table} c ON p.fk_category_id = c.id 
                     ORDER BY p.created_at DESC 
                     LIMIT %d OFFSET %d",
                     $per_page,
@@ -709,7 +721,7 @@ class Obydullah_Restaurant_POS_Lite_Products
     }
 
     /** Add product */
-    public function ajax_add_product()
+    public function ajax_add_orpl_product()
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
@@ -718,7 +730,7 @@ class Obydullah_Restaurant_POS_Lite_Products
         }
 
         global $wpdb;
-        $table = $wpdb->prefix . 'orpl_products';
+        $table_name = $wpdb->prefix . 'orpl_products';
 
         // Unslash and sanitize input
         $name = sanitize_text_field(wp_unslash($_POST['name'] ?? ''));
@@ -740,7 +752,7 @@ class Obydullah_Restaurant_POS_Lite_Products
 
         if (false === $existing) {
             $existing = $wpdb->get_var($wpdb->prepare(
-                "SELECT id FROM $table WHERE name = %s",
+                "SELECT id FROM {$table_name} WHERE name = %s",
                 $name
             ));
             wp_cache_set($cache_key, $existing, 'obydullah-restaurant-pos-lite', 300);
@@ -759,7 +771,7 @@ class Obydullah_Restaurant_POS_Lite_Products
             }
         }
 
-        $result = $wpdb->insert($table, [
+        $result = $wpdb->insert($table_name, [
             'name' => $name,
             'fk_category_id' => $fk_category_id,
             'image' => $image_url,
@@ -777,7 +789,7 @@ class Obydullah_Restaurant_POS_Lite_Products
     }
 
     /** Edit product */
-    public function ajax_edit_product()
+    public function ajax_edit_orpl_product()
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
@@ -786,7 +798,7 @@ class Obydullah_Restaurant_POS_Lite_Products
         }
 
         global $wpdb;
-        $table = $wpdb->prefix . 'orpl_products';
+        $table_name = $wpdb->prefix . 'orpl_products';
 
         $id = intval($_POST['id'] ?? 0);
         // Unslash and sanitize input
@@ -805,7 +817,7 @@ class Obydullah_Restaurant_POS_Lite_Products
 
         if (false === $existing) {
             $existing = $wpdb->get_var($wpdb->prepare(
-                "SELECT id FROM $table WHERE name = %s AND id != %d",
+                "SELECT id FROM {$table_name} WHERE name = %s AND id != %d",
                 $name,
                 $id
             ));
@@ -833,7 +845,7 @@ class Obydullah_Restaurant_POS_Lite_Products
             }
         }
 
-        $result = $wpdb->update($table, $update_data, ['id' => $id], $format, ['%d']);
+        $result = $wpdb->update($table_name, $update_data, ['id' => $id], $format, ['%d']);
 
         if ($result === false) {
             wp_send_json_error(__('Failed to update product', 'obydullah-restaurant-pos-lite'));
@@ -846,7 +858,7 @@ class Obydullah_Restaurant_POS_Lite_Products
     }
 
     /** Delete product */
-    public function ajax_delete_product()
+    public function ajax_delete_orpl_product()
     {
         // Verify nonce - sanitize the input first
         $nonce = sanitize_text_field(wp_unslash($_REQUEST['nonce'] ?? ''));
