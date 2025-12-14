@@ -6,14 +6,17 @@
  * @since   1.0.0
  */
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 class Obydullah_Restaurant_POS_Lite_Deactivator
 {
+    /**
+     * Plugin deactivation callback
+     */
     public static function deactivate()
     {
-        if (!current_user_can('activate_plugins')) {
-            wp_die('You do not have sufficient permissions to deactivate this plugin.');
-        }
-
         flush_rewrite_rules();
     }
 }

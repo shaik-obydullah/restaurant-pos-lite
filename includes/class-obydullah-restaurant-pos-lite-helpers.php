@@ -7,7 +7,7 @@
  */
 
 if (!defined('ABSPATH')) {
-    exit; // Exit if accessed directly.
+    exit;
 }
 
 /**
@@ -177,7 +177,6 @@ class Obydullah_Restaurant_POS_Lite_Helpers
             return $date_string;
         }
 
-        // FIX: Use gmdate() instead of date() to avoid timezone issues
         return gmdate($date_format, $timestamp);
     }
 
@@ -294,7 +293,6 @@ class Obydullah_Restaurant_POS_Lite_Helpers
      */
     public static function get_current_date()
     {
-        // Use current_time with 'mysql' format which is already timezone-aware
         return self::format_date(current_time('mysql'));
     }
 

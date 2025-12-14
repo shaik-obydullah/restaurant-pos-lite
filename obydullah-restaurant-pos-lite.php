@@ -11,32 +11,44 @@
  * Text Domain: obydullah-restaurant-pos-lite
  */
 
-// Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
 }
 
-// Define plugin constants
+// Plugin constants
 define('ORPL_VERSION', '1.0.0');
 define('ORPL_PATH', plugin_dir_path(__FILE__));
 define('ORPL_URL', plugin_dir_url(__FILE__));
 
-// Load the handler class
+// Includes
 require_once ORPL_PATH . 'includes/class-obydullah-restaurant-pos-lite-handler.php';
 require_once ORPL_PATH . 'includes/class-obydullah-restaurant-pos-lite-activator.php';
 require_once ORPL_PATH . 'includes/class-obydullah-restaurant-pos-lite-deactivator.php';
 
-/**
- * Initialize the Obydullah Restaurant POS Lite plugin
- */
-function orpl_init()
+// Load translations
+add_action('plugins_loaded', 'orpl_load_textdomain');
+function orpl_load_textdomain()
 {
-    return new Obydullah_Restaurant_POS_Lite_Handler();
+    load_plugin_textdomain(
+        'obydullah-restaurant-pos-lite',
+        false,
+        dirname(plugin_basename(__FILE__)) . '/languages'
+    );
 }
 
-// Start the plugin
+// Init plugin
 add_action('plugins_loaded', 'orpl_init');
+function orpl_init()
+{
+    static $plugin = null;
 
-// Register activation and deactivation hooks
+    if (null === $plugin) {
+        $plugin = new Obydullah_Restaurant_POS_Lite_Handler();
+    }
+
+    return $plugin;
+}
+
+// Hooks
 register_activation_hook(__FILE__, ['Obydullah_Restaurant_POS_Lite_Activator', 'activate']);
 register_deactivation_hook(__FILE__, ['Obydullah_Restaurant_POS_Lite_Deactivator', 'deactivate']);

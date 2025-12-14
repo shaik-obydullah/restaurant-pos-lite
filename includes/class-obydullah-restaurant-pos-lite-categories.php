@@ -23,6 +23,12 @@ class Obydullah_Restaurant_POS_Lite_Categories
      */
     public function render_page()
     {
+
+echo '<pre>WP_DEBUG: ' . (WP_DEBUG ? 'ON' : 'OFF') . '</pre>';
+echo '<pre>WP_DEBUG_LOG: ' . (defined("WP_DEBUG_LOG") && WP_DEBUG_LOG ? 'ON' : 'OFF') . '</pre>';
+echo '<pre>WP_DEBUG_DISPLAY: ' . (defined("WP_DEBUG_DISPLAY") && WP_DEBUG_DISPLAY ? 'ON' : 'OFF') . '</pre>';
+
+
         // Create nonces for JavaScript
         $add_nonce = wp_create_nonce('orpl_add_product_category');
         $edit_nonce = wp_create_nonce('orpl_edit_product_category');
@@ -479,20 +485,33 @@ class Obydullah_Restaurant_POS_Lite_Categories
         wp_send_json_success('Category deleted successfully');
     }
 
-    /**
-     * Clear all category-related caches
-     */
-    private function clear_orpl_category_caches()
-    {
-        wp_cache_delete('orpl_categories_all', 'obydullah-restaurant-pos-lite');
-        wp_cache_delete('orpl_categories_active', 'obydullah-restaurant-pos-lite');
+/**
+ * Clear all category-related caches
+ */
+private function clear_orpl_category_caches()
+{
+    // Delete cache
+    wp_cache_delete('orpl_categories_all', 'obydullah-restaurant-pos-lite');
+    wp_cache_delete('orpl_categories_active', 'obydullah-restaurant-pos-lite');
 
-        global $wpdb;
-        $wpdb->query(
-            $wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", '_transient_orpl_category_exists_%')
-        );
-        $wpdb->query(
-            $wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", '_transient_timeout_orpl_category_exists_%')
-        );
-    }
+    global $wpdb;
+
+    // Remove transient entries
+    $transient_like = '_transient_orpl_category_exists_%';
+    $wpdb->query(
+        $wpdb->prepare(
+            "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s",
+            $transient_like
+        )
+    );
+
+    $transient_timeout_like = '_transient_timeout_orpl_category_exists_%';
+    $wpdb->query(
+        $wpdb->prepare(
+            "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s",
+            $transient_timeout_like
+        )
+    );
+}
+
 }
