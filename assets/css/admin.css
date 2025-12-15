@@ -1,31 +1,53 @@
 /*
 ===========================================
- Restaurant POS Lite - Admin Styles
+ Obydullah Restaurant POS Lite - Admin Styles
  Author: Shaik Obydullah
  Description: Admin UI styling for Restaurant POS Lite
- Version: 1.0
+ Version: 1.0.0
 ===========================================
+INDEX
+-----
+1. Global Styles
+2. Dashboard
+   2.1 Base Dashboard Container
+   2.2 Main Metrics Grid
+   2.3 Card Color Variations
+   2.4 Charts Section
+   2.5 Income vs Expense Chart
+   2.6 Hourly Heatmap Chart
+   2.7 Top Products Section
+   2.8 Responsive Design
+3. Categories
+  3.1 ORPL Categories Page Styles
+  3.2 Main container layout
+  3.3 Left Column - Form Section
+  3.4 Form Title
+  3.5 Category Form
+  3.6 Form Actions
+  3.7 Right Column - Categories Table
+  3.8 Table Styles
+  3.9 Status Badges
+  3.10 Loading States
+  3.11 Action Buttons
+  3.12 Responsive Design
+
 */
 
 /* ===============================
-   GLOBAL
+   1. Global Styles
 =============================== */
+
 
 /* ===============================
-   Dashboard
+   2. Dashboard
 =============================== */
 
-/* ===============================
-   Restaurant POS Dashboard
-   Clean CSS Styles
-=============================== */
-
-/* Base Dashboard Container */
+/* 2.1 Base Dashboard Container */
 .wp-restaurant-pos-dashboard {
     margin: 20px 0;
 }
 
-/* Main Metrics Grid */
+/* 2.2 Main Metrics Grid */
 .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -89,7 +111,7 @@
     display: block;
 }
 
-/* Card Color Variations */
+/* 2.3 Card Color Variations */
 .financial-card {
     border-left: 4px solid #10b981;
 }
@@ -110,7 +132,7 @@
     border-left: 4px solid #8b5cf6;
 }
 
-/* Charts Section */
+/* 2.4 Charts Section */
 .charts-section {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -133,7 +155,7 @@
     color: #2c3338;
 }
 
-/* Income vs Expense Chart */
+/* 2.5 Income vs Expense Chart */
 .bar-chart {
     display: flex;
     align-items: flex-end;
@@ -224,7 +246,7 @@
     color: #3b82f6;
 }
 
-/* Hourly Heatmap Chart */
+/* 2.6 Hourly Heatmap Chart */
 .hourly-heatmap {
     margin-top: 10px;
 }
@@ -410,7 +432,7 @@
     border: 1px solid #ddd;
 }
 
-/* Top Products Section */
+/* 2.7 Top Products Section */
 .top-products-section {
     background: #ffffff;
     border-radius: 12px;
@@ -513,7 +535,7 @@
     grid-column: 1 / -1;
 }
 
-/* Responsive Design */
+/* 2.8 Responsive Design */
 @media (max-width: 1200px) {
     .charts-section {
         grid-template-columns: 1fr;
@@ -619,46 +641,237 @@
     }
 }
 /* ===============================
-   Categories
+   3. Categories
 =============================== */
 
-/* Status styling */
+/* 3.1 ORPL Categories Page Styles */
+.wrap .wp-header-end {
+    margin-bottom: 20px;
+}
+
+/* 3.2 Main container layout */
+#col-container {
+    display: flex;
+    gap: 24px;
+    margin-top: 20px;
+}
+
+/* 3.3 Left Column - Form Section */
+#col-left {
+    flex: 1;
+    max-width: 380px;
+}
+
+#col-left .col-wrap {
+    background: #fff;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* 3.4 Form Title */
+#form-title {
+    margin: 0 0 20px 0;
+    padding: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+/* 3.5 Category Form */
+#add-category-form .form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+#add-category-form .form-fields-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+#add-category-form .form-field {
+    flex: 1;
+}
+
+#add-category-form label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 12px;
+    color: #1d2327;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#add-category-form label .required {
+    color: #d63638;
+}
+
+#add-category-form input[type="text"],
+#add-category-form select {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 13px;
+    border: 1px solid #8c8f94;
+    border-radius: 3px;
+    background: #fff;
+    transition: border-color 0.2s ease;
+}
+
+#add-category-form select {
+    cursor: pointer;
+}
+
+#add-category-form input[type="text"]:focus,
+#add-category-form select:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: 2px solid transparent;
+}
+
+/* 3.6 Form Actions */
+#add-category-form .form-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+#submit-category,
+#cancel-edit {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+#submit-category {
+    position: relative;
+}
+
+#submit-category .btn-text {
+    display: inline-block;
+}
+
+#submit-category .spinner {
+    float: none;
+    margin: 0;
+    display: none;
+}
+
+#submit-category.button-loading .btn-text {
+    opacity: 0.7;
+}
+
+#submit-category.button-loading .spinner {
+    display: inline-block;
+    visibility: visible;
+    vertical-align: middle;
+    margin-left: 5px;
+}
+
+#cancel-edit {
+    display: none;
+}
+
+/* 3.7 Right Column - Categories Table */
+#col-right {
+    flex: 2;
+}
+
+#col-right .col-wrap {
+    background: #fff;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* 3.8 Table Styles */
+.wp-list-table {
+    margin: 0;
+}
+
+.wp-list-table th {
+    font-weight: 600;
+}
+
+.wp-list-table td {
+    vertical-align: middle;
+}
+
+/* 3.9 Status Badges */
+.status-active,
+.status-inactive {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
 .status-active {
-  color: #0a7c38;
-  font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 3px;
-  background: #edfaef;
-  display: inline-block;
+    background: #d1e7dd;
+    color: #0f5132;
 }
 
 .status-inactive {
-  color: #d63638;
-  font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 3px;
-  background: #fef0f1;
-  display: inline-block;
+    background: #f8d7da;
+    color: #842029;
 }
 
-/* Form field focus states */
-#category-name:focus,
-#category-status:focus {
-  border-color: #2271b1 !important;
-  box-shadow: 0 0 0 1px #2271b1 !important;
-  outline: none !important;
+/* 3.10 Loading States */
+.loading-categories {
+    text-align: center;
+    padding: 20px !important;
 }
 
-/* Button loading state */
-.button-loading {
-  position: relative;
-  color: transparent !important;
+.loading-categories .spinner {
+    float: none;
+    margin: 0 5px 0 0;
 }
 
-.button-loading .spinner {
-  display: inline-block !important;
-  visibility: visible !important;
+/* 3.11 Action Buttons */
+.wp-list-table td:last-child {
+    text-align: center;
 }
+
+.wp-list-table td:last-child .edit-category {
+    margin-right: 2px;
+}
+
+.wp-list-table td:last-child .delete-category {
+    margin-left: 2px;
+}
+
+/* 3.12 Responsive Design */
+@media screen and (max-width: 782px) {
+    #col-container {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    #col-left,
+    #col-right {
+        max-width: 100%;
+    }
+    
+    #add-category-form .form-fields-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .wp-list-table th:nth-child(3),
+    .wp-list-table td:nth-child(3) {
+        text-align: right;
+    }
+}
+
+
+
+
 
 /* ===============================
    Products

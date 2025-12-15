@@ -23,30 +23,18 @@ class Obydullah_Restaurant_POS_Lite_Categories
      */
     public function render_page()
     {
-
-echo '<pre>WP_DEBUG: ' . (WP_DEBUG ? 'ON' : 'OFF') . '</pre>';
-echo '<pre>WP_DEBUG_LOG: ' . (defined("WP_DEBUG_LOG") && WP_DEBUG_LOG ? 'ON' : 'OFF') . '</pre>';
-echo '<pre>WP_DEBUG_DISPLAY: ' . (defined("WP_DEBUG_DISPLAY") && WP_DEBUG_DISPLAY ? 'ON' : 'OFF') . '</pre>';
-
-
-        // Create nonces for JavaScript
-        $add_nonce = wp_create_nonce('orpl_add_product_category');
-        $edit_nonce = wp_create_nonce('orpl_edit_product_category');
-        $delete_nonce = wp_create_nonce('orpl_delete_product_category');
-        $get_nonce = wp_create_nonce('orpl_get_product_categories');
         ?>
         <div class="wrap">
-            <h1 class="wp-heading-inline" style="margin-bottom:20px;">
+            <h1 class="wp-heading-inline">
                 <?php esc_html_e('Product Categories', 'obydullah-restaurant-pos-lite'); ?>
             </h1>
             <hr class="wp-header-end">
 
-            <div id="col-container" class="wp-clearfix" style="display:flex;gap:24px;">
+            <div id="col-container" class="wp-clearfix">
                 <!-- Left: Add/Edit Category Form -->
-                <div id="col-left" style="flex:1; max-width:380px;">
-                    <div class="col-wrap"
-                        style="background:#fff;padding:20px;border:1px solid #ddd;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.05);">
-                        <h2 id="form-title" style="margin:0 0 20px 0;padding:0;font-size:16px;font-weight:600;color:#1d2327;">
+                <div id="col-left">
+                    <div class="col-wrap">
+                        <h2 id="form-title">
                             <?php esc_html_e('Add New Category', 'obydullah-restaurant-pos-lite'); ?>
                         </h2>
                         <form id="add-category-form" method="post">
@@ -54,25 +42,21 @@ echo '<pre>WP_DEBUG_DISPLAY: ' . (defined("WP_DEBUG_DISPLAY") && WP_DEBUG_DISPLA
                             <input type="hidden" id="category-id" name="id" value="">
 
                             <!-- Horizontal layout with equal width -->
-                            <div style="display:flex;flex-direction:column;gap:15px;">
-                                <div style="display:flex;gap:12px;align-items:center;">
-                                    <div class="form-field form-required" style="flex:1;">
-                                        <label for="category-name"
-                                            style="display:block;font-weight:600;margin-bottom:6px;font-size:12px;color:#1d2327;text-transform:uppercase;letter-spacing:0.5px;">
-                                            <?php esc_html_e('Name', 'obydullah-restaurant-pos-lite'); ?> <span
-                                                style="color:#d63638;">*</span>
+                            <div class="form-row">
+                                <div class="form-fields-row">
+                                    <div class="form-field form-required">
+                                        <label for="category-name">
+                                            <?php esc_html_e('Name', 'obydullah-restaurant-pos-lite'); ?>
+                                            <span class="required">*</span>
                                         </label>
-                                        <input name="name" id="category-name" type="text" value="" required
-                                            style="width:100%;padding:8px 10px;font-size:13px;border:1px solid #8c8f94;border-radius:3px;background:#fff;transition:border-color 0.2s ease;">
+                                        <input name="name" id="category-name" type="text" value="" required>
                                     </div>
 
-                                    <div class="form-field form-required" style="flex:1;">
-                                        <label for="category-status"
-                                            style="display:block;font-weight:600;margin-bottom:6px;font-size:12px;color:#1d2327;text-transform:uppercase;letter-spacing:0.5px;">
+                                    <div class="form-field form-required">
+                                        <label for="category-status">
                                             <?php esc_html_e('Status', 'obydullah-restaurant-pos-lite'); ?>
                                         </label>
-                                        <select name="status" id="category-status"
-                                            style="width:100%;padding:8px 10px;font-size:13px;border:1px solid #8c8f94;border-radius:3px;background:#fff;cursor:pointer;">
+                                        <select name="status" id="category-status">
                                             <option value="active">
                                                 <?php esc_html_e('Active', 'obydullah-restaurant-pos-lite'); ?>
                                             </option>
@@ -84,15 +68,12 @@ echo '<pre>WP_DEBUG_DISPLAY: ' . (defined("WP_DEBUG_DISPLAY") && WP_DEBUG_DISPLA
                                 </div>
                             </div>
 
-                            <div style="margin-top:20px;display:flex;gap:10px;">
-                                <button type="submit" id="submit-category" class="button button-primary"
-                                    style="flex:1;padding:8px 12px;font-size:13px;font-weight:500;">
-                                    <span
-                                        class="btn-text"><?php esc_html_e('Save Category', 'obydullah-restaurant-pos-lite'); ?></span>
-                                    <span class="spinner" style="float:none;margin:0;display:none;"></span>
+                            <div class="form-actions">
+                                <button type="submit" id="submit-category" class="button button-primary">
+                                    <span class="btn-text"><?php esc_html_e('Save Category', 'obydullah-restaurant-pos-lite'); ?></span>
+                                    <span class="spinner"></span>
                                 </button>
-                                <button type="button" id="cancel-edit" class="button"
-                                    style="display:none;flex:1;padding:8px 12px;font-size:13px;font-weight:500;">
+                                <button type="button" id="cancel-edit" class="button">
                                     <?php esc_html_e('Cancel', 'obydullah-restaurant-pos-lite'); ?>
                                 </button>
                             </div>
@@ -101,22 +82,19 @@ echo '<pre>WP_DEBUG_DISPLAY: ' . (defined("WP_DEBUG_DISPLAY") && WP_DEBUG_DISPLA
                 </div>
 
                 <!-- Right: Categories Table -->
-                <div id="col-right" style="flex:2;">
-                    <div class="col-wrap"
-                        style="background:#fff;padding:20px;border:1px solid #ddd;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+                <div id="col-right">
+                    <div class="col-wrap">
                         <table class="wp-list-table widefat fixed striped table-view-list">
                             <thead>
                                 <tr>
                                     <th><?php esc_html_e('Name', 'obydullah-restaurant-pos-lite'); ?></th>
                                     <th><?php esc_html_e('Status', 'obydullah-restaurant-pos-lite'); ?></th>
-                                    <th style="text-align:center;">
-                                        <?php esc_html_e('Actions', 'obydullah-restaurant-pos-lite'); ?>
-                                    </th>
+                                    <th><?php esc_html_e('Actions', 'obydullah-restaurant-pos-lite'); ?></th>
                                 </tr>
                             </thead>
                             <tbody id="category-list">
                                 <tr>
-                                    <td colspan="3" class="loading-categories" style="text-align:center;">
+                                    <td colspan="3" class="loading-categories">
                                         <span class="spinner is-active"></span>
                                         <?php esc_html_e('Loading categories...', 'obydullah-restaurant-pos-lite'); ?>
                                     </td>
@@ -126,173 +104,6 @@ echo '<pre>WP_DEBUG_DISPLAY: ' . (defined("WP_DEBUG_DISPLAY") && WP_DEBUG_DISPLA
                     </div>
                 </div>
             </div>
-
-            <script>
-                jQuery(document).ready(function ($) {
-                    let isSubmitting = false;
-                    const addNonce = '<?php echo esc_js($add_nonce); ?>';
-                    const editNonce = '<?php echo esc_js($edit_nonce); ?>';
-                    const deleteNonce = '<?php echo esc_js($delete_nonce); ?>';
-                    const getNonce = '<?php echo esc_js($get_nonce); ?>';
-
-                    loadORPLCategories();
-
-                    function loadORPLCategories() {
-                        $.ajax({
-                            url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
-                            type: 'GET',
-                            data: {
-                                action: 'orpl_get_product_categories',
-                                nonce: getNonce
-                            },
-                            success: function (response) {
-                                let tbody = $('#category-list').empty();
-                                if (response.success) {
-                                    if (!response.data.length) {
-                                        tbody.append('<tr><td colspan="3" style="text-align:center;"><?php echo esc_js(__('No categories found.', 'obydullah-restaurant-pos-lite')); ?></td></tr>');
-                                        return;
-                                    }
-
-                                    $.each(response.data, function (_, cat) {
-                                        let row = $('<tr>').attr('data-category-id', cat.id);
-                                        row.append($('<td>').text(cat.name));
-                                        let statusClass = cat.status === 'active' ? 'status-active' : 'status-inactive';
-                                        let statusText = cat.status.charAt(0).toUpperCase() + cat.status.slice(1);
-                                        row.append($('<td>').append(
-                                            $('<span>').addClass(statusClass).text(statusText)
-                                        ));
-
-                                        row.append($('<td style="text-align:center;">')
-                                            .append('<button class="button button-small edit-category" style="margin-right:5px;"><?php echo esc_js(__('Edit', 'obydullah-restaurant-pos-lite')); ?></button>')
-                                            .append('<button class="button button-small button-link-delete delete-category"><?php echo esc_js(__('Delete', 'obydullah-restaurant-pos-lite')); ?></button>')
-                                        );
-                                        tbody.append(row);
-                                    });
-                                } else {
-                                    tbody.append('<tr><td colspan="3" style="color:red;text-align:center;">' + response.data + '</td></tr>');
-                                }
-                            },
-                            error: function () {
-                                $('#category-list').html('<tr><td colspan="3" style="color:red;text-align:center;"><?php echo esc_js(__('Failed to load categories.', 'obydullah-restaurant-pos-lite')); ?></td></tr>');
-                            }
-                        });
-                    }
-
-                    $('#add-category-form').on('submit', function (e) {
-                        e.preventDefault();
-
-                        // Prevent double submission
-                        if (isSubmitting) {
-                            return false;
-                        }
-
-                        let id = $('#category-id').val();
-                        let action = id ? 'orpl_edit_product_category' : 'orpl_add_product_category';
-                        let name = $('#category-name').val().trim();
-                        let status = $('#category-status').val();
-                        let nonce = id ? editNonce : addNonce;
-
-                        if (!name) {
-                            alert('<?php echo esc_js(__('Please enter a category name', 'obydullah-restaurant-pos-lite')); ?>');
-                            return false;
-                        }
-
-                        // Set submitting state
-                        isSubmitting = true;
-                        setORPLButtonLoading(true);
-
-                        $.post('<?php echo esc_url(admin_url('admin-ajax.php')); ?>', {
-                            action: action,
-                            id: id,
-                            name: name,
-                            status: status,
-                            nonce: nonce
-                        }, function (res) {
-                            if (res.success) {
-                                resetForm();
-                                loadORPLCategories();
-                            } else {
-                                alert('<?php echo esc_js(__('Error:', 'obydullah-restaurant-pos-lite')); ?> ' + res.data);
-                            }
-                        }).fail(() => alert('<?php echo esc_js(__('Request failed. Please try again.', 'obydullah-restaurant-pos-lite')); ?>'))
-                            .always(function () {
-                                // Reset submitting state
-                                isSubmitting = false;
-                                setORPLButtonLoading(false);
-                            });
-                    });
-
-                    $('#cancel-edit').on('click', function () {
-                        resetForm();
-                    });
-
-                    $(document).on('click', '.edit-category', function () {
-                        let row = $(this).closest('tr');
-                        $('#category-id').val(row.data('category-id'));
-                        $('#category-name').val(row.find('td').eq(0).text());
-                        $('#category-status').val(row.find('td').eq(1).find('span').hasClass('status-active') ? 'active' : 'inactive');
-                        $('#form-title').text('<?php echo esc_js(__('Edit Category', 'obydullah-restaurant-pos-lite')); ?>');
-                        $('#submit-category').find('.btn-text').text('<?php echo esc_js(__('Update Category', 'obydullah-restaurant-pos-lite')); ?>');
-                        $('#cancel-edit').show();
-                    });
-
-                    $(document).on('click', '.delete-category', function () {
-                        if (!confirm('<?php echo esc_js(__('Are you sure you want to delete this category?', 'obydullah-restaurant-pos-lite')); ?>')) return;
-
-                        let button = $(this);
-                        let originalText = button.text();
-                        let id = $(this).closest('tr').data('category-id');
-
-                        // Disable button and show loading
-                        button.prop('disabled', true).text('<?php echo esc_js(__('Deleting...', 'obydullah-restaurant-pos-lite')); ?>');
-
-                        $.post('<?php echo esc_url(admin_url('admin-ajax.php')); ?>', {
-                            action: 'orpl_delete_product_category',
-                            id: id,
-                            nonce: deleteNonce
-                        }, function (res) {
-                            if (res.success) {
-                                loadORPLCategories();
-                            } else {
-                                alert(res.data);
-                            }
-                        }).fail(() => alert('<?php echo esc_js(__('Delete request failed. Please try again.', 'obydullah-restaurant-pos-lite')); ?>'))
-                            .always(function () {
-                                // Re-enable button
-                                button.prop('disabled', false).text(originalText);
-                            });
-                    });
-
-                    function setORPLButtonLoading(loading) {
-                        let button = $('#submit-category');
-                        let spinner = button.find('.spinner');
-                        let btnText = button.find('.btn-text');
-
-                        if (loading) {
-                            button.prop('disabled', true).addClass('button-loading');
-                            spinner.show();
-                            btnText.text(button.hasClass('button-loading') ? '<?php echo esc_js(__('Saving...', 'obydullah-restaurant-pos-lite')); ?>' : '<?php echo esc_js(__('Updating...', 'obydullah-restaurant-pos-lite')); ?>');
-                        } else {
-                            button.prop('disabled', false).removeClass('button-loading');
-                            spinner.hide();
-                            btnText.text(button.find('.btn-text').text().includes('Update') ? '<?php echo esc_js(__('Update Category', 'obydullah-restaurant-pos-lite')); ?>' : '<?php echo esc_js(__('Save Category', 'obydullah-restaurant-pos-lite')); ?>');
-                        }
-                    }
-
-                    function resetForm() {
-                        $('#category-id').val('');
-                        $('#category-name').val('');
-                        $('#category-status').val('active');
-                        $('#form-title').text('<?php echo esc_js(__('Add New Category', 'obydullah-restaurant-pos-lite')); ?>');
-                        $('#submit-category').find('.btn-text').text('<?php echo esc_js(__('Save Category', 'obydullah-restaurant-pos-lite')); ?>');
-                        $('#cancel-edit').hide();
-                        $('#category-name').focus();
-
-                        // Ensure button is enabled
-                        setORPLButtonLoading(false);
-                    }
-                });
-            </script>
         </div>
         <?php
     }
@@ -485,33 +296,32 @@ echo '<pre>WP_DEBUG_DISPLAY: ' . (defined("WP_DEBUG_DISPLAY") && WP_DEBUG_DISPLA
         wp_send_json_success('Category deleted successfully');
     }
 
-/**
- * Clear all category-related caches
- */
-private function clear_orpl_category_caches()
-{
-    // Delete cache
-    wp_cache_delete('orpl_categories_all', 'obydullah-restaurant-pos-lite');
-    wp_cache_delete('orpl_categories_active', 'obydullah-restaurant-pos-lite');
+    /**
+     * Clear all category-related caches
+     */
+    private function clear_orpl_category_caches()
+    {
+        // Delete cache
+        wp_cache_delete('orpl_categories_all', 'obydullah-restaurant-pos-lite');
+        wp_cache_delete('orpl_categories_active', 'obydullah-restaurant-pos-lite');
 
-    global $wpdb;
+        global $wpdb;
 
-    // Remove transient entries
-    $transient_like = '_transient_orpl_category_exists_%';
-    $wpdb->query(
-        $wpdb->prepare(
-            "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s",
-            $transient_like
-        )
-    );
+        // Remove transient entries
+        $transient_like = '_transient_orpl_category_exists_%';
+        $wpdb->query(
+            $wpdb->prepare(
+                "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s",
+                $transient_like
+            )
+        );
 
-    $transient_timeout_like = '_transient_timeout_orpl_category_exists_%';
-    $wpdb->query(
-        $wpdb->prepare(
-            "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s",
-            $transient_timeout_like
-        )
-    );
-}
-
+        $transient_timeout_like = '_transient_timeout_orpl_category_exists_%';
+        $wpdb->query(
+            $wpdb->prepare(
+                "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s",
+                $transient_timeout_like
+            )
+        );
+    }
 }
