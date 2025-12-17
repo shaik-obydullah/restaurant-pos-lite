@@ -383,143 +383,110 @@ class Obydullah_Restaurant_POS_Lite_Dashboard
         $max_revenue = !empty($hourly_revenues) ? max($hourly_revenues) : 0;
         $total_today_revenue = array_sum($hourly_revenues);
         ?>
-        <div class="wrap">
+        <div class="wrap orpl-admin-page">
             <h1><?php esc_html_e('Restaurant POS Dashboard', 'obydullah-restaurant-pos-lite'); ?></h1>
 
             <div class="wp-restaurant-pos-dashboard">
                 <!-- Main Metrics Grid -->
                 <div class="dashboard-grid">
-                    <div class="dashboard-card financial-card">
-                        <div class="card-icon">💰</div>
+                    <div class="orpl-card dashboard-card financial-card">
                         <div class="card-content">
                             <h3><?php esc_html_e('Stock Value', 'obydullah-restaurant-pos-lite'); ?></h3>
-                            <p class="number"><?php echo esc_html($this->format_currency($dashboard_data['stock_value'])); ?>
-                            </p>
-                            <span
-                                class="card-description"><?php esc_html_e('Current inventory value', 'obydullah-restaurant-pos-lite'); ?></span>
+                            <p class="orpl-summary-number"><?php echo esc_html($this->format_currency($dashboard_data['stock_value'])); ?></p>
+                            <span class="card-description"><?php esc_html_e('Current inventory value', 'obydullah-restaurant-pos-lite'); ?></span>
                         </div>
                     </div>
-
-                    <div class="dashboard-card sales-card">
-                        <div class="card-icon">📊</div>
+                    <div class="orpl-card dashboard-card sales-card">
                         <div class="card-content">
                             <h3><?php esc_html_e("Today's Sales", 'obydullah-restaurant-pos-lite'); ?></h3>
-                            <p class="number"><?php echo esc_html($this->format_number($dashboard_data['today_sale'])); ?></p>
-
-                            <span
-                                class="card-description"><?php esc_html_e('Completed orders today', 'obydullah-restaurant-pos-lite'); ?></span>
+                            <p class="orpl-summary-number"><?php echo esc_html($this->format_number($dashboard_data['today_sale'])); ?></p>
+                            <span class="card-description"><?php esc_html_e('Completed orders today', 'obydullah-restaurant-pos-lite'); ?></span>
                         </div>
                     </div>
 
-                    <div class="dashboard-card sales-card">
-                        <div class="card-icon">📈</div>
+                    <div class="orpl-card dashboard-card sales-card">
                         <div class="card-content">
                             <h3><?php esc_html_e('Monthly Sales', 'obydullah-restaurant-pos-lite'); ?></h3>
-                            <p class="number"><?php echo esc_html($this->format_number($dashboard_data['month_sale'])); ?></p>
-
-                            <span
-                                class="card-description"><?php esc_html_e('Total orders this month', 'obydullah-restaurant-pos-lite'); ?></span>
+                            <p class="orpl-summary-number"><?php echo esc_html($this->format_number($dashboard_data['month_sale'])); ?></p>
+                            <span class="card-description"><?php esc_html_e('Total orders this month', 'obydullah-restaurant-pos-lite'); ?></span>
                         </div>
                     </div>
 
-                    <div class="dashboard-card income-card">
-                        <div class="card-icon">💵</div>
+                    <div class="orpl-card dashboard-card income-card">
                         <div class="card-content">
                             <h3><?php esc_html_e("Today's Income", 'obydullah-restaurant-pos-lite'); ?></h3>
-                            <p class="number"><?php echo esc_html($this->format_currency($dashboard_data['today_income'])); ?>
-                            </p>
-
-                            <span
-                                class="card-description"><?php esc_html_e('Revenue generated today', 'obydullah-restaurant-pos-lite'); ?></span>
+                            <p class="orpl-summary-number"><?php echo esc_html($this->format_currency($dashboard_data['today_income'])); ?></p>
+                            <span class="card-description"><?php esc_html_e('Revenue generated today', 'obydullah-restaurant-pos-lite'); ?></span>
                         </div>
                     </div>
 
-                    <div class="dashboard-card income-card">
-                        <div class="card-icon">💰</div>
+                    <div class="orpl-card dashboard-card income-card">
                         <div class="card-content">
                             <h3><?php esc_html_e('Monthly Income', 'obydullah-restaurant-pos-lite'); ?></h3>
-                            <p class="number"><?php echo esc_html($this->format_currency($dashboard_data['month_income'])); ?>
-                            </p>
-                            <span
-                                class="card-description"><?php esc_html_e('Total revenue this month', 'obydullah-restaurant-pos-lite'); ?></span>
+                            <p class="orpl-summary-number"><?php echo esc_html($this->format_currency($dashboard_data['month_income'])); ?></p>
+                            <span class="card-description"><?php esc_html_e('Total revenue this month', 'obydullah-restaurant-pos-lite'); ?></span>
                         </div>
                     </div>
 
-                    <div class="dashboard-card expense-card">
-                        <div class="card-icon">💸</div>
+                    <div class="orpl-card dashboard-card expense-card">
                         <div class="card-content">
                             <h3><?php esc_html_e("Today's Expense", 'obydullah-restaurant-pos-lite'); ?></h3>
-                            <p class="number"><?php echo esc_html($this->format_currency($dashboard_data['today_expense'])); ?>
-                            </p>
-                            <span
-                                class="card-description"><?php esc_html_e('Expenses incurred today', 'obydullah-restaurant-pos-lite'); ?></span>
+                            <p class="orpl-summary-number"><?php echo esc_html($this->format_currency($dashboard_data['today_expense'])); ?></p>
+                            <span class="card-description"><?php esc_html_e('Expenses incurred today', 'obydullah-restaurant-pos-lite'); ?></span>
                         </div>
                     </div>
 
-                    <div class="dashboard-card expense-card">
-                        <div class="card-icon">📉</div>
+                    <div class="orpl-card dashboard-card expense-card">
                         <div class="card-content">
                             <h3><?php esc_html_e('Monthly Expense', 'obydullah-restaurant-pos-lite'); ?></h3>
-                            <p class="number"><?php echo esc_html($this->format_currency($dashboard_data['month_expense'])); ?>
-                            </p>
-                            <span
-                                class="card-description"><?php esc_html_e('Total expenses this month', 'obydullah-restaurant-pos-lite'); ?></span>
+                            <p class="orpl-summary-number"><?php echo esc_html($this->format_currency($dashboard_data['month_expense'])); ?></p>
+                            <span class="card-description"><?php esc_html_e('Total expenses this month', 'obydullah-restaurant-pos-lite'); ?></span>
                         </div>
                     </div>
 
-                    <div class="dashboard-card profit-card">
-                        <div class="card-icon">📊</div>
+                    <div class="orpl-card dashboard-card profit-card">
                         <div class="card-content">
                             <h3><?php esc_html_e('Monthly Profit', 'obydullah-restaurant-pos-lite'); ?></h3>
-                            <p class="number">
+                            <p class="orpl-summary-number">
                                 <?php echo esc_html($this->format_currency($dashboard_data['month_income'] - $dashboard_data['month_expense'])); ?>
                             </p>
-                            <span
-                                class="card-description"><?php esc_html_e('Net profit this month', 'obydullah-restaurant-pos-lite'); ?></span>
+                            <span class="card-description"><?php esc_html_e('Net profit this month', 'obydullah-restaurant-pos-lite'); ?></span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Charts Section -->
                 <div class="charts-section">
-                    <div class="chart-container">
+                    <div class="orpl-card chart-container">
                         <h3><?php esc_html_e('Income vs Expense (This Month)', 'obydullah-restaurant-pos-lite'); ?></h3>
                         <div class="bar-chart">
                             <div class="bar-income" style="height: <?php echo esc_attr($income_height); ?>%">
                                 <span class="bar-label"><?php esc_html_e('Income', 'obydullah-restaurant-pos-lite'); ?></span>
-                                <span
-                                    class="bar-value"><?php echo esc_html($this->format_currency($income_expense['income'])); ?></span>
+                                <span class="bar-value"><?php echo esc_html($this->format_currency($income_expense['income'])); ?></span>
                             </div>
                             <div class="bar-expense" style="height: <?php echo esc_attr($expense_height); ?>%">
                                 <span class="bar-label"><?php esc_html_e('Expense', 'obydullah-restaurant-pos-lite'); ?></span>
-                                <span
-                                    class="bar-value"><?php echo esc_html($this->format_currency($income_expense['expense'])); ?></span>
+                                <span class="bar-value"><?php echo esc_html($this->format_currency($income_expense['expense'])); ?></span>
                             </div>
                         </div>
                         <div class="chart-amounts">
                             <div class="amount-item">
-                                <span
-                                    class="amount-label"><?php esc_html_e('Total Income:', 'obydullah-restaurant-pos-lite'); ?></span>
-                                <span
-                                    class="amount-value income"><?php echo esc_html($this->format_currency($income_expense['income'])); ?></span>
+                                <span class="amount-label"><?php esc_html_e('Total Income:', 'obydullah-restaurant-pos-lite'); ?></span>
+                                <span class="amount-value orpl-profit-positive"><?php echo esc_html($this->format_currency($income_expense['income'])); ?></span>
                             </div>
                             <div class="amount-item">
-                                <span
-                                    class="amount-label"><?php esc_html_e('Total Expense:', 'obydullah-restaurant-pos-lite'); ?></span>
-                                <span
-                                    class="amount-value expense"><?php echo esc_html($this->format_currency($income_expense['expense'])); ?></span>
+                                <span class="amount-label"><?php esc_html_e('Total Expense:', 'obydullah-restaurant-pos-lite'); ?></span>
+                                <span class="amount-value orpl-profit-negative"><?php echo esc_html($this->format_currency($income_expense['expense'])); ?></span>
                             </div>
                             <div class="amount-item">
-                                <span
-                                    class="amount-label"><?php esc_html_e('Net Profit:', 'obydullah-restaurant-pos-lite'); ?></span>
-                                <span
-                                    class="amount-value profit"><?php echo esc_html($this->format_currency($income_expense['income'] - $income_expense['expense'])); ?></span>
+                                <span class="amount-label"><?php esc_html_e('Net Profit:', 'obydullah-restaurant-pos-lite'); ?></span>
+                                <span class="amount-value orpl-profit-positive"><?php echo esc_html($this->format_currency($income_expense['income'] - $income_expense['expense'])); ?></span>
                             </div>
                         </div>
                     </div>
                     
                     <!-- Hourly Sales Heatmap Chart -->
-                    <div class="chart-container">
+                    <div class="orpl-card chart-container">
                         <h3><?php esc_html_e('Today\'s Hourly Sales Heatmap', 'obydullah-restaurant-pos-lite'); ?></h3>
                         <div class="hourly-heatmap">
                             <div class="heatmap-header">
@@ -591,7 +558,7 @@ class Obydullah_Restaurant_POS_Lite_Dashboard
                 </div>
 
                 <!-- Top Products Section -->
-                <div class="top-products-section">
+                <div class="orpl-card top-products-section">
                     <h3><?php esc_html_e('Top Selling Products (Last 30 Days)', 'obydullah-restaurant-pos-lite'); ?></h3>
                     <div class="top-products-grid">
                         <?php if (!empty($top_products)): ?>
@@ -618,8 +585,7 @@ class Obydullah_Restaurant_POS_Lite_Dashboard
                             <?php endforeach; ?>
                         <?php else: ?>
                             <div class="no-products">
-                                <p><?php esc_html_e('No sales data available for the last 30 days.', 'obydullah-restaurant-pos-lite'); ?>
-                                </p>
+                                <p><?php esc_html_e('No sales data available for the last 30 days.', 'obydullah-restaurant-pos-lite'); ?></p>
                             </div>
                         <?php endif; ?>
                     </div>

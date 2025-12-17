@@ -1,22 +1,8 @@
 /**
- * ORPL Restaurant POS Lite - Categories Management
- *
- * This file handles all JavaScript functionality for the Product Categories page.
- * It manages loading, adding, editing, and deleting categories via AJAX.
- *
- * @package     Obydullah_Restaurant_POS_Lite
- * @subpackage  Admin
- * @since       1.0.0
- *
- * Dependencies: jQuery, obydullah-restaurant-pos-lite-admin
+ * ORPL Product Categories Manager
  */
-
 (function ($) {
   "use strict";
-  /**
-   * ORPL Categories Manager
-   * Main controller for categories management functionality
-   */
   let ORPLCategories = {
     // Configuration (will be populated from wp_localize_script)
     config: {
@@ -26,6 +12,7 @@
       deleteNonce: "",
       getNonce: "",
       ajaxUrl: "",
+      strings: {},
     },
 
     /**
@@ -40,6 +27,7 @@
         this.config.deleteNonce = orplCategories.deleteNonce || "";
         this.config.getNonce = orplCategories.getNonce || "";
         this.config.ajaxUrl = orplCategories.ajaxUrl || "";
+        this.config.strings = orplCategories.strings || {};
       }
 
       // Bind events
@@ -94,7 +82,7 @@
           self.renderCategories(response);
         },
         error: function () {
-          $("#category-list").html('<tr><td colspan="3" style="color:red;text-align:center;">' + "Failed to load categories." + "</td></tr>");
+          $("#category-list").html('<tr><td colspan="3" class="text-center text-danger">' + self.config.strings.loadError || "Failed to load categories." + "</td></tr>");
         },
       });
     },
@@ -107,28 +95,59 @@
 
       if (response.success) {
         if (!response.data.length) {
-          tbody.append('<tr><td colspan="3" style="text-align:center;">' + "No categories found." + "</td></tr>");
+          tbody.append('<tr><td colspan="3" class="text-center">' + this.config.strings.noCategories || "No categories found." + "</td></tr>");
           return;
         }
 
-        $.each(response.data, function (_, cat) {
-          var row = $("<tr>").attr("data-category-id", cat.id);
+        $.each(
+          response.data,
+          function (_, cat) {
+            var row = $("<tr>").attr("data-category-id", cat.id);
 
-          // Name column
-          row.append($("<td>").text(cat.name));
+            // Name column
+            row.append($("<td>").text(cat.name));
 
-          // Status column with badge
-          var statusClass = cat.status === "active" ? "status-active" : "status-inactive";
-          var statusText = cat.status.charAt(0).toUpperCase() + cat.status.slice(1);
-          row.append($("<td>").append($("<span>").addClass(statusClass).text(statusText)));
+            // Status column with proper styling
+            var statusClass = cat.status === "active" ? "badge bg-success" : "badge bg-secondary";
+            var statusText = cat.status.charAt(0).toUpperCase() + cat.status.slice(1);
+            row.append(
+              $("<td>").append(
+                $("<span>")
+                  .addClass(statusClass)
+                  .css({
+                    display: "inline-block",
+                    padding: "0.25em 0.4em",
+                    "font-size": "75%",
+                    "font-weight": "700",
+                    "line-height": "1",
+                    "text-align": "center",
+                    "white-space": "nowrap",
+                    "vertical-align": "baseline",
+                    "border-radius": "0.25rem",
+                  })
+                  .text(statusText)
+              )
+            );
 
-          // Actions column
-          row.append($("<td>").append('<button class="button button-small edit-category">Edit</button>' + '<button class="button button-small button-link-delete delete-category">Delete</button>'));
+            // Actions column
+            var actions = $("<td>").addClass("text-right");
+            actions.append(
+              $("<button>")
+                .addClass("btn btn-sm btn-secondary mr-2 edit-category")
+                .text(this.config.strings.edit || "Edit")
+            );
+            actions.append(
+              $("<button>")
+                .addClass("btn btn-sm btn-danger delete-category")
+                .text(this.config.strings.delete || "Delete")
+            );
 
-          tbody.append(row);
-        });
+            row.append(actions);
+            tbody.append(row);
+          }.bind(this)
+        );
       } else {
-        tbody.append('<tr><td colspan="3" style="color:red;text-align:center;">' + response.data + "</td></tr>");
+        tbody.append('<tr><td colspan="3" class="text-center text-danger">' + response.data + "</td></tr>");
       }
     },
 
@@ -151,7 +170,7 @@
 
       // Validation
       if (!name) {
-        alert("Please enter a category name");
+        alert(this.config.strings.nameRequired || "Please enter a category name");
         return false;
       }
 
@@ -173,14 +192,18 @@
           if (response.success) {
             self.resetForm();
             self.loadCategories();
+            // Show success message
+            alert(response.data);
           } else {
-            alert("Error: " + response.data);
+            alert(this.config.strings.error + ": " + response.data);
           }
-        }
+        }.bind(this)
       )
-        .fail(function () {
-          alert("Request failed. Please try again.");
-        })
+        .fail(
+          function () {
+            alert(this.config.strings.requestFailed || "Request failed. Please try again.");
+          }.bind(this)
+        )
         .always(function () {
           // Reset submitting state
           self.config.isSubmitting = false;
@@ -195,17 +218,21 @@
       var row = $(button).closest("tr");
       var categoryId = row.data("category-id");
       var name = row.find("td").eq(0).text();
-      var status = row.find("td").eq(1).find("span").hasClass("status-active") ? "active" : "inactive";
+
+      // Get status from badge
+      var statusBadge = row.find("td").eq(1).find("span");
+      var statusText = statusBadge.text().toLowerCase();
+      var isActive = statusText === "active";
 
       // Populate form
       $("#category-id").val(categoryId);
       $("#category-name").val(name);
-      $("#category-status").val(status);
+      $("#category-status").val(isActive ? "active" : "inactive");
 
       // Update UI for edit mode
-      $("#form-title").text("Edit Category");
-      $("#submit-category .btn-text").text("Update Category");
+      $("#form-title").text(this.config.strings.editCategory || "Edit Category");
       $("#cancel-edit").show();
+      $("#submit-category .btn-text").text(this.config.strings.updateCategory || "Update Category");
       $("#category-name").focus();
     },
 
@@ -215,7 +242,7 @@
     handleDeleteCategory: function (button) {
       var self = this;
 
-      if (!confirm("Are you sure you want to delete this category?")) {
+      if (!confirm(this.config.strings.confirmDelete)) {
         return;
       }
 
@@ -224,7 +251,7 @@
       var categoryId = $button.closest("tr").data("category-id");
 
       // Disable button and show loading
-      $button.prop("disabled", true).text("Deleting...");
+      $button.prop("disabled", true).text(this.config.strings.deleting);
 
       $.post(
         this.config.ajaxUrl,
@@ -236,14 +263,17 @@
         function (response) {
           if (response.success) {
             self.loadCategories();
+            alert(response.data);
           } else {
             alert(response.data);
           }
         }
       )
-        .fail(function () {
-          alert("Delete request failed. Please try again.");
-        })
+        .fail(
+          function () {
+            alert(this.config.strings.deleteFailed || "Delete request failed. Please try again.");
+          }.bind(this)
+        )
         .always(function () {
           // Re-enable button
           $button.prop("disabled", false).text(originalText);
@@ -259,13 +289,15 @@
       var btnText = button.find(".btn-text");
 
       if (loading) {
-        button.prop("disabled", true).addClass("button-loading");
+        button.prop("disabled", true);
         spinner.show();
-        btnText.text(button.hasClass("button-loading") ? "Saving..." : "Updating...");
+        var isEditMode = $("#category-id").val() !== "";
+        btnText.text(isEditMode ? this.config.strings.updating : this.config.strings.saving);
       } else {
-        button.prop("disabled", false).removeClass("button-loading");
+        button.prop("disabled", false);
         spinner.hide();
-        btnText.text(btnText.text().includes("Update") ? "Update Category" : "Save Category");
+        var isEditMode = $("#category-id").val() !== "";
+        btnText.text(isEditMode ? this.config.strings.updateCategory || "Update Category" : this.config.strings.saveCategory || "Save Category");
       }
     },
 
@@ -278,19 +310,17 @@
       $("#category-status").val("active");
 
       // Update UI
-      $("#form-title").text("Add New Category");
-      $("#submit-category .btn-text").text("Save Category");
+      $("#form-title").text(this.config.strings.addNewCategory || "Add New Category");
       $("#cancel-edit").hide();
+      $("#submit-category .btn-text").text(this.config.strings.saveCategory || "Save Category");
+      $("#submit-category").prop("disabled", false);
+      $("#submit-category .spinner").hide();
       $("#category-name").focus();
-
-      // Ensure button is enabled
-      this.setButtonLoading(false);
     },
   };
 
   /**
    * Initialize when document is ready
-   * Only initialize if we're on the categories page
    */
   $(document).ready(function () {
     if ($("#add-category-form").length) {

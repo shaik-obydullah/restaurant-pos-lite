@@ -18,6 +18,7 @@ class Obydullah_Restaurant_POS_Lite_Categories
         add_action('wp_ajax_orpl_delete_product_category', [$this, 'ajax_delete_orpl_category']);
     }
 
+
     /**
      * Render the categories page
      */
@@ -25,55 +26,53 @@ class Obydullah_Restaurant_POS_Lite_Categories
     {
         ?>
         <div class="wrap">
-            <h1 class="wp-heading-inline">
+            <h1 class="wp-heading-inline mb-3">
                 <?php esc_html_e('Product Categories', 'obydullah-restaurant-pos-lite'); ?>
             </h1>
             <hr class="wp-header-end">
 
-            <div id="col-container" class="wp-clearfix">
-                <!-- Left: Add/Edit Category Form -->
-                <div id="col-left">
-                    <div class="col-wrap">
-                        <h2 id="form-title">
+            <div class="row">
+                <!-- Left Column: Form -->
+                <div class="col-lg-4">
+                    <div class="bg-light p-4 rounded shadow-sm mb-3">
+                        <h2 id="form-title" class="mb-3 mt-1">
                             <?php esc_html_e('Add New Category', 'obydullah-restaurant-pos-lite'); ?>
                         </h2>
-                        <form id="add-category-form" method="post">
+                        <form id="add-category-form" method="post" class="form-group">
                             <?php wp_nonce_field('orpl_add_product_category', 'product_category_nonce'); ?>
                             <input type="hidden" id="category-id" name="id" value="">
 
-                            <!-- Horizontal layout with equal width -->
-                            <div class="form-row">
-                                <div class="form-fields-row">
-                                    <div class="form-field form-required">
-                                        <label for="category-name">
-                                            <?php esc_html_e('Name', 'obydullah-restaurant-pos-lite'); ?>
-                                            <span class="required">*</span>
-                                        </label>
-                                        <input name="name" id="category-name" type="text" value="" required>
-                                    </div>
-
-                                    <div class="form-field form-required">
-                                        <label for="category-status">
-                                            <?php esc_html_e('Status', 'obydullah-restaurant-pos-lite'); ?>
-                                        </label>
-                                        <select name="status" id="category-status">
-                                            <option value="active">
-                                                <?php esc_html_e('Active', 'obydullah-restaurant-pos-lite'); ?>
-                                            </option>
-                                            <option value="inactive">
-                                                <?php esc_html_e('Inactive', 'obydullah-restaurant-pos-lite'); ?>
-                                            </option>
-                                        </select>
-                                    </div>
-                                </div>
+                            <div class="form-group mb-3">
+                                <label for="category-name" class="form-label">
+                                    <?php esc_html_e('Name', 'obydullah-restaurant-pos-lite'); ?>
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input name="name" id="category-name" type="text" class="form-control" value="" required>
                             </div>
 
-                            <div class="form-actions">
-                                <button type="submit" id="submit-category" class="button button-primary">
-                                    <span class="btn-text"><?php esc_html_e('Save Category', 'obydullah-restaurant-pos-lite'); ?></span>
-                                    <span class="spinner"></span>
+                            <div class="form-group mb-3">
+                                <label for="category-status" class="form-label">
+                                    <?php esc_html_e('Status', 'obydullah-restaurant-pos-lite'); ?>
+                                </label>
+                                <select name="status" id="category-status" class="form-control">
+                                    <option value="active">
+                                        <?php esc_html_e('Active', 'obydullah-restaurant-pos-lite'); ?>
+                                    </option>
+                                    <option value="inactive">
+                                        <?php esc_html_e('Inactive', 'obydullah-restaurant-pos-lite'); ?>
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="d-flex mt-3">
+                                <button type="submit" id="submit-category" class="btn btn-primary mr-2">
+                                    <span class="btn-text">
+                                        <?php esc_html_e('Save Category', 'obydullah-restaurant-pos-lite'); ?>
+                                    </span>
+                                    <span class="spinner" style="display: none;"></span>
                                 </button>
-                                <button type="button" id="cancel-edit" class="button">
+
+                                <button type="button" id="cancel-edit" class="btn btn-secondary" style="display: none;">
                                     <?php esc_html_e('Cancel', 'obydullah-restaurant-pos-lite'); ?>
                                 </button>
                             </div>
@@ -81,26 +80,32 @@ class Obydullah_Restaurant_POS_Lite_Categories
                     </div>
                 </div>
 
-                <!-- Right: Categories Table -->
-                <div id="col-right">
-                    <div class="col-wrap">
-                        <table class="wp-list-table widefat fixed striped table-view-list">
-                            <thead>
-                                <tr>
-                                    <th><?php esc_html_e('Name', 'obydullah-restaurant-pos-lite'); ?></th>
-                                    <th><?php esc_html_e('Status', 'obydullah-restaurant-pos-lite'); ?></th>
-                                    <th><?php esc_html_e('Actions', 'obydullah-restaurant-pos-lite'); ?></th>
-                                </tr>
-                            </thead>
-                            <tbody id="category-list">
-                                <tr>
-                                    <td colspan="3" class="loading-categories">
-                                        <span class="spinner is-active"></span>
-                                        <?php esc_html_e('Loading categories...', 'obydullah-restaurant-pos-lite'); ?>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <!-- Right Column: Table -->
+                <div class="col-lg-8">
+                    <div class="bg-light p-4 rounded shadow-sm">
+                        <h2 class="mb-3 mt-1">
+                            <?php esc_html_e('All Categories', 'obydullah-restaurant-pos-lite'); ?>
+                        </h2>
+
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr class="bg-primary text-white">
+                                        <th><?php esc_html_e('Name', 'obydullah-restaurant-pos-lite'); ?></th>
+                                        <th><?php esc_html_e('Status', 'obydullah-restaurant-pos-lite'); ?></th>
+                                        <th class="text-right"><?php esc_html_e('Actions', 'obydullah-restaurant-pos-lite'); ?></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="category-list" class="bg-white">
+                                    <tr>
+                                        <td colspan="3" class="text-center">
+                                            <span class="spinner is-active"></span>
+                                            <?php esc_html_e('Loading categories...', 'obydullah-restaurant-pos-lite'); ?>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -126,7 +131,7 @@ class Obydullah_Restaurant_POS_Lite_Categories
 
         if (false === $categories) {
             $categories = $wpdb->get_results(
-                $wpdb->prepare("SELECT id, name, status FROM {$table_name} ORDER BY id DESC")
+                "SELECT id, name, status FROM {$table_name} ORDER BY id DESC"
             );
 
             // Cache for 5 minutes

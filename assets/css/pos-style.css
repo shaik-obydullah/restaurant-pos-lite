@@ -1,0 +1,296 @@
+/*!
+ * ==========================================================
+ * Plugin Name: Obydullah Restaurant POS Lite
+ * Version: 1.0.0
+ * Author: Shaik Obydullah
+ * Author URI: https://obydullah.com
+ * ==========================================================
+ */
+
+/*
+Index
+
+1. Buttons – Primary
+2. Buttons – Secondary
+3. Table Container (WP Admin Box)
+4. Tables – Header
+5. Tables – Body
+6. Table Buttons (Edit / Delete)
+7. Spinner
+8. Product Page
+9. Stock Page
+
+*/
+
+/* ==========================================================================
+   1. Buttons – Primary
+   ========================================================================== */
+.btn-primary {
+  display: inline-block;
+  padding: 6px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  height: 35px;
+  color: #fff;
+  background-color: #2271b1;
+  border: 1px solid #2271b1;
+  border-radius: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+  text-align: center;
+  transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.btn-primary:hover {
+  background-color: #135e96;
+  border-color: #135e96;
+}
+
+.btn-primary:focus,
+.btn-primary:active {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.3);
+}
+
+/* ==========================================================================
+   2. Buttons – Secondary
+   ========================================================================== */
+.btn-secondary {
+  display: inline-block;
+  padding: 6px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  height: 35px;
+  color: #333;
+  background-color: #f1f1f1;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+  text-align: center;
+  transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.btn-secondary:hover {
+  background-color: #e2e2e2;
+  border-color: #bdbdbd;
+}
+
+.btn-secondary:focus,
+.btn-secondary:active {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(200, 200, 200, 0.3);
+}
+
+.btn-secondary:disabled,
+.btn-secondary.disabled {
+  background-color: #f5f5f5;
+  border-color: #ddd;
+  color: #999;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+/* ==========================================================================
+   3. Table Container (WP Admin Box)
+   ========================================================================== */
+.bg-light.p-4.rounded.shadow-sm {
+  background-color: #fff;
+  border: 1px solid #ccd0d4;
+  border-radius: 3px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+  padding: 20px;
+}
+
+/* ==========================================================================
+   4. Tables – Header
+   ========================================================================== */
+.table thead tr.bg-primary {
+  background-color: #f1f1f1 !important;
+  color: #555 !important;
+  font-weight: 600;
+}
+
+.table thead th {
+  padding: 8px 10px;
+  line-height: 1.5;
+  border-bottom: 1px solid #e1e1e1;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.table thead th.text-right {
+  text-align: right;
+}
+
+/* ==========================================================================
+   5. Tables – Body
+   ========================================================================== */
+.table tbody tr {
+  background-color: #fff;
+}
+
+.table.table-striped tbody tr:nth-child(odd) {
+  background-color: #f9f9f9;
+}
+
+.table.table-hover tbody tr:hover {
+  background-color: #f5f5f5;
+}
+
+.table td {
+  padding: 8px 10px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.table td.text-right {
+  text-align: right;
+}
+
+/* ==========================================================================
+   6. Table Buttons (Edit / Delete)
+   ========================================================================== */
+.table .btn {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  height: 28px;
+  border-radius: 3px;
+  white-space: nowrap;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.table .btn-secondary {
+  color: #333;
+  background-color: #f1f1f1;
+  border: 1px solid #ccc;
+  transition: all 0.15s ease-in-out;
+}
+
+.table .btn-secondary:hover {
+  background-color: #e2e2e2;
+  border-color: #bdbdbd;
+}
+
+.table .btn-danger {
+  color: #fff;
+  background-color: #dc3232;
+  border: 1px solid #dc3232;
+  transition: all 0.15s ease-in-out;
+}
+
+.table .btn-danger:hover {
+  background-color: #b82a2a;
+  border-color: #b82a2a;
+}
+
+/* ==========================================================================
+   7. Spinner
+   ========================================================================== */
+.spinner.is-active {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ccc;
+  border-top-color: #555;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-right: 5px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==========================================================================
+   8. Product Page
+   ========================================================================== */
+.product-image {
+  width: 50px;
+  height: 50px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-image img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+  border-radius: 3px;
+  border: 1px solid #ccd0d4;
+  background-color: #fff;
+}
+
+/* ==========================================================================
+   9. Stock Page
+   ========================================================================== */
+
+   .stock-summary-card {
+  background-color: #fff;
+  border: 1px solid #ccd0d4;
+  border-radius: 6px;
+  padding: 1rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: default;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 120px; /* fixed height for all cards */
+}
+
+.stock-summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+}
+
+.stock-summary-card h3 {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #6c757d;
+  margin-bottom: 0.25rem;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.stock-summary-card .summary-number {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.stock-summary-card .text-primary { color: #2271b1 !important; }
+.stock-summary-card .text-danger  { color: #dc3232 !important; }
+.stock-summary-card .text-warning { color: #ffb236 !important; }
+.stock-summary-card .text-info    { color: #17a2b8 !important; }
+
+/* Responsive adjustments */
+@media (max-width: 575.98px) {
+  .stock-summary-card {
+    padding: 0.8rem;
+    height: auto;
+  }
+
+  .stock-summary-card h3 {
+    font-size: 1rem;
+  }
+
+  .stock-summary-card .summary-number {
+    font-size: 1.6rem;
+  }
+}
+
+

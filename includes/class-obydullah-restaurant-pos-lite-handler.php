@@ -123,12 +123,10 @@ if (!class_exists('Obydullah_Restaurant_POS_Lite_Handler')) {
          */
         public function enqueue_admin_scripts($hook)
         {
-            // Get current page safely
             $current_page = isset($_GET['page'])
                 ? sanitize_text_field(wp_unslash($_GET['page']))
                 : '';
 
-            // Load only on ORPL admin pages
             if (
                 strpos($hook, 'obydullah-restaurant-pos-lite') === false &&
                 strpos($current_page, 'obydullah-restaurant-pos-lite') === false
@@ -136,57 +134,33 @@ if (!class_exists('Obydullah_Restaurant_POS_Lite_Handler')) {
                 return;
             }
 
-            // ------------------------------
-            // Global Admin CSS
-            // ------------------------------
             wp_enqueue_style(
-                'obydullah-restaurant-pos-lite-admin',
-                ORPL_URL . 'assets/css/admin.css',
+                'obydullah-restaurant-pos-lite-main',
+                ORPL_URL . 'assets/css/main.css',
                 [],
                 ORPL_VERSION
             );
 
-            // ------------------------------
-            // Global Admin JS
-            // ------------------------------
-            wp_enqueue_script(
-                'obydullah-restaurant-pos-lite-admin',
-                ORPL_URL . 'assets/js/admin.js',
-                ['jquery'],
-                ORPL_VERSION,
-                [
-                    'in_footer' => true,
-                    'strategy' => 'defer',
-                ]
+            wp_enqueue_style(
+                'obydullah-restaurant-pos-lite-pos-style',
+                ORPL_URL . 'assets/css/pos-style.css',
+                ['obydullah-restaurant-pos-lite-main'],
+                ORPL_VERSION
             );
 
-            wp_localize_script(
-                'obydullah-restaurant-pos-lite-admin',
-                'orplAdmin',
-                [
-                    'ajaxUrl' => admin_url('admin-ajax.php'),
-                    'nonce' => wp_create_nonce('orpl_admin_nonce'),
-                    'siteUrl' => site_url(),
-                    'adminUrl' => admin_url(),
-                ]
-            );
-
-            // ------------------------------
             // Page-specific JS
-            // ------------------------------
             switch ($current_page) {
                 case 'obydullah-restaurant-pos-lite-categories':
                     wp_enqueue_script(
                         'orpl-categories-js',
                         ORPL_URL . 'assets/js/categories.js',
-                        ['jquery', 'obydullah-restaurant-pos-lite-admin'],
+                        ['jquery'],
                         ORPL_VERSION,
                         [
                             'in_footer' => true,
                             'strategy' => 'defer',
                         ]
                     );
-
                     wp_localize_script(
                         'orpl-categories-js',
                         'orplCategories',
@@ -199,117 +173,123 @@ if (!class_exists('Obydullah_Restaurant_POS_Lite_Handler')) {
                             'strings' => [
                                 'confirmDelete' => __('Are you sure you want to delete this category?', 'obydullah-restaurant-pos-lite'),
                                 'saving' => __('Saving...', 'obydullah-restaurant-pos-lite'),
+                                'updating' => __('Updating...', 'obydullah-restaurant-pos-lite'),
+                                'deleting' => __('Deleting...', 'obydullah-restaurant-pos-lite'),
                                 'error' => __('Error occurred. Please try again.', 'obydullah-restaurant-pos-lite'),
+                                'requestFailed' => __('Request failed. Please try again.', 'obydullah-restaurant-pos-lite'),
+                                'deleteFailed' => __('Delete request failed. Please try again.', 'obydullah-restaurant-pos-lite'),
+                                'nameRequired' => __('Please enter a category name', 'obydullah-restaurant-pos-lite'),
+                                'noCategories' => __('No categories found.', 'obydullah-restaurant-pos-lite'),
+                                'loadError' => __('Failed to load categories.', 'obydullah-restaurant-pos-lite'),
+                                'addNewCategory' => __('Add New Category', 'obydullah-restaurant-pos-lite'),
+                                'editCategory' => __('Edit Category', 'obydullah-restaurant-pos-lite'),
+                                'saveCategory' => __('Save Category', 'obydullah-restaurant-pos-lite'),
+                                'updateCategory' => __('Update Category', 'obydullah-restaurant-pos-lite'),
+                                'edit' => __('Edit', 'obydullah-restaurant-pos-lite'),
+                                'delete' => __('Delete', 'obydullah-restaurant-pos-lite'),
                             ]
                         ]
                     );
                     break;
 
-                // case 'obydullah-restaurant-pos-lite-products':
-                //     wp_enqueue_script(
-                //         'orpl-products-js',
-                //         ORPL_URL . 'assets/js/products.js',
-                //         ['jquery', 'obydullah-restaurant-pos-lite-admin'],
-                //         ORPL_VERSION,
-                //         [
-                //             'in_footer' => true,
-                //             'strategy' => 'defer',
-                //         ]
-                //     );
+                case 'obydullah-restaurant-pos-lite-products':
+                    wp_enqueue_script(
+                        'orpl-products-js',
+                        ORPL_URL . 'assets/js/products.js',
+                        ['jquery'],
+                        ORPL_VERSION,
+                        [
+                            'in_footer' => true,
+                            'strategy' => 'defer',
+                        ]
+                    );
 
-                //     wp_localize_script(
-                //         'orpl-products-js',
-                //         'orplProducts',
-                //         [
-                //             'ajaxUrl' => admin_url('admin-ajax.php'),
-                //             'nonce' => wp_create_nonce('orpl_products_nonce'),
-                //             'mediaFrame' => [
-                //                 'title' => __('Select or Upload Image', 'obydullah-restaurant-pos-lite'),
-                //                 'button' => __('Use this image', 'obydullah-restaurant-pos-lite'),
-                //             ]
-                //         ]
-                //     );
-                //     break;
+                    wp_localize_script(
+                        'orpl-products-js',
+                        'orplProducts',
+                        [
+                            'ajaxUrl' => admin_url('admin-ajax.php'),
+                            'addNonce' => wp_create_nonce('orpl_add_product'),
+                            'editNonce' => wp_create_nonce('orpl_edit_product'),
+                            'deleteNonce' => wp_create_nonce('orpl_delete_product'),
+                            'getNonce' => wp_create_nonce('orpl_get_products'),
+                            'getCategoriesNonce' => wp_create_nonce('orpl_get_categories_for_products'),
+                            'strings' => [
+                                'selectCategory' => __('Select Category', 'obydullah-restaurant-pos-lite'),
+                                'addNewProduct' => __('Add New Product', 'obydullah-restaurant-pos-lite'),
+                                'editProduct' => __('Edit Product', 'obydullah-restaurant-pos-lite'),
+                                'saveProduct' => __('Save Product', 'obydullah-restaurant-pos-lite'),
+                                'updateProduct' => __('Update Product', 'obydullah-restaurant-pos-lite'),
+                                'cancel' => __('Cancel', 'obydullah-restaurant-pos-lite'),
+                                'loadingProducts' => __('Loading products...', 'obydullah-restaurant-pos-lite'),
+                                'noResults' => __('No products found matching', 'obydullah-restaurant-pos-lite'),
+                                'noProducts' => __('No products found.', 'obydullah-restaurant-pos-lite'),
+                                'noImage' => __('No Image', 'obydullah-restaurant-pos-lite'),
+                                'edit' => __('Edit', 'obydullah-restaurant-pos-lite'),
+                                'delete' => __('Delete', 'obydullah-restaurant-pos-lite'),
+                                'items' => __('items', 'obydullah-restaurant-pos-lite'),
+                                'enterName' => __('Please enter a product name', 'obydullah-restaurant-pos-lite'),
+                                'selectCategoryError' => __('Please select a category', 'obydullah-restaurant-pos-lite'),
+                                'error' => __('Error:', 'obydullah-restaurant-pos-lite'),
+                                'requestFailed' => __('Request failed. Please try again.', 'obydullah-restaurant-pos-lite'),
+                                'saving' => __('Saving...', 'obydullah-restaurant-pos-lite'),
+                                'updating' => __('Updating...', 'obydullah-restaurant-pos-lite'),
+                                'deleting' => __('Deleting...', 'obydullah-restaurant-pos-lite'),
+                                'confirmDelete' => __('Are you sure you want to delete this product?', 'obydullah-restaurant-pos-lite'),
+                                'deleteFailed' => __('Delete request failed. Please try again.', 'obydullah-restaurant-pos-lite'),
+                                'loadError' => __('Failed to load products.', 'obydullah-restaurant-pos-lite'),
+                            ]
+                        ]
+                    );
+                    break;
 
-                // case 'obydullah-restaurant-pos-lite-pos':
-                //     wp_enqueue_script(
-                //         'orpl-pos-js',
-                //         ORPL_URL . 'assets/js/pos.js',
-                //         ['jquery', 'obydullah-restaurant-pos-lite-admin'],
-                //         ORPL_VERSION,
-                //         [
-                //             'in_footer' => true,
-                //             'strategy' => 'defer',
-                //         ]
-                //     );
+                case 'obydullah-restaurant-pos-lite-stocks':
+                    wp_enqueue_script(
+                        'orpl-stocks-js',
+                        ORPL_URL . 'assets/js/stocks.js',
+                        ['jquery'],
+                        ORPL_VERSION,
+                        [
+                            'in_footer' => true,
+                            'strategy' => 'defer',
+                        ]
+                    );
 
-                //     wp_localize_script(
-                //         'orpl-pos-js',
-                //         'orplPOS',
-                //         [
-                //             'ajaxUrl' => admin_url('admin-ajax.php'),
-                //             'nonce' => wp_create_nonce('orpl_pos_nonce'),
-                //             'currency' => [
-                //                 'symbol' => get_woocommerce_currency_symbol(),
-                //                 'position' => get_option('woocommerce_currency_pos'),
-                //             ]
-                //         ]
-                //     );
-                //     break;
-
-                // case 'obydullah-restaurant-pos-lite-sales':
-                //     wp_enqueue_script(
-                //         'orpl-sales-js',
-                //         ORPL_URL . 'assets/js/sales.js',
-                //         ['jquery', 'dataTables', 'obydullah-restaurant-pos-lite-admin'],
-                //         ORPL_VERSION,
-                //         [
-                //             'in_footer' => true,
-                //             'strategy' => 'defer',
-                //         ]
-                //     );
-
-                //     // Enqueue DataTables if needed
-                //     wp_enqueue_style('datatables-style', 'https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css');
-                //     wp_enqueue_script('dataTables', 'https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js', ['jquery'], null, [
-                //         'in_footer' => true,
-                //         'strategy' => 'defer',
-                //     ]);
-                //     break;
-
-                // case 'obydullah-restaurant-pos-lite-stock_adjustments':
-                //     wp_enqueue_script(
-                //         'orpl-stock-js',
-                //         ORPL_URL . 'assets/js/stock.js',
-                //         ['jquery', 'obydullah-restaurant-pos-lite-admin'],
-                //         ORPL_VERSION,
-                //         [
-                //             'in_footer' => true,
-                //             'strategy' => 'defer',
-                //         ]
-                //     );
-                //     break;
-
-                // case 'obydullah-restaurant-pos-lite-accounting':
-                //     wp_enqueue_script(
-                //         'orpl-accounting-js',
-                //         ORPL_URL . 'assets/js/accounting.js',
-                //         ['jquery', 'chart-js', 'obydullah-restaurant-pos-lite-admin'],
-                //         ORPL_VERSION,
-                //         [
-                //             'in_footer' => true,
-                //             'strategy' => 'defer',
-                //         ]
-                //     );
-
-                //     // Enqueue Chart.js for accounting reports
-                //     wp_enqueue_script('chart-js', 'https://cdn.jsdelivr.net/npm/chart.js', [], null, [
-                //         'in_footer' => true,
-                //         'strategy' => 'defer',
-                //     ]);
-                //     break;
+                    wp_localize_script(
+                        'orpl-stocks-js',
+                        'orplStocks',
+                        [
+                            'ajaxUrl' => admin_url('admin-ajax.php'),
+                            'addNonce' => wp_create_nonce('orpl_add_stock'),
+                            'getNonce' => wp_create_nonce('orpl_get_stocks'),
+                            'deleteNonce' => wp_create_nonce('orpl_delete_stock'),
+                            'productsNonce' => wp_create_nonce('orpl_get_products_for_stocks'),
+                            'strings' => [
+                                'selectProduct' => __('Select Product', 'obydullah-restaurant-pos-lite'),
+                                'selectProductRequired' => __('Please select a product', 'obydullah-restaurant-pos-lite'),
+                                'validNetCost' => __('Please enter a valid net cost', 'obydullah-restaurant-pos-lite'),
+                                'validSalePrice' => __('Please enter a valid sale price', 'obydullah-restaurant-pos-lite'),
+                                'validQuantity' => __('Please enter a valid quantity greater than 0', 'obydullah-restaurant-pos-lite'),
+                                'loadingStocks' => __('Loading stocks...', 'obydullah-restaurant-pos-lite'),
+                                'noStocks' => __('No stock entries found.', 'obydullah-restaurant-pos-lite'),
+                                'inStock' => __('In Stock', 'obydullah-restaurant-pos-lite'),
+                                'outStock' => __('Out of Stock', 'obydullah-restaurant-pos-lite'),
+                                'lowStock' => __('Low Stock', 'obydullah-restaurant-pos-lite'),
+                                'delete' => __('Delete', 'obydullah-restaurant-pos-lite'),
+                                'items' => __('items', 'obydullah-restaurant-pos-lite'),
+                                'error' => __('Error', 'obydullah-restaurant-pos-lite'),
+                                'requestFailed' => __('Request failed. Please try again.', 'obydullah-restaurant-pos-lite'),
+                                'confirmDelete' => __('Are you sure you want to delete this stock entry?', 'obydullah-restaurant-pos-lite'),
+                                'deleting' => __('Deleting...', 'obydullah-restaurant-pos-lite'),
+                                'deleteFailed' => __('Delete request failed. Please try again.', 'obydullah-restaurant-pos-lite'),
+                                'saving' => __('Saving...', 'obydullah-restaurant-pos-lite'),
+                                'saveStock' => __('Save Stock', 'obydullah-restaurant-pos-lite'),
+                                'loadError' => __('Failed to load stocks.', 'obydullah-restaurant-pos-lite'),
+                            ]
+                        ]
+                    );
+                    break;
             }
-
         }
     }
 }
