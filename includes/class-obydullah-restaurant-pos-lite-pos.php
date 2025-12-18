@@ -45,7 +45,6 @@ class Obydullah_Restaurant_POS_Lite_POS
     }
 
 
-
     public function render_page()
     {
         $currency = $this->helpers->get_currency_symbol();
@@ -287,7 +286,6 @@ class Obydullah_Restaurant_POS_Lite_POS
 
         <?php
     }
-
 
     /** Get categories for POS with caching */
     public function ajax_get_categories_for_pos()

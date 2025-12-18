@@ -246,39 +246,6 @@ class Obydullah_Restaurant_POS_Lite_Customers
             </div>
         </div>
 
-        <script type="text/javascript">
-            var orplCustomersData = {
-                ajaxUrl: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
-                nonce_get_customers: '<?php echo esc_attr(wp_create_nonce('orpl_get_customers')); ?>',
-                nonce_add_customer: '<?php echo esc_attr(wp_create_nonce('orpl_add_customer')); ?>',
-                nonce_edit_customer: '<?php echo esc_attr(wp_create_nonce('orpl_edit_customer')); ?>',
-                nonce_delete_customer: '<?php echo esc_attr(wp_create_nonce('orpl_delete_customer')); ?>',
-                strings: {
-                    loading_customers: '<?php echo esc_js(__('Loading customers...', 'obydullah-restaurant-pos-lite')); ?>',
-                    no_customers: '<?php echo esc_js(__('No customers found.', 'obydullah-restaurant-pos-lite')); ?>',
-                    failed_load: '<?php echo esc_js(__('Failed to load customers.', 'obydullah-restaurant-pos-lite')); ?>',
-                    active: '<?php echo esc_js(__('Active', 'obydullah-restaurant-pos-lite')); ?>',
-                    inactive: '<?php echo esc_js(__('Inactive', 'obydullah-restaurant-pos-lite')); ?>',
-                    edit: '<?php echo esc_js(__('Edit', 'obydullah-restaurant-pos-lite')); ?>',
-                    delete: '<?php echo esc_js(__('Delete', 'obydullah-restaurant-pos-lite')); ?>',
-                    items: '<?php echo esc_js(__('items', 'obydullah-restaurant-pos-lite')); ?>',
-                    name_required: '<?php echo esc_js(__('Customer name is required', 'obydullah-restaurant-pos-lite')); ?>',
-                    email_required: '<?php echo esc_js(__('Email is required', 'obydullah-restaurant-pos-lite')); ?>',
-                    email_invalid: '<?php echo esc_js(__('Please enter a valid email address', 'obydullah-restaurant-pos-lite')); ?>',
-                    error: '<?php echo esc_js(__('Error', 'obydullah-restaurant-pos-lite')); ?>',
-                    request_failed: '<?php echo esc_js(__('Request failed. Please try again.', 'obydullah-restaurant-pos-lite')); ?>',
-                    confirm_delete: '<?php echo esc_js(__('Are you sure you want to delete this customer?', 'obydullah-restaurant-pos-lite')); ?>',
-                    deleting: '<?php echo esc_js(__('Deleting...', 'obydullah-restaurant-pos-lite')); ?>',
-                    delete_failed: '<?php echo esc_js(__('Delete request failed. Please try again.', 'obydullah-restaurant-pos-lite')); ?>',
-                    updating: '<?php echo esc_js(__('Updating...', 'obydullah-restaurant-pos-lite')); ?>',
-                    saving: '<?php echo esc_js(__('Saving...', 'obydullah-restaurant-pos-lite')); ?>',
-                    update_customer: '<?php echo esc_js(__('Update Customer', 'obydullah-restaurant-pos-lite')); ?>',
-                    save_customer: '<?php echo esc_js(__('Save Customer', 'obydullah-restaurant-pos-lite')); ?>',
-                    edit_customer: '<?php echo esc_js(__('Edit Customer', 'obydullah-restaurant-pos-lite')); ?>',
-                    add_new_customer: '<?php echo esc_js(__('Add New Customer', 'obydullah-restaurant-pos-lite')); ?>'
-                }
-            };
-        </script>
         <?php
     }
 

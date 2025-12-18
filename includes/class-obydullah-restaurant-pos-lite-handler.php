@@ -450,7 +450,7 @@ if (!class_exists('Obydullah_Restaurant_POS_Lite_Handler')) {
                         case 'right_space':
                             $currency_template = $formatted_amount . ' ' . $currency;
                             break;
-                        default: // left
+                        default:
                             $currency_template = $currency . $formatted_amount;
                     }
 
