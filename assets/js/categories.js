@@ -133,7 +133,7 @@
             var actions = $("<td>").addClass("text-right");
             actions.append(
               $("<button>")
-                .addClass("btn btn-sm btn-secondary mr-2 edit-category")
+                .addClass("btn btn-sm btn-warning mr-2 edit-category")
                 .text(this.config.strings.edit || "Edit")
             );
             actions.append(

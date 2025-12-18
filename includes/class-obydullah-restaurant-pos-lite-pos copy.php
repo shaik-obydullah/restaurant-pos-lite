@@ -44,250 +44,257 @@ class Obydullah_Restaurant_POS_Lite_POS
         add_action('wp_ajax_orpl_load_saved_sale', [$this, 'ajax_load_saved_sale']);
     }
 
-
-
+    /**
+     * Render the POS page
+     */
     public function render_page()
     {
-        $currency = $this->helpers->get_currency_symbol();
+        $vat_rate = $this->helpers->get_vat_rate();
+        $is_vat_enabled = $this->helpers->is_vat_enabled();
         ?>
         <div class="wrap">
-            <h1 class="wp-heading-inline"><?php esc_html_e('Point of Sale (POS)', 'obydullah-restaurant-pos-lite'); ?></h1>
-            <hr class="wp-header-end">
+            <h1 class="mb-3"><?php esc_html_e('Restaurant POS System', 'obydullah-restaurant-pos-lite'); ?></h1>
 
-            <div class="row">
-                <!-- Left Column: Categories and Stocks -->
-                <div class="col-lg-8">
-                    <div class="row">
-                        <!-- Categories Section -->
-                        <div class="col-12 mb-4">
-                            <div class="bg-light p-4 rounded shadow-sm">
-                                <h3 class="mb-3 mt-1"><?php esc_html_e('Categories', 'obydullah-restaurant-pos-lite'); ?></h3>
-                                <div class="orpl-categories-list" id="orpl-categories-list">
-                                    <button class="btn btn-outline-primary active mr-2 mb-2" data-category="all">
-                                        <?php esc_html_e('All Stocks', 'obydullah-restaurant-pos-lite'); ?>
-                                    </button>
-                                    <!-- Categories will be loaded via AJAX -->
-                                    <span class="spinner-border spinner-border-sm text-primary" role="status">
-                                        <span class="sr-only"><?php esc_html_e('Loading...', 'obydullah-restaurant-pos-lite'); ?></span>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
+            <!-- Saved Sales Panel -->
+            <div id="saved-sales-panel" class="bg-light p-4 rounded shadow-sm mb-3" style="display: none;">
+                <h3 class="mt-0 mb-2"><?php esc_html_e('Saved Sales', 'obydullah-restaurant-pos-lite'); ?></h3>
+                <div id="saved-sales-list" class="mb-2" style="max-height: 200px; overflow-y: auto;">
+                    <!-- Saved sales will be loaded here -->
+                </div>
+                <button id="close-saved-sales" class="btn btn-secondary">
+                    <?php esc_html_e('Close', 'obydullah-restaurant-pos-lite'); ?>
+                </button>
+            </div>
 
-                        <!-- Stocks Section -->
-                        <div class="col-12">
-                            <div class="bg-light p-4 rounded shadow-sm">
-                                <h3 class="mb-3"><?php esc_html_e('Stocks', 'obydullah-restaurant-pos-lite'); ?></h3>
-                                <div class="orpl-stocks-grid" id="orpl-stocks-grid">
-                                    <!-- Stocks will be loaded via AJAX -->
-                                    <div class="text-center py-5">
-                                        <div class="spinner-border text-primary" role="status">
-                                            <span class="sr-only"><?php esc_html_e('Loading...', 'obydullah-restaurant-pos-lite'); ?></span>
-                                        </div>
-                                        <p class="mt-2"><?php esc_html_e('Loading stocks...', 'obydullah-restaurant-pos-lite'); ?></p>
-                                    </div>
-                                </div>
-                            </div>
+            <div id="pos-container" class="pos-container">
+                <!-- Stock Items Panel -->
+                <div class="pos-stock-panel">
+                    <div class="pos-panel-header">
+                        <h2 class="pos-panel-title"><?php esc_html_e('Stock Items', 'obydullah-restaurant-pos-lite'); ?></h2>
+                        <button id="show-saved-sales" class="btn btn-primary">
+                            <?php esc_html_e('Load Saved Sale', 'obydullah-restaurant-pos-lite'); ?>
+                        </button>
+                    </div>
+
+                    <!-- Customer Selection -->
+                    <div class="pos-customer-selection">
+                        <label class="pos-label"><?php esc_html_e('Select Customer', 'obydullah-restaurant-pos-lite'); ?></label>
+                        <select id="customer-select" class="form-control">
+                            <option value=""><?php esc_html_e('Walk-in Customer', 'obydullah-restaurant-pos-lite'); ?></option>
+                        </select>
+                    </div>
+
+                    <!-- Product Categories -->
+                    <div class="pos-categories" id="category-buttons">
+                        <!-- Categories will be loaded via AJAX -->
+                    </div>
+
+                    <!-- Product Grid -->
+                    <div id="product-grid" class="pos-product-grid">
+                        <div class="pos-loading">
+                            <div class="spinner is-active"></div>
+                            <p><?php esc_html_e('Loading stock items...', 'obydullah-restaurant-pos-lite'); ?></p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right Column: Cart and Order Details -->
-                <div class="col-lg-4">
-                    <div class="bg-light p-4 rounded shadow-sm">
-                        <!-- Customer -->
-                        <div class="form-group mb-3">
-                            <label for="orpl-customer" class="form-label">
-                                <?php esc_html_e('Customer:', 'obydullah-restaurant-pos-lite'); ?>
-                            </label>
-                            <select id="orpl-customer" class="form-control">
-                                <option value=""><?php esc_html_e('Walk-in Customer', 'obydullah-restaurant-pos-lite'); ?></option>
-                            </select>
-                        </div>
+                <!-- Cart & Checkout Panel -->
+                <div class="pos-cart-panel">
+                    <h2 class="pos-panel-title"><?php esc_html_e('Current Sale', 'obydullah-restaurant-pos-lite'); ?></h2>
 
-                        <!-- Order Type Tabs -->
-                        <div class="pos-order-tabs mb-3">
-                            <div class="pos-tab-buttons btn-group btn-group-toggle w-100 mb-3">
-                                <label class="btn btn-outline-primary active">
-                                    <input type="radio" name="order-type" value="dineIn" checked>
-                                    <?php esc_html_e('Dine In', 'obydullah-restaurant-pos-lite'); ?>
-                                </label>
-                                <label class="btn btn-outline-primary">
-                                    <input type="radio" name="order-type" value="takeAway">
-                                    <?php esc_html_e('Take Away', 'obydullah-restaurant-pos-lite'); ?>
-                                </label>
-                                <label class="btn btn-outline-primary">
-                                    <input type="radio" name="order-type" value="pickup">
-                                    <?php esc_html_e('Pickup', 'obydullah-restaurant-pos-lite'); ?>
-                                </label>
-                            </div>
+                    <!-- Cart Items -->
+                    <div class="pos-cart-items">
+                        <table class="table table-striped table-hover mb-0">
+                            <thead>
+                                <tr class="bg-primary">
+                                    <th class="text-left"><?php esc_html_e('Item', 'obydullah-restaurant-pos-lite'); ?></th>
+                                    <th class="text-center"><?php esc_html_e('Qty', 'obydullah-restaurant-pos-lite'); ?></th>
+                                    <th class="text-right"><?php esc_html_e('Price', 'obydullah-restaurant-pos-lite'); ?></th>
+                                    <th class="text-right"><?php esc_html_e('Total', 'obydullah-restaurant-pos-lite'); ?></th>
+                                </tr>
+                            </thead>
+                            <tbody id="cart-items">
+                                <tr>
+                                    <td colspan="4" class="text-center p-4 text-muted">
+                                        <?php esc_html_e('No items in cart', 'obydullah-restaurant-pos-lite'); ?>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
 
-                            <!-- Dine In Options -->
-                            <div id="dineInOptions" class="pos-tab-content">
-                                <div class="form-group mb-2">
-                                    <label class="form-label"><?php esc_html_e('Table Number', 'obydullah-restaurant-pos-lite'); ?></label>
-                                    <input type="text" id="table-number" class="form-control form-control-sm"
-                                        placeholder="<?php esc_attr_e('Enter table number', 'obydullah-restaurant-pos-lite'); ?>">
-                                </div>
-                                <div class="form-group mb-0">
-                                    <label class="form-label"><?php esc_html_e('Cooking Instructions', 'obydullah-restaurant-pos-lite'); ?></label>
-                                    <textarea id="dinein-instructions" class="form-control form-control-sm" rows="2"
-                                        placeholder="<?php esc_attr_e('Add special cooking instructions...', 'obydullah-restaurant-pos-lite'); ?>"></textarea>
-                                </div>
-                            </div>
-
-                            <!-- Take Away Options -->
-                            <div id="takeAwayOptions" class="pos-tab-content" style="display: none;">
-                                <div class="form-group mb-2">
-                                    <label class="form-label"><?php esc_html_e('Customer Name', 'obydullah-restaurant-pos-lite'); ?></label>
-                                    <input type="text" id="takeaway-name" class="form-control form-control-sm"
-                                        placeholder="<?php esc_attr_e('Enter customer name', 'obydullah-restaurant-pos-lite'); ?>">
-                                </div>
-                                <div class="form-group mb-2">
-                                    <label class="form-label"><?php esc_html_e('Delivery Address', 'obydullah-restaurant-pos-lite'); ?></label>
-                                    <textarea id="takeaway-address" class="form-control form-control-sm" rows="2"
-                                        placeholder="<?php esc_attr_e('Enter delivery address', 'obydullah-restaurant-pos-lite'); ?>"></textarea>
-                                </div>
-                                <div class="row">
-                                    <div class="col-6">
-                                        <div class="form-group mb-2">
-                                            <label class="form-label"><?php esc_html_e('Email', 'obydullah-restaurant-pos-lite'); ?></label>
-                                            <input type="email" id="takeaway-email" class="form-control form-control-sm"
-                                                placeholder="<?php esc_attr_e('Enter email address', 'obydullah-restaurant-pos-lite'); ?>">
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="form-group mb-2">
-                                            <label class="form-label"><?php esc_html_e('Mobile', 'obydullah-restaurant-pos-lite'); ?></label>
-                                            <input type="text" id="takeaway-mobile" class="form-control form-control-sm"
-                                                placeholder="<?php esc_attr_e('Enter mobile number', 'obydullah-restaurant-pos-lite'); ?>">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group mb-0">
-                                    <label class="form-label"><?php esc_html_e('Cooking Instructions', 'obydullah-restaurant-pos-lite'); ?></label>
-                                    <textarea id="takeaway-instructions" class="form-control form-control-sm" rows="2"
-                                        placeholder="<?php esc_attr_e('Enter Cooking Instructions', 'obydullah-restaurant-pos-lite'); ?>"></textarea>
-                                </div>
-                            </div>
-
-                            <!-- Pickup Options -->
-                            <div id="pickupOptions" class="pos-tab-content" style="display: none;">
-                                <div class="form-group mb-2">
-                                    <label class="form-label"><?php esc_html_e('Customer Name', 'obydullah-restaurant-pos-lite'); ?></label>
-                                    <input type="text" id="pickup-name" class="form-control form-control-sm"
-                                        placeholder="<?php esc_attr_e('Enter customer name', 'obydullah-restaurant-pos-lite'); ?>">
-                                </div>
-                                <div class="form-group mb-0">
-                                    <label class="form-label"><?php esc_html_e('Mobile', 'obydullah-restaurant-pos-lite'); ?></label>
-                                    <input type="tel" id="pickup-mobile" class="form-control form-control-sm"
-                                        placeholder="<?php esc_attr_e('Enter mobile number', 'obydullah-restaurant-pos-lite'); ?>">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Cart Items -->
-                        <div class="mb-3">
-                            <h4><?php esc_html_e('Cart', 'obydullah-restaurant-pos-lite'); ?></h4>
-                            <div class="orpl-cart-items" id="orpl-cart-items" style="max-height: 200px; overflow-y: auto;">
-                                <div class="text-center py-3 text-muted">
-                                    <?php esc_html_e('Cart is empty', 'obydullah-restaurant-pos-lite'); ?>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Order Summary -->
-                        <div class="mb-3">
-                            <div class="bg-white p-3 rounded border">
-                                <table class="table table-sm table-borderless mb-0">
-                                    <tbody>
-                                        <tr>
-                                            <td class="pl-0"><?php esc_html_e('Subtotal:', 'obydullah-restaurant-pos-lite'); ?></td>
-                                            <td class="text-right pr-0 font-weight-bold" id="orpl-subtotal"><?php echo esc_html($this->helpers->format_currency(0)); ?></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="pl-0"><?php esc_html_e('Discount:', 'obydullah-restaurant-pos-lite'); ?></td>
-                                            <td class="text-right pr-0">
-                                                <input type="number" id="orpl-discount" class="form-control form-control-sm d-inline-block" value="0" min="0" step="0.01" style="width: 90px;">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="pl-0"><?php esc_html_e('Delivery:', 'obydullah-restaurant-pos-lite'); ?></td>
-                                            <td class="text-right pr-0">
-                                                <input type="number" id="orpl-delivery" class="form-control form-control-sm d-inline-block" value="0" min="0" step="0.01" style="width: 90px;">
-                                            </td>
-                                        </tr>
-                                        <?php if ($this->helpers->is_tax_enabled()): ?>
-                                            <tr>
-                                                <td class="pl-0"><?php esc_html_e('Tax:', 'obydullah-restaurant-pos-lite'); ?></td>
-                                                <td class="text-right pr-0" id="orpl-tax"><?php echo esc_html($this->helpers->format_currency(0)); ?></td>
-                                            </tr>
-                                        <?php endif; ?>
-                                        <?php if ($this->helpers->is_vat_enabled()): ?>
-                                            <tr>
-                                                <td class="pl-0"><?php esc_html_e('VAT:', 'obydullah-restaurant-pos-lite'); ?></td>
-                                                <td class="text-right pr-0" id="orpl-vat"><?php echo esc_html($this->helpers->format_currency(0)); ?></td>
-                                            </tr>
-                                        <?php endif; ?>
-                                        <tr class="border-top">
-                                            <td class="pl-0 pt-2"><strong><?php esc_html_e('Total:', 'obydullah-restaurant-pos-lite'); ?></strong></td>
-                                            <td class="text-right pr-0 pt-2"><strong id="orpl-grand-total" class="text-primary"><?php echo esc_html($this->helpers->format_currency(0)); ?></strong></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Action Buttons -->
-                        <div class="mb-3">
-                            <div class="row">
-                                <div class="col-4">
-                                    <button type="button" id="orpl-clear-cart" class="btn btn-outline-danger btn-block">
-                                        <?php esc_html_e('Clear', 'obydullah-restaurant-pos-lite'); ?>
-                                    </button>
-                                </div>
-                                <div class="col-4">
-                                    <button type="button" id="orpl-save-sale" class="btn btn-outline-primary btn-block">
-                                        <?php esc_html_e('Save', 'obydullah-restaurant-pos-lite'); ?>
-                                    </button>
-                                </div>
-                                <div class="col-4">
-                                    <button type="button" id="orpl-complete-sale" class="btn btn-primary btn-block">
-                                        <?php esc_html_e('Complete', 'obydullah-restaurant-pos-lite'); ?>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Notes -->
-                        <div class="mb-3">
-                            <label for="orpl-notes" class="form-label">
-                                <?php esc_html_e('Notes:', 'obydullah-restaurant-pos-lite'); ?>
-                            </label>
-                            <textarea id="orpl-notes" class="form-control form-control-sm" rows="2" placeholder="<?php esc_attr_e('Add any notes here...', 'obydullah-restaurant-pos-lite'); ?>"></textarea>
-                        </div>
-
-                        <!-- Saved Sales -->
-                        <div class="mt-3">
-                            <h5 class="mb-2"><?php esc_html_e('Saved Sales', 'obydullah-restaurant-pos-lite'); ?></h5>
-                            <button type="button" id="orpl-load-saved" class="btn btn-outline-secondary btn-sm mb-2">
-                                <?php esc_html_e('Refresh List', 'obydullah-restaurant-pos-lite'); ?>
+                    <!-- Order Type Tabs -->
+                    <div class="pos-order-tabs">
+                        <div class="pos-tab-buttons">
+                            <button id="dineInTab" class="pos-tab-btn active" data-order-type="dineIn">
+                                <?php esc_html_e('Dine In', 'obydullah-restaurant-pos-lite'); ?>
                             </button>
-                            <div class="orpl-saved-list" id="orpl-saved-list" style="max-height: 150px; overflow-y: auto;">
-                                <!-- Saved sales will be loaded here -->
+                            <button id="takeAwayTab" class="pos-tab-btn" data-order-type="takeAway">
+                                <?php esc_html_e('Take Away', 'obydullah-restaurant-pos-lite'); ?>
+                            </button>
+                            <button id="pickupTab" class="pos-tab-btn" data-order-type="pickup">
+                                <?php esc_html_e('Pickup', 'obydullah-restaurant-pos-lite'); ?>
+                            </button>
+                        </div>
+
+                        <!-- Dine In Options -->
+                        <div id="dineInOptions" class="pos-tab-content">
+                            <div class="form-group">
+                                <label class="pos-label"><?php esc_html_e('Table Number', 'obydullah-restaurant-pos-lite'); ?></label>
+                                <input type="text" id="table-number" class="form-control"
+                                    placeholder="<?php esc_attr_e('Enter table number', 'obydullah-restaurant-pos-lite'); ?>">
+                            </div>
+                            <div class="form-group">
+                                <label class="pos-label"><?php esc_html_e('Cooking Instructions', 'obydullah-restaurant-pos-lite'); ?></label>
+                                <textarea id="dinein-instructions" class="form-control" rows="3"
+                                    placeholder="<?php esc_attr_e('Add special cooking instructions...', 'obydullah-restaurant-pos-lite'); ?>"></textarea>
                             </div>
                         </div>
+
+                        <!-- Take Away Options -->
+                        <div id="takeAwayOptions" class="pos-tab-content" style="display: none;">
+                            <div class="form-group">
+                                <label class="pos-label"><?php esc_html_e('Customer Name', 'obydullah-restaurant-pos-lite'); ?></label>
+                                <input type="text" id="takeaway-name" class="form-control"
+                                    placeholder="<?php esc_attr_e('Enter customer name', 'obydullah-restaurant-pos-lite'); ?>">
+                            </div>
+                            <div class="form-group">
+                                <label class="pos-label"><?php esc_html_e('Delivery Address', 'obydullah-restaurant-pos-lite'); ?></label>
+                                <textarea id="takeaway-address" class="form-control" rows="2"
+                                    placeholder="<?php esc_attr_e('Enter delivery address', 'obydullah-restaurant-pos-lite'); ?>"></textarea>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="pos-label"><?php esc_html_e('Email', 'obydullah-restaurant-pos-lite'); ?></label>
+                                        <input type="email" id="takeaway-email" class="form-control"
+                                            placeholder="<?php esc_attr_e('Enter email address', 'obydullah-restaurant-pos-lite'); ?>">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="pos-label"><?php esc_html_e('Mobile', 'obydullah-restaurant-pos-lite'); ?></label>
+                                        <input type="text" id="takeaway-mobile" class="form-control"
+                                            placeholder="<?php esc_attr_e('Enter mobile number', 'obydullah-restaurant-pos-lite'); ?>">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="pos-label"><?php esc_html_e('Cooking Instructions', 'obydullah-restaurant-pos-lite'); ?></label>
+                                <textarea id="takeaway-instructions" class="form-control" rows="3"
+                                    placeholder="<?php esc_attr_e('Enter Cooking Instructions', 'obydullah-restaurant-pos-lite'); ?>"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Pickup Options -->
+                        <div id="pickupOptions" class="pos-tab-content" style="display: none;">
+                            <div class="form-group">
+                                <label class="pos-label"><?php esc_html_e('Customer Name', 'obydullah-restaurant-pos-lite'); ?></label>
+                                <input type="text" id="pickup-name" class="form-control"
+                                    placeholder="<?php esc_attr_e('Enter customer name', 'obydullah-restaurant-pos-lite'); ?>">
+                            </div>
+                            <div class="form-group">
+                                <label class="pos-label"><?php esc_html_e('Mobile', 'obydullah-restaurant-pos-lite'); ?></label>
+                                <input type="tel" id="pickup-mobile" class="form-control"
+                                    placeholder="<?php esc_attr_e('Enter mobile number', 'obydullah-restaurant-pos-lite'); ?>">
+                            </div>
+                            <div class="form-group">
+                                <label class="pos-label"><?php esc_html_e('Cooking Instructions', 'obydullah-restaurant-pos-lite'); ?></label>
+                                <textarea id="pickup-instructions" class="form-control" rows="3"
+                                    placeholder="<?php esc_attr_e('Add special cooking instructions...', 'obydullah-restaurant-pos-lite'); ?>"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Totals -->
+                    <div class="pos-totals">
+                        <div class="pos-totals-row">
+                            <span><?php esc_html_e('Subtotal:', 'obydullah-restaurant-pos-lite'); ?></span>
+                            <span id="subtotal"><?php echo esc_html($this->helpers->format_currency(0)); ?></span>
+                        </div>
+                        <div class="pos-totals-row">
+                            <span><?php esc_html_e('Discount:', 'obydullah-restaurant-pos-lite'); ?></span>
+                            <div class="pos-discount-input">
+                                <input type="text" id="discount-amount" class="form-control form-control-sm" placeholder="0.00">
+                                <button id="apply-discount" class="btn btn-primary btn-sm">
+                                    <?php esc_html_e('Apply', 'obydullah-restaurant-pos-lite'); ?>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="pos-totals-row">
+                            <span><?php esc_html_e('Delivery Cost:', 'obydullah-restaurant-pos-lite'); ?></span>
+                            <div class="pos-delivery-input">
+                                <input type="text" id="delivery-cost" class="form-control form-control-sm" placeholder="0.00" value="0.00">
+                            </div>
+                        </div>
+                        <!-- VAT Line -->
+                        <div class="pos-totals-row" id="vat-line" style="display: <?php echo $is_vat_enabled ? 'flex' : 'none'; ?>;">
+                            <span id="vat-label"><?php printf(esc_html__('VAT (%s%%):', 'obydullah-restaurant-pos-lite'), esc_html($vat_rate)); ?></span>
+                            <span id="vat-amount"><?php echo esc_html($this->helpers->format_currency(0)); ?></span>
+                        </div>
+                        <!-- TAX Line -->
+                        <div class="pos-totals-row" id="tax-line" style="display: <?php echo esc_attr($this->helpers->is_tax_enabled() ? 'flex' : 'none'); ?>;">
+                            <span id="tax-label"><?php printf(esc_html__('TAX (%s%%):', 'obydullah-restaurant-pos-lite'), esc_html($this->helpers->get_tax_rate())); ?></span>
+                            <span id="tax-amount"><?php echo esc_html($this->helpers->format_currency(0)); ?></span>
+                        </div>
+                        <div class="pos-totals-row pos-total">
+                            <span><?php esc_html_e('Total:', 'obydullah-restaurant-pos-lite'); ?></span>
+                            <span id="total-amount"><?php echo esc_html($this->helpers->format_currency(0)); ?></span>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="pos-action-buttons">
+                        <button id="clear-cart" class="btn btn-danger">
+                            <?php esc_html_e('Cancel', 'obydullah-restaurant-pos-lite'); ?>
+                        </button>
+                        <button id="save-sale" class="btn btn-warning">
+                            <?php esc_html_e('Save Sale', 'obydullah-restaurant-pos-lite'); ?>
+                        </button>
+                        <button id="complete-sale" class="btn btn-success">
+                            <?php esc_html_e('Complete Sale', 'obydullah-restaurant-pos-lite'); ?>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Success Modal -->
+            <div id="success-modal" class="pos-success-modal">
+                <div class="pos-modal-content">
+                    <div class="pos-success-icon">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </div>
+                    <h2 class="pos-modal-title"><?php esc_html_e('Sale Completed Successfully!', 'obydullah-restaurant-pos-lite'); ?></h2>
+                    <p class="pos-modal-text">
+                        <?php esc_html_e('Invoice:', 'obydullah-restaurant-pos-lite'); ?> <strong id="modal-invoice-id">-</strong><br>
+                        <?php esc_html_e('Total:', 'obydullah-restaurant-pos-lite'); ?> <strong id="modal-total-amount"><?php echo esc_html($this->helpers->format_currency(0)); ?></strong>
+                    </p>
+                    <div class="pos-modal-actions">
+                        <button id="modal-print-receipt" class="btn btn-primary">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                <rect x="6" y="14" width="12" height="8"></rect>
+                            </svg>
+                            <?php esc_html_e('Print Receipt', 'obydullah-restaurant-pos-lite'); ?>
+                        </button>
+                        <button id="modal-new-order" class="btn btn-success">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            <?php esc_html_e('New Order', 'obydullah-restaurant-pos-lite'); ?>
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Current sale ID only (nonces are handled via JS object) -->
-        <input type="hidden" id="orpl-current-sale-id" value="">
-
         <?php
     }
-
 
     /** Get categories for POS with caching */
     public function ajax_get_categories_for_pos()

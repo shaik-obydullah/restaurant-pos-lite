@@ -213,7 +213,8 @@
 
               // Actions column
               row.append(
-                $("<td class='actions-column'>")
+                $("<td>")
+                  .addClass("text-center")
                   .append('<button class="button button-small edit-product" data-id="' + product.id + '">' + self.config.i18n.edit + "</button> ")
                   .append('<button class="button button-small button-link-delete delete-product" data-id="' + product.id + '">' + self.config.i18n.delete + "</button>")
               );

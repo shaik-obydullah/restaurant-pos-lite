@@ -18,7 +18,6 @@ class Obydullah_Restaurant_POS_Lite_Categories
         add_action('wp_ajax_orpl_delete_product_category', [$this, 'ajax_delete_orpl_category']);
     }
 
-
     /**
      * Render the categories page
      */

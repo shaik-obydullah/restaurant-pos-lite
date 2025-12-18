@@ -39,10 +39,6 @@ class Obydullah_Restaurant_POS_Lite_Stocks
      */
     public function render_page()
     {
-        // echo '<pre>WP_DEBUG: ' . (WP_DEBUG ? 'ON' : 'OFF') . '</pre>';
-        // echo '<pre>WP_DEBUG_LOG: ' . (defined("WP_DEBUG_LOG") && WP_DEBUG_LOG ? 'ON' : 'OFF') . '</pre>';
-        // echo '<pre>WP_DEBUG_DISPLAY: ' . (defined("WP_DEBUG_DISPLAY") && WP_DEBUG_DISPLAY ? 'ON' : 'OFF') . '</pre>';
-
         ?>
         <div class="wrap orpl-stocks-page">
             <h1 class="wp-heading-inline mb-3">
@@ -164,59 +160,75 @@ class Obydullah_Restaurant_POS_Lite_Stocks
 
                 <!-- Right: Stocks Table -->
                 <div class="col-lg-8">
-                    <div class="bg-light p-4 rounded shadow-sm">
+                    <div class="bg-light p-4 rounded shadow-sm border">
                         <!-- Search and Filter Section -->
-                        <div class="row mb-3">
-                            <div class="col-md-4 mb-2 mb-md-0">
-                                <label for="stock-search" class="form-label font-weight-bold d-block mb-1">
-                                    <?php esc_html_e('Search', 'obydullah-restaurant-pos-lite'); ?>
-                                </label>
-                                <input type="text" id="stock-search" class="form-control"
-                                    placeholder="<?php esc_attr_e('Search by product name...', 'obydullah-restaurant-pos-lite'); ?>">
-                            </div>
-                            <div class="col-md-3 mb-2 mb-md-0">
-                                <label for="status-filter" class="form-label font-weight-bold d-block mb-1">
-                                    <?php esc_html_e('Status', 'obydullah-restaurant-pos-lite'); ?>
-                                </label>
-                                <select id="status-filter" class="form-control">
-                                    <option value=""><?php esc_html_e('All Status', 'obydullah-restaurant-pos-lite'); ?></option>
-                                    <option value="inStock"><?php esc_html_e('In Stock', 'obydullah-restaurant-pos-lite'); ?></option>
-                                    <option value="outStock"><?php esc_html_e('Out of Stock', 'obydullah-restaurant-pos-lite'); ?></option>
-                                    <option value="lowStock"><?php esc_html_e('Low Stock', 'obydullah-restaurant-pos-lite'); ?></option>
-                                </select>
-                            </div>
-                            <div class="col-md-3 mb-2 mb-md-0">
-                                <label for="quantity-filter" class="form-label font-weight-bold d-block mb-1">
-                                    <?php esc_html_e('Quantity', 'obydullah-restaurant-pos-lite'); ?>
-                                </label>
-                                <select id="quantity-filter" class="form-control">
-                                    <option value=""><?php esc_html_e('All Quantities', 'obydullah-restaurant-pos-lite'); ?></option>
-                                    <option value="zero"><?php esc_html_e('Zero Quantity', 'obydullah-restaurant-pos-lite'); ?></option>
-                                    <option value="low"><?php esc_html_e('Low (1-10)', 'obydullah-restaurant-pos-lite'); ?></option>
-                                    <option value="high"><?php esc_html_e('High (10+)', 'obydullah-restaurant-pos-lite'); ?></option>
-                                </select>
-                            </div>
-                            <div class="col-md-3 mb-2 mb-md-0">
-                                <label class="form-label font-weight-bold d-block mb-1"></label>
-                                <button id="refresh-stocks" class="btn-primary">Refresh</button>
+                        <div class="stock-filters mb-4 p-3 bg-white border rounded shadow-sm">
+                            <div class="d-flex flex-wrap align-items-center gap-4">
+                                <!-- Search -->
+                                <div class="filter-group">
+                                    <label for="stock-search" class="form-label small text-muted mb-1">
+                                        <?php esc_html_e('Search', 'obydullah-restaurant-pos-lite'); ?>
+                                    </label>
+                                    <input type="text" id="stock-search" class="form-control form-control-sm" style="width: 200px;"
+                                        placeholder="<?php esc_attr_e('Stock name...', 'obydullah-restaurant-pos-lite'); ?>">
+                                </div>
+
+                                <!-- Status Filter -->
+                                <div class="filter-group">
+                                    <label for="status-filter" class="form-label small text-muted mb-1">
+                                        <?php esc_html_e('Stock Status', 'obydullah-restaurant-pos-lite'); ?>
+                                    </label>
+                                    <select id="status-filter" class="form-control form-control-sm" style="width: 160px;">
+                                        <option value=""><?php esc_html_e('All Status', 'obydullah-restaurant-pos-lite'); ?></option>
+                                        <option value="inStock"><?php esc_html_e('In Stock', 'obydullah-restaurant-pos-lite'); ?></option>
+                                        <option value="outStock"><?php esc_html_e('Out of Stock', 'obydullah-restaurant-pos-lite'); ?></option>
+                                        <option value="lowStock"><?php esc_html_e('Low Stock', 'obydullah-restaurant-pos-lite'); ?></option>
+                                    </select>
+                                </div>
+
+                                <!-- Quantity Filter -->
+                                <div class="filter-group">
+                                    <label for="quantity-filter" class="form-label small text-muted mb-1">
+                                        <?php esc_html_e('Quantity Range', 'obydullah-restaurant-pos-lite'); ?>
+                                    </label>
+                                    <select id="quantity-filter" class="form-control form-control-sm" style="width: 160px;">
+                                        <option value=""><?php esc_html_e('All Quantities', 'obydullah-restaurant-pos-lite'); ?></option>
+                                        <option value="zero"><?php esc_html_e('Zero Quantity', 'obydullah-restaurant-pos-lite'); ?></option>
+                                        <option value="low"><?php esc_html_e('Low (1-10)', 'obydullah-restaurant-pos-lite'); ?></option>
+                                        <option value="high"><?php esc_html_e('High (10+)', 'obydullah-restaurant-pos-lite'); ?></option>
+                                    </select>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="filter-group align-self-end">
+                                    <div class="d-flex align-items-center gap-2 mt-2">
+                                        <button type="button" id="refresh-stocks" class="btn btn-primary btn-sm px-3">
+                                            <?php esc_html_e('Filter', 'obydullah-restaurant-pos-lite'); ?>
+                                        </button>
+                                        <button type="button" id="reset-filters" class="btn btn-outline-secondary btn-sm px-3">
+                                            <?php esc_html_e('Reset', 'obydullah-restaurant-pos-lite'); ?>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
                         <!-- Stocks Table -->
                         <div class="table-responsive">
-                            <table class="table table-striped table-hover stocks-table">
+                            <table class="table table-striped table-hover table-bordered mb-3">
                                 <thead>
-                                    <tr class="bg-primary">
-                                        <th><?php esc_html_e('Product', 'obydullah-restaurant-pos-lite'); ?></th>
+                                    <tr class="bg-primary text-white">
+                                        <th><?php esc_html_e('Stock', 'obydullah-restaurant-pos-lite'); ?></th>
                                         <th><?php esc_html_e('Net Cost', 'obydullah-restaurant-pos-lite'); ?></th>
                                         <th><?php esc_html_e('Sale Price', 'obydullah-restaurant-pos-lite'); ?></th>
                                         <th><?php esc_html_e('Quantity', 'obydullah-restaurant-pos-lite'); ?></th>
                                         <th><?php esc_html_e('Status', 'obydullah-restaurant-pos-lite'); ?></th>
-                                        <th class="text-right"><?php esc_html_e('Actions', 'obydullah-restaurant-pos-lite'); ?></th>
+                                        <th class="text-center"><?php esc_html_e('Actions', 'obydullah-restaurant-pos-lite'); ?></th>
                                     </tr>
                                 </thead>
                                 <tbody id="stock-list">
                                     <tr>
-                                        <td colspan="6" class="text-center">
+                                        <td colspan="6" class="text-center p-4">
                                             <span class="spinner is-active"></span>
                                             <?php esc_html_e('Loading stocks...', 'obydullah-restaurant-pos-lite'); ?>
                                         </td>
@@ -226,31 +238,42 @@ class Obydullah_Restaurant_POS_Lite_Stocks
                         </div>
 
                         <!-- Pagination -->
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <div class="d-flex align-items-center">
-                                <span id="displaying-num" class="text-muted">
-                                    0 <?php esc_html_e('items', 'obydullah-restaurant-pos-lite'); ?>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="tablenav-pages">
+                                <span class="displaying-num" id="displaying-num">0
+                                    <?php esc_html_e('items', 'obydullah-restaurant-pos-lite'); ?></span>
+                                <span class="pagination-links d-inline-flex align-items-center gap-1 ms-2">
+                                    <a class="first-page btn btn-sm btn-secondary" href="#">
+                                        <span class="screen-reader-text"><?php esc_html_e('First page', 'obydullah-restaurant-pos-lite'); ?></span>
+                                        <span aria-hidden="true">«</span>
+                                    </a>
+                                    <a class="prev-page btn btn-sm btn-secondary" href="#">
+                                        <span class="screen-reader-text"><?php esc_html_e('Previous page', 'obydullah-restaurant-pos-lite'); ?></span>
+                                        <span aria-hidden="true">‹</span>
+                                    </a>
+                                    <span class="paging-input d-inline-flex align-items-center gap-1">
+                                        <label for="current-page-selector" class="screen-reader-text"><?php esc_html_e('Current Page', 'obydullah-restaurant-pos-lite'); ?></span>
+                                    <input class="current-page form-control form-control-sm" style="width: 50px;" id="current-page-selector" type="text" name="paged" value="1" size="3" aria-describedby="table-paging">
+                                    <span class="tablenav-paging-text m-1">
+                                        <?php esc_html_e('of', 'obydullah-restaurant-pos-lite'); ?> <span class="total-pages">1</span></span>
                                 </span>
-                                <div class="ml-3">
-                                    <select id="per-page-select" class="form-control form-control-sm d-inline-block" style="width: auto;">
-                                        <option value="10">10 <?php esc_html_e('per page', 'obydullah-restaurant-pos-lite'); ?></option>
-                                        <option value="20">20 <?php esc_html_e('per page', 'obydullah-restaurant-pos-lite'); ?></option>
-                                        <option value="50">50 <?php esc_html_e('per page', 'obydullah-restaurant-pos-lite'); ?></option>
-                                        <option value="100">100 <?php esc_html_e('per page', 'obydullah-restaurant-pos-lite'); ?></option>
-                                    </select>
-                                </div>
+                                <a class="next-page btn btn-sm btn-secondary" href="#">
+                                    <span class="screen-reader-text"><?php esc_html_e('Next page', 'obydullah-restaurant-pos-lite'); ?></span>
+                                    <span aria-hidden="true">›</span>
+                                </a>
+                                <a class="last-page btn btn-sm btn-secondary" href="#">
+                                    <span class="screen-reader-text"><?php esc_html_e('Last page', 'obydullah-restaurant-pos-lite'); ?></span>
+                                    <span aria-hidden="true">»</span>
+                                </a>
+                                </span>
                             </div>
-
-                            <div class="pagination-links">
-                                <button id="first-page" class="btn-secondary btn-sm" disabled>«</button>
-                                <button id="prev-page" class="btn-secondary btn-sm ml-1" disabled>‹</button>
-                                <span class="mx-2">
-                                    <input id="current-page-selector" type="text" value="1" size="3" class="text-center" style="width: 40px;">
-                                    <?php esc_html_e('of', 'obydullah-restaurant-pos-lite'); ?>
-                                    <span id="total-pages">1</span>
-                                </span>
-                                <button id="next-page" class="btn-secondary btn-sm mr-1" disabled>›</button>
-                                <button id="last-page" class="btn-secondary btn-sm" disabled>»</button>
+                            <div class="tablenav-pages">
+                                <select id="per-page-select" class="form-control form-control-sm">
+                                    <option value="10">10 <?php esc_html_e('per page', 'obydullah-restaurant-pos-lite'); ?></option>
+                                    <option value="20">20 <?php esc_html_e('per page', 'obydullah-restaurant-pos-lite'); ?></option>
+                                    <option value="50">50 <?php esc_html_e('per page', 'obydullah-restaurant-pos-lite'); ?></option>
+                                    <option value="100">100 <?php esc_html_e('per page', 'obydullah-restaurant-pos-lite'); ?></option>
+                                </select>
                             </div>
                         </div>
                     </div>

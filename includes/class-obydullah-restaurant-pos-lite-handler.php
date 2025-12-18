@@ -289,6 +289,302 @@ if (!class_exists('Obydullah_Restaurant_POS_Lite_Handler')) {
                         ]
                     );
                     break;
+
+                case 'obydullah-restaurant-pos-lite-stock_adjustments':
+                    wp_enqueue_script(
+                        'orpl-stock-adjustments-js',
+                        ORPL_URL . 'assets/js/stock-adjustments.js',
+                        ['jquery'],
+                        ORPL_VERSION,
+                        [
+                            'in_footer' => true,
+                            'strategy' => 'defer',
+                        ]
+                    );
+                    wp_localize_script(
+                        'orpl-stock-adjustments-js',
+                        'orplStockAdjustments',
+                        [
+                            'ajaxUrl' => admin_url('admin-ajax.php'),
+                            'addNonce' => wp_create_nonce('orpl_add_stock_adjustment'),
+                            'getNonce' => wp_create_nonce('orpl_get_stock_adjustments'),
+                            'deleteNonce' => wp_create_nonce('orpl_delete_stock_adjustment'),
+                            'getProductsNonce' => wp_create_nonce('orpl_get_products_for_adjustments'),
+                            'getStockNonce' => wp_create_nonce('orpl_get_current_stock'),
+                            'strings' => [
+                                'selectStock' => __('Select Stock', 'obydullah-restaurant-pos-lite'),
+                                'loadingAdjustments' => __('Loading adjustments...', 'obydullah-restaurant-pos-lite'),
+                                'noAdjustments' => __('No adjustments found.', 'obydullah-restaurant-pos-lite'),
+                                'loadError' => __('Failed to load adjustments.', 'obydullah-restaurant-pos-lite'),
+                                'increase' => __('Increase', 'obydullah-restaurant-pos-lite'),
+                                'decrease' => __('Decrease', 'obydullah-restaurant-pos-lite'),
+                                'delete' => __('Delete', 'obydullah-restaurant-pos-lite'),
+                                'items' => __('items', 'obydullah-restaurant-pos-lite'),
+                                'selectStockError' => __('Please select a stock', 'obydullah-restaurant-pos-lite'),
+                                'invalidQuantity' => __('Please enter a valid quantity', 'obydullah-restaurant-pos-lite'),
+                                'negativeStockConfirm' => __('This adjustment will result in negative stock. Are you sure you want to continue?', 'obydullah-restaurant-pos-lite'),
+                                'error' => __('Error', 'obydullah-restaurant-pos-lite'),
+                                'requestFailed' => __('Request failed. Please try again.', 'obydullah-restaurant-pos-lite'),
+                                'confirmDelete' => __('Are you sure you want to delete this adjustment?', 'obydullah-restaurant-pos-lite'),
+                                'deleting' => __('Deleting...', 'obydullah-restaurant-pos-lite'),
+                                'deleteFailed' => __('Delete request failed. Please try again.', 'obydullah-restaurant-pos-lite'),
+                                'applying' => __('Applying...', 'obydullah-restaurant-pos-lite'),
+                                'applyAdjustment' => __('Apply Adjustment', 'obydullah-restaurant-pos-lite'),
+                            ]
+                        ]
+                    );
+                    break;
+
+                case 'obydullah-restaurant-pos-lite-customers':
+                    wp_enqueue_script(
+                        'orpl-customers-js',
+                        ORPL_URL . 'assets/js/customers.js',
+                        ['jquery'],
+                        ORPL_VERSION,
+                        [
+                            'in_footer' => true,
+                            'strategy' => 'defer',
+                        ]
+                    );
+                    wp_localize_script(
+                        'orpl-customers-js',
+                        'orplCustomersData',
+                        [
+                            'ajaxUrl' => admin_url('admin-ajax.php'),
+                            'nonce_get_customers' => wp_create_nonce('orpl_get_customers'),
+                            'nonce_add_customer' => wp_create_nonce('orpl_add_customer'),
+                            'nonce_edit_customer' => wp_create_nonce('orpl_edit_customer'),
+                            'nonce_delete_customer' => wp_create_nonce('orpl_delete_customer'),
+                            'strings' => [
+                                'items' => __('items', 'obydullah-restaurant-pos-lite'),
+                                'loading_customers' => __('Loading customers...', 'obydullah-restaurant-pos-lite'),
+                                'no_customers' => __('No customers found.', 'obydullah-restaurant-pos-lite'),
+                                'failed_load' => __('Failed to load customers.', 'obydullah-restaurant-pos-lite'),
+                                'active' => __('Active', 'obydullah-restaurant-pos-lite'),
+                                'inactive' => __('Inactive', 'obydullah-restaurant-pos-lite'),
+                                'edit' => __('Edit', 'obydullah-restaurant-pos-lite'),
+                                'delete' => __('Delete', 'obydullah-restaurant-pos-lite'),
+                                'add_new_customer' => __('Add New Customer', 'obydullah-restaurant-pos-lite'),
+                                'edit_customer' => __('Edit Customer', 'obydullah-restaurant-pos-lite'),
+                                'save_customer' => __('Save Customer', 'obydullah-restaurant-pos-lite'),
+                                'update_customer' => __('Update Customer', 'obydullah-restaurant-pos-lite'),
+                                'name_required' => __('Please enter customer name', 'obydullah-restaurant-pos-lite'),
+                                'email_required' => __('Please enter customer email', 'obydullah-restaurant-pos-lite'),
+                                'email_invalid' => __('Please enter a valid email address', 'obydullah-restaurant-pos-lite'),
+                                'error' => __('Error:', 'obydullah-restaurant-pos-lite'),
+                                'request_failed' => __('Request failed. Please try again.', 'obydullah-restaurant-pos-lite'),
+                                'saving' => __('Saving...', 'obydullah-restaurant-pos-lite'),
+                                'updating' => __('Updating...', 'obydullah-restaurant-pos-lite'),
+                                'deleting' => __('Deleting...', 'obydullah-restaurant-pos-lite'),
+                                'confirm_delete' => __('Are you sure you want to delete this customer?', 'obydullah-restaurant-pos-lite'),
+                                'delete_failed' => __('Delete request failed. Please try again.', 'obydullah-restaurant-pos-lite'),
+                            ]
+                        ]
+                    );
+                    break;
+
+                case 'obydullah-restaurant-pos-lite-pos':
+                    // Create helpers instance
+                    $helpers = new Obydullah_Restaurant_POS_Lite_Helpers();
+
+                    wp_enqueue_script(
+                        'orpl-pos-js',
+                        ORPL_URL . 'assets/js/pos.js',
+                        ['jquery'],
+                        ORPL_VERSION,
+                        [
+                            'in_footer' => true,
+                            'strategy' => 'defer',
+                        ]
+                    );
+
+                    wp_localize_script(
+                        'orpl-pos-js',
+                        'orpl_pos',
+                        [
+                            'ajaxUrl' => admin_url('admin-ajax.php'),
+                            'currencySymbol' => $helpers->get_currency_symbol(),
+                            'vatRate' => $helpers->get_vat_rate(),
+                            'taxRate' => $helpers->get_tax_rate(),
+                            'nonces' => [
+                                'categories' => wp_create_nonce('orpl_get_categories_for_pos'),
+                                'customers' => wp_create_nonce('orpl_get_customers_for_pos'),
+                                'stocks' => wp_create_nonce('orpl_get_products_by_category'),
+                                'saved' => wp_create_nonce('orpl_get_saved_sales'),
+                                'load' => wp_create_nonce('orpl_load_saved_sale'),
+                                'process' => wp_create_nonce('orpl_process_sale')
+                            ],
+                            'strings' => [
+                                'allStocks' => __('All Stocks', 'obydullah-restaurant-pos-lite'),
+                                'loadingStocks' => __('Loading stocks...', 'obydullah-restaurant-pos-lite'),
+                                'noStocks' => __('No stocks found', 'obydullah-restaurant-pos-lite'),
+                                'inStock' => __('in stock', 'obydullah-restaurant-pos-lite'),
+                                'cartEmpty' => __('Cart is empty', 'obydullah-restaurant-pos-lite'),
+                                'confirmLoadSaved' => __('Loading saved sale will clear current cart. Continue?', 'obydullah-restaurant-pos-lite'),
+                                'confirmRemove' => __('Remove this item from cart?', 'obydullah-restaurant-pos-lite'),
+                                'confirmClear' => __('Clear cart?', 'obydullah-restaurant-pos-lite'),
+                                'cartEmptyAlert' => __('Cart is empty!', 'obydullah-restaurant-pos-lite'),
+                                'saleLoaded' => __('Saved sale loaded!', 'obydullah-restaurant-pos-lite'),
+                                'error' => __('Error:', 'obydullah-restaurant-pos-lite'),
+                                'loadingSaved' => __('Loading saved sales...', 'obydullah-restaurant-pos-lite'),
+                                'noSaved' => __('No saved sales', 'obydullah-restaurant-pos-lite'),
+                                'requestFailed' => __('An error occurred. Please try again.', 'obydullah-restaurant-pos-lite')
+                            ]
+                        ]
+                    );
+                    break;
+
+                case 'obydullah-restaurant-pos-lite-sales':
+                    // Get currency format directly
+                    $currency = get_option('orpl_currency', '$');
+                    $position = get_option('orpl_currency_position', 'left');
+                    $formatted_amount = number_format(0, 2, '.', ',');
+
+                    switch ($position) {
+                        case 'right':
+                            $currency_template = $formatted_amount . $currency;
+                            break;
+                        case 'left_space':
+                            $currency_template = $currency . ' ' . $formatted_amount;
+                            break;
+                        case 'right_space':
+                            $currency_template = $formatted_amount . ' ' . $currency;
+                            break;
+                        default: // left
+                            $currency_template = $currency . $formatted_amount;
+                    }
+
+                    $helpers = new Obydullah_Restaurant_POS_Lite_Helpers();
+                    $shop_info = $helpers->get_shop_info();
+
+                    wp_enqueue_script(
+                        'orpl-sales-js',
+                        ORPL_URL . 'assets/js/sales.js',
+                        ['jquery'],
+                        ORPL_VERSION,
+                        [
+                            'in_footer' => true,
+                            'strategy' => 'defer',
+                        ]
+                    );
+
+                    wp_localize_script(
+                        'orpl-sales-js',
+                        'orplSalesData',
+                        [
+                            'ajaxUrl' => admin_url('admin-ajax.php'),
+                            'nonce_get_sales' => wp_create_nonce('orpl_get_sales'),
+                            'nonce_print_sale' => wp_create_nonce('orpl_print_sale'),
+                            'nonce_delete_sale' => wp_create_nonce('orpl_delete_sale'),
+                            'currency_template' => $currency_template,
+                            'shop_info' => $shop_info,
+                            'strings' => [
+                                'items' => __('items', 'obydullah-restaurant-pos-lite'),
+                                'loading_sales' => __('Loading sales...', 'obydullah-restaurant-pos-lite'),
+                                'no_sales_matching' => __('No sales found matching your criteria.', 'obydullah-restaurant-pos-lite'),
+                                'no_sales' => __('No sales found.', 'obydullah-restaurant-pos-lite'),
+                                'failed_load' => __('Failed to load sales.', 'obydullah-restaurant-pos-lite'),
+                                'na' => __('N/A', 'obydullah-restaurant-pos-lite'),
+                                'walkin_customer' => __('Walk-in Customer', 'obydullah-restaurant-pos-lite'),
+                                'saved' => __('Saved', 'obydullah-restaurant-pos-lite'),
+                                'print' => __('Print', 'obydullah-restaurant-pos-lite'),
+                                'delete' => __('Delete', 'obydullah-restaurant-pos-lite'),
+                                'cannot_print' => __('Cannot print: No sale ID available', 'obydullah-restaurant-pos-lite'),
+                                'error' => __('Error:', 'obydullah-restaurant-pos-lite'),
+                                'request_failed' => __('Request failed:', 'obydullah-restaurant-pos-lite'),
+                                'confirm_delete' => __('Are you sure you want to delete this sale? This action cannot be undone.', 'obydullah-restaurant-pos-lite'),
+                                'deleting' => __('Deleting...', 'obydullah-restaurant-pos-lite'),
+                                'delete_failed' => __('Delete request failed. Please try again.', 'obydullah-restaurant-pos-lite'),
+
+                                // Invoice strings
+                                'invoice' => __('Invoice', 'obydullah-restaurant-pos-lite'),
+                                'phone' => __('Phone:', 'obydullah-restaurant-pos-lite'),
+                                'customer' => __('Customer:', 'obydullah-restaurant-pos-lite'),
+                                'mobile' => __('Mobile:', 'obydullah-restaurant-pos-lite'),
+                                'email' => __('Email:', 'obydullah-restaurant-pos-lite'),
+                                'address' => __('Address:', 'obydullah-restaurant-pos-lite'),
+                                'order_type' => __('Order Type:', 'obydullah-restaurant-pos-lite'),
+                                'cooking_instructions' => __('Cooking Instructions:', 'obydullah-restaurant-pos-lite'),
+                                'date' => __('Date:', 'obydullah-restaurant-pos-lite'),
+                                'status' => __('Status:', 'obydullah-restaurant-pos-lite'),
+                                'item' => __('Item', 'obydullah-restaurant-pos-lite'),
+                                'quantity' => __('Quantity', 'obydullah-restaurant-pos-lite'),
+                                'price' => __('Price', 'obydullah-restaurant-pos-lite'),
+                                'total' => __('Total', 'obydullah-restaurant-pos-lite'),
+                                'no_items' => __('No items found', 'obydullah-restaurant-pos-lite'),
+                                'net_price' => __('Net Price:', 'obydullah-restaurant-pos-lite'),
+                                'tax' => __('Tax:', 'obydullah-restaurant-pos-lite'),
+                                'vat' => __('VAT:', 'obydullah-restaurant-pos-lite'),
+                                'shipping' => __('Shipping:', 'obydullah-restaurant-pos-lite'),
+                                'discount' => __('Discount:', 'obydullah-restaurant-pos-lite'),
+                                'grand_total' => __('Grand Total:', 'obydullah-restaurant-pos-lite'),
+                                'note' => __('Note:', 'obydullah-restaurant-pos-lite'),
+                            ]
+                        ]
+                    );
+                    break;
+
+                case 'obydullah-restaurant-pos-lite-accounting':
+                    $currency = get_option('orpl_currency', '$');
+                    $position = get_option('orpl_currency_position', 'left');
+                    $formatted_amount = number_format(0, 2, '.', ',');
+
+                    switch ($position) {
+                        case 'right':
+                            $currency_template = $formatted_amount . $currency;
+                            break;
+                        case 'left_space':
+                            $currency_template = $currency . ' ' . $formatted_amount;
+                            break;
+                        case 'right_space':
+                            $currency_template = $formatted_amount . ' ' . $currency;
+                            break;
+                        default:
+                            $currency_template = $currency . $formatted_amount;
+                    }
+
+                    // Get current date
+                    $date_format = get_option('orpl_date_format', 'Y-m-d');
+                    $current_date = gmdate($date_format);
+
+                    wp_enqueue_script(
+                        'orpl-accounting-js',
+                        ORPL_URL . 'assets/js/accounting.js',
+                        ['jquery'],
+                        ORPL_VERSION,
+                        [
+                            'in_footer' => true,
+                            'strategy' => 'defer',
+                        ]
+                    );
+                    wp_localize_script(
+                        'orpl-accounting-js',
+                        'orplAccountingData',
+                        [
+                            'ajaxUrl' => admin_url('admin-ajax.php'),
+                            'nonce_get_entries' => wp_create_nonce('orpl_get_accounting_entries'),
+                            'nonce_add_entry' => wp_create_nonce('orpl_add_accounting_entry'),
+                            'nonce_delete_entry' => wp_create_nonce('orpl_delete_accounting_entry'),
+                            'currency_template' => $currency_template,
+                            'current_date' => $current_date,
+                            'strings' => [
+                                'items' => __('items', 'obydullah-restaurant-pos-lite'),
+                                'saving' => __('Saving...', 'obydullah-restaurant-pos-lite'),
+                                'save_entry' => __('Save Entry', 'obydullah-restaurant-pos-lite'),
+                                'loading_entries' => __('Loading accounting entries...', 'obydullah-restaurant-pos-lite'),
+                                'no_entries' => __('No accounting entries found.', 'obydullah-restaurant-pos-lite'),
+                                'failed_load' => __('Failed to load accounting entries.', 'obydullah-restaurant-pos-lite'),
+                                'amount_required' => __('Please enter either income or expense amount', 'obydullah-restaurant-pos-lite'),
+                                'error' => __('Error:', 'obydullah-restaurant-pos-lite'),
+                                'request_failed' => __('Request failed. Please try again.', 'obydullah-restaurant-pos-lite'),
+                                'confirm_delete' => __('Are you sure you want to delete this accounting entry?', 'obydullah-restaurant-pos-lite'),
+                                'deleting' => __('Deleting...', 'obydullah-restaurant-pos-lite'),
+                                'delete_failed' => __('Delete request failed. Please try again.', 'obydullah-restaurant-pos-lite'),
+                                'delete' => __('Delete', 'obydullah-restaurant-pos-lite'),
+                            ]
+                        ]
+                    );
+                    break;
             }
         }
     }

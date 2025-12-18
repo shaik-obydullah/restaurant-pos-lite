@@ -19,6 +19,7 @@ Index
 7. Spinner
 8. Product Page
 9. Stock Page
+10. POS Page
 
 */
 
@@ -235,7 +236,7 @@ Index
    9. Stock Page
    ========================================================================== */
 
-   .stock-summary-card {
+.stock-summary-card {
   background-color: #fff;
   border: 1px solid #ccd0d4;
   border-radius: 6px;
@@ -247,7 +248,7 @@ Index
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 120px; /* fixed height for all cards */
+  height: 120px;
 }
 
 .stock-summary-card:hover {
@@ -272,10 +273,18 @@ Index
   text-align: center;
 }
 
-.stock-summary-card .text-primary { color: #2271b1 !important; }
-.stock-summary-card .text-danger  { color: #dc3232 !important; }
-.stock-summary-card .text-warning { color: #ffb236 !important; }
-.stock-summary-card .text-info    { color: #17a2b8 !important; }
+.stock-summary-card .text-primary {
+  color: #2271b1 !important;
+}
+.stock-summary-card .text-danger {
+  color: #dc3232 !important;
+}
+.stock-summary-card .text-warning {
+  color: #ffb236 !important;
+}
+.stock-summary-card .text-info {
+  color: #17a2b8 !important;
+}
 
 /* Responsive adjustments */
 @media (max-width: 575.98px) {
@@ -293,4 +302,640 @@ Index
   }
 }
 
+/* ==========================================================================
+   10. POS Page
+   ========================================================================== */
 
+.orpl-pos-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.orpl-summary {
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.orpl-summary-box {
+  display: inline-block;
+  padding: 10px 20px;
+  background: #007cba;
+  color: white;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.orpl-summary-label {
+  margin-right: 10px;
+}
+
+.orpl-summary-value {
+  color: #fff;
+}
+
+.orpl-pos-main {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.orpl-pos-left {
+  flex: 2;
+}
+
+.orpl-pos-right {
+  flex: 1;
+  min-width: 400px;
+}
+
+.orpl-categories,
+.orpl-products,
+.orpl-cart,
+.orpl-saved-sales {
+  background: white;
+  border: 1px solid #ccd0d4;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.orpl-categories h3,
+.orpl-products h3,
+.orpl-cart h3,
+.orpl-saved-sales h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.orpl-categories-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.orpl-category-btn {
+  padding: 8px 15px;
+  background: #f1f1f1;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.orpl-category-btn:hover,
+.orpl-category-btn.active {
+  background: #007cba;
+  color: white;
+  border-color: #007cba;
+}
+
+/* Stocks Grid */
+.orpl-stocks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+  max-height: 500px;
+  overflow-y: auto;
+  padding: 5px;
+}
+
+.orpl-stock-card {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  cursor: pointer;
+  background: white;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+
+.orpl-stock-card:hover {
+  border-color: #007cba;
+}
+
+.orpl-stock-card.out-of-stock {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.orpl-stock-name {
+  font-weight: 600;
+  margin-bottom: 5px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.orpl-stock-price {
+  color: #007cba;
+  font-weight: bold;
+  margin-bottom: 5px;
+  font-size: 16px;
+}
+
+.orpl-stock-quantity {
+  font-size: 12px;
+  color: #666;
+}
+
+/* Order Header */
+.orpl-order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 15px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.orpl-customer-select {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.orpl-order-type-buttons {
+  display: flex;
+  gap: 5px;
+}
+
+.orpl-order-type-btn {
+  padding: 5px 10px;
+  border: 1px solid #ddd;
+  background: #f1f1f1;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.orpl-order-type-btn:hover,
+.orpl-order-type-btn.active {
+  background: #007cba;
+  color: white;
+  border-color: #007cba;
+}
+
+/* Cart Items */
+.orpl-cart-items {
+  min-height: 200px;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 15px;
+}
+
+.orpl-cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  background: white;
+}
+
+.orpl-cart-item:last-child {
+  border-bottom: none;
+}
+
+.orpl-cart-item-name {
+  flex: 2;
+  font-size: 14px;
+}
+
+.orpl-cart-item-qty {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+}
+
+.orpl-cart-item-qty input {
+  width: 50px;
+  text-align: center;
+}
+
+.orpl-cart-item-price {
+  flex: 1;
+  text-align: right;
+  font-weight: bold;
+  color: #28a745;
+}
+
+.orpl-cart-item-remove {
+  color: #dc3545;
+  cursor: pointer;
+  margin-left: 10px;
+  font-size: 18px;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.orpl-cart-item-remove:hover {
+  opacity: 1;
+}
+
+.orpl-cart-empty {
+  text-align: center;
+  color: #666;
+  padding: 40px 0;
+}
+
+/* Order Summary Table */
+.orpl-cart-summary {
+  border-top: 2px solid #eee;
+  padding-top: 15px;
+}
+
+.orpl-summary-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.orpl-summary-table td {
+  padding: 6px 0;
+  vertical-align: middle;
+}
+
+.orpl-summary-table .label-cell {
+  text-align: left;
+  color: #666;
+}
+
+.orpl-summary-table .value-cell {
+  text-align: right;
+  font-weight: 500;
+}
+
+.orpl-summary-table .input-cell {
+  text-align: right;
+}
+
+.orpl-summary-table .input-cell input {
+  width: 90px;
+  text-align: right;
+  padding: 2px 6px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+}
+
+.orpl-summary-table tr.total-row {
+  border-top: 2px solid #007cba;
+}
+
+.orpl-summary-table tr.total-row td {
+  padding-top: 10px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.orpl-summary-table tr.total-row .value-cell {
+  color: #007cba;
+  font-size: 18px;
+}
+
+/* Action Buttons */
+.orpl-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.orpl-actions .button {
+  flex: 1;
+  padding: 12px;
+  font-size: 16px;
+}
+
+/* Saved Sales */
+.orpl-saved-list {
+  margin-top: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.orpl-saved-item {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.orpl-saved-item:hover {
+  background: #f1f1f1;
+}
+
+.orpl-saved-item:last-child {
+  border-bottom: none;
+}
+
+.orpl-saved-item-header {
+  font-weight: 600;
+  color: #007cba;
+  margin-bottom: 2px;
+  font-size: 14px;
+}
+
+.orpl-saved-item-details {
+  font-size: 13px;
+  color: #666;
+}
+
+.orpl-saved-item-total {
+  font-weight: 600;
+  color: #28a745;
+  font-size: 14px;
+}
+
+/* Notes Section */
+.orpl-notes {
+  margin-top: 20px;
+}
+
+.orpl-notes textarea {
+  width: 100%;
+  margin-top: 5px;
+}
+
+/* Loading States */
+.orpl-loading {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  grid-column: 1 / -1;
+}
+
+/* Order Type Tabs */
+.pos-order-tabs {
+  margin-bottom: 20px;
+}
+
+.pos-tab-buttons {
+  display: flex;
+  border-bottom: 2px solid #dee2e6;
+  margin-bottom: 0;
+}
+
+.pos-tab-btn {
+  padding: 8px 16px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-bottom: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.pos-tab-btn:first-child {
+  border-radius: 4px 0 0 0;
+}
+
+.pos-tab-btn:last-child {
+  border-radius: 0 4px 0 0;
+}
+
+.pos-tab-btn:hover {
+  background: #e9ecef;
+}
+
+.pos-tab-btn.active {
+  background: #007cba;
+  color: white;
+  border-color: #007cba;
+}
+
+.pos-tab-content {
+  background: white;
+  padding: 15px;
+  border: 1px solid #dee2e6;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+}
+
+.pos-label {
+  font-weight: 500;
+  margin-bottom: 5px;
+  display: block;
+}
+
+/* Sales Page Styles */
+.sales-filters {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+}
+
+.filter-group {
+  margin-bottom: 0;
+}
+
+.filter-group label {
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+/* Custom scrollbar */
+.orpl-stocks-grid::-webkit-scrollbar,
+.orpl-cart-items::-webkit-scrollbar,
+.orpl-saved-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.orpl-stocks-grid::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.orpl-stocks-grid::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.orpl-stocks-grid::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .orpl-pos-container {
+    padding: 0;
+  }
+
+  .orpl-actions,
+  .orpl-saved-sales,
+  .orpl-notes {
+    display: none !important;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .orpl-pos-main {
+    flex-direction: column;
+  }
+
+  .orpl-pos-right {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .orpl-stocks-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  .orpl-cart-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .orpl-cart-item-qty {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .orpl-cart-item-price {
+    text-align: left;
+    width: 100%;
+  }
+
+  .orpl-order-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .pos-tab-buttons {
+    flex-wrap: wrap;
+  }
+
+  .pos-tab-btn {
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
+  }
+}
+
+/* Utility Classes */
+.text-primary {
+  color: #007cba !important;
+}
+
+.bg-primary {
+  background-color: #007cba !important;
+}
+
+/* WordPress Admin Compatibility */
+.wp-admin .orpl-pos-container h1,
+.wp-admin .orpl-pos-container h2,
+.wp-admin .orpl-pos-container h3,
+.wp-admin .orpl-pos-container h4 {
+  color: #1d2327;
+}
+
+.wp-admin .orpl-stock-card:hover {
+  border-color: #2271b1;
+}
+
+.wp-admin .orpl-category-btn.active,
+.wp-admin .orpl-order-type-btn.active {
+  background: #2271b1;
+  border-color: #2271b1;
+}
+
+/* Fix for WordPress button styles */
+.wp-admin .btn {
+  font-size: 13px;
+  line-height: 2.15384615;
+  min-height: 30px;
+  margin: 0;
+  padding: 0 10px;
+  cursor: pointer;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 3px;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.wp-admin .btn-primary {
+  background: #2271b1;
+  border-color: #2271b1;
+  color: #fff;
+}
+
+.wp-admin .btn-primary:hover {
+  background: #135e96;
+  border-color: #135e96;
+}
+
+.wp-admin .btn-outline-primary {
+  background: transparent;
+  border-color: #2271b1;
+  color: #2271b1;
+}
+
+.wp-admin .btn-outline-primary:hover {
+  background: #2271b1;
+  color: #fff;
+}
+
+/* Table Styles for Sales Page */
+.wp-admin .table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.wp-admin .table-hover tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.wp-admin .table-bordered {
+  border: 1px solid #c3c4c7;
+}
+
+.wp-admin .table-bordered th,
+.wp-admin .table-bordered td {
+  border: 1px solid #c3c4c7;
+}
+
+/* Form Control Styles */
+.wp-admin .form-control {
+  display: block;
+  width: 100%;
+  padding: 0 8px;
+  min-height: 30px;
+  line-height: 2;
+  border-radius: 3px;
+  border: 1px solid #8c8f94;
+  background-color: #fff;
+  color: #2c3338;
+}
+
+.wp-admin .form-control:focus {
+  border-color: #2271b1;
+  box-shadow: 0 0 0 1px #2271b1;
+  outline: 2px solid transparent;
+}
+
+.wp-admin .form-control-sm {
+  min-height: 28px;
+  padding: 0 6px;
+  font-size: 12px;
+  line-height: 1.8;
+}

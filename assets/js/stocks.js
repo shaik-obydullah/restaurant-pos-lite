@@ -238,8 +238,7 @@
               );
 
               // Actions column
-              row.append($('<td class="actions-column">').append('<button class="button button-small button-link-delete delete-stock">' + (self.config.strings.delete || "Delete") + "</button>"));
-
+              row.append($('<td class="text-center">').append('<button class="button button-small button-link-delete delete-stock">' + (self.config.strings.delete || "Delete") + "</button>"));
               tbody.append(row);
             });
 

@@ -142,12 +142,12 @@ class Obydullah_Restaurant_POS_Lite_Settings
 
     public function general_section_callback()
     {
-        echo '<p>' . esc_html__('Configure general POS system settings.', 'obydullah-restaurant-pos-lite') . '</p>';
+        echo '<p class="text-muted">' . esc_html__('Configure general POS system settings.', 'obydullah-restaurant-pos-lite') . '</p>';
     }
 
     public function shop_section_callback()
     {
-        echo '<p>' . esc_html__('Enter your restaurant/shop information that will be used on receipts and reports.', 'obydullah-restaurant-pos-lite') . '</p>';
+        echo '<p class="text-muted">' . esc_html__('Enter your restaurant/shop information that will be used on receipts and reports.', 'obydullah-restaurant-pos-lite') . '</p>';
     }
 
     public function date_format_callback()
@@ -162,14 +162,14 @@ class Obydullah_Restaurant_POS_Lite_Settings
             'm-d-Y' => 'MM-DD-YYYY (01-15-2024)',
         );
         ?>
-        <select name="orpl_settings[date_format]" style="min-width: 200px;">
+        <select name="orpl_settings[date_format]" class="form-control w-auto pr-5">
             <?php foreach ($date_formats as $value => $label): ?>
                 <option value="<?php echo esc_attr($value); ?>" <?php selected($date_format, $value); ?>>
                     <?php echo esc_html($label); ?>
                 </option>
             <?php endforeach; ?>
         </select>
-        <p class="description">
+        <p class="form-text text-muted mt-1">
             <?php esc_html_e('Select the date format to be used throughout the system.', 'obydullah-restaurant-pos-lite'); ?>
         </p>
         <?php
@@ -194,14 +194,14 @@ class Obydullah_Restaurant_POS_Lite_Settings
             '₱' => 'Philippine Peso (₱)',
         );
         ?>
-        <select name="orpl_settings[currency]" style="min-width: 200px;">
+        <select name="orpl_settings[currency]" class="form-control w-auto pr-5">
             <?php foreach ($currencies as $symbol => $label): ?>
                 <option value="<?php echo esc_attr($symbol); ?>" <?php selected($currency, $symbol); ?>>
                     <?php echo esc_html($label); ?>
                 </option>
             <?php endforeach; ?>
         </select>
-        <p class="description">
+        <p class="form-text text-muted mt-1">
             <?php esc_html_e('Select the currency symbol for your pricing.', 'obydullah-restaurant-pos-lite'); ?>
         </p>
         <?php
@@ -211,7 +211,7 @@ class Obydullah_Restaurant_POS_Lite_Settings
     {
         $position = get_option('orpl_currency_position', 'left');
         ?>
-        <select name="orpl_settings[currency_position]" style="min-width: 200px;">
+        <select name="orpl_settings[currency_position]" class="form-control w-auto">
             <option value="left" <?php selected($position, 'left'); ?>>
                 <?php esc_html_e('Left ($100)', 'obydullah-restaurant-pos-lite'); ?>
             </option>
@@ -225,7 +225,7 @@ class Obydullah_Restaurant_POS_Lite_Settings
                 <?php esc_html_e('Right with space (100 $)', 'obydullah-restaurant-pos-lite'); ?>
             </option>
         </select>
-        <p class="description">
+        <p class="form-text text-muted mt-1">
             <?php esc_html_e('Choose where the currency symbol appears relative to the amount.', 'obydullah-restaurant-pos-lite'); ?>
         </p>
         <?php
@@ -235,10 +235,12 @@ class Obydullah_Restaurant_POS_Lite_Settings
     {
         $vat_rate = get_option('orpl_vat_rate', '0');
         ?>
-        <input type="number" name="orpl_settings[vat_rate]" value="<?php echo esc_attr($vat_rate); ?>"
-            step="0.01" min="0" max="100" class="small-text" />
-        <span>%</span>
-        <p class="description">
+        <div class="d-flex align-items-center gap-2">
+            <input type="number" name="orpl_settings[vat_rate]" value="<?php echo esc_attr($vat_rate); ?>"
+                step="0.01" min="0" max="100" class="form-control w-auto" />
+            <span class="text-muted">%</span>
+        </div>
+        <p class="form-text text-muted mt-1">
             <?php esc_html_e('Enter the VAT rate as a percentage (e.g., 20 for 20%). Set to 0 to disable VAT.', 'obydullah-restaurant-pos-lite'); ?>
         </p>
         <?php
@@ -248,10 +250,12 @@ class Obydullah_Restaurant_POS_Lite_Settings
     {
         $tax_rate = get_option('orpl_tax_rate', '0');
         ?>
-        <input type="number" name="orpl_settings[tax_rate]" value="<?php echo esc_attr($tax_rate); ?>"
-            step="0.01" min="0" max="100" class="small-text" />
-        <span>%</span>
-        <p class="description">
+        <div class="d-flex align-items-center gap-2">
+            <input type="number" name="orpl_settings[tax_rate]" value="<?php echo esc_attr($tax_rate); ?>"
+                step="0.01" min="0" max="100" class="form-control w-auto" />
+            <span class="text-muted">%</span>
+        </div>
+        <p class="form-text text-muted mt-1">
             <?php esc_html_e('Enter the general tax rate as a percentage (e.g., 8.5 for 8.5%). Set to 0 to disable tax.', 'obydullah-restaurant-pos-lite'); ?>
         </p>
         <?php
@@ -262,7 +266,7 @@ class Obydullah_Restaurant_POS_Lite_Settings
         $shop_name = get_option('orpl_shop_name', '');
         ?>
         <input type="text" name="orpl_settings[shop_name]" value="<?php echo esc_attr($shop_name); ?>"
-            class="regular-text" placeholder="<?php esc_attr_e('Enter restaurant name', 'obydullah-restaurant-pos-lite'); ?>">
+            class="form-control w-50" placeholder="<?php esc_attr_e('Enter restaurant name', 'obydullah-restaurant-pos-lite'); ?>">
         <?php
     }
 
@@ -270,7 +274,7 @@ class Obydullah_Restaurant_POS_Lite_Settings
     {
         $shop_address = get_option('orpl_shop_address', '');
         ?>
-        <textarea name="orpl_settings[shop_address]" rows="3" class="large-text"
+        <textarea name="orpl_settings[shop_address]" rows="3" class="form-control w-75"
             placeholder="<?php esc_attr_e('Enter full address', 'obydullah-restaurant-pos-lite'); ?>"><?php echo esc_textarea($shop_address); ?></textarea>
         <?php
     }
@@ -280,7 +284,7 @@ class Obydullah_Restaurant_POS_Lite_Settings
         $shop_phone = get_option('orpl_shop_phone', '');
         ?>
         <input type="text" name="orpl_settings[shop_phone]" value="<?php echo esc_attr($shop_phone); ?>"
-            class="regular-text" placeholder="<?php esc_attr_e('Enter phone number', 'obydullah-restaurant-pos-lite'); ?>">
+            class="form-control w-50" placeholder="<?php esc_attr_e('Enter phone number', 'obydullah-restaurant-pos-lite'); ?>">
         <?php
     }
 
@@ -294,59 +298,99 @@ class Obydullah_Restaurant_POS_Lite_Settings
         settings_errors('orpl_settings');
         ?>
         <div class="wrap">
-            <h1><?php esc_html_e('Restaurant POS Settings', 'obydullah-restaurant-pos-lite'); ?></h1>
+            <h1 class="wp-heading-inline mb-3"><?php esc_html_e('Restaurant POS Settings', 'obydullah-restaurant-pos-lite'); ?></h1>
+            <hr class="wp-header-end">
 
-            <form method="post" action="options.php">
-                <?php
-                settings_fields('orpl_settings_group');
-                do_settings_sections('obydullah-restaurant-pos-lite-settings');
-                submit_button(__('Save Settings', 'obydullah-restaurant-pos-lite'));
-                ?>
-            </form>
+            <div class="row">
+                <!-- Settings Form -->
+                <div class="col-lg-8">
+                    <div class="bg-light p-4 rounded shadow-sm border mb-4">
+                        <form method="post" action="options.php" class="mb-0">
+                            <?php
+                            settings_fields('orpl_settings_group');
+                            do_settings_sections('obydullah-restaurant-pos-lite-settings');
+                            ?>
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <?php esc_html_e('Save Settings', 'obydullah-restaurant-pos-lite'); ?>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
 
-            <!-- Settings Preview Section -->
-            <div class="settings-preview" style="margin-top: 30px; padding: 20px; background: #f9f9f9; border: 1px solid #ddd;">
-                <h2><?php esc_html_e('Settings Preview', 'obydullah-restaurant-pos-lite'); ?></h2>
-                <p><strong><?php esc_html_e('Current Date Format:', 'obydullah-restaurant-pos-lite'); ?></strong>
-                    <?php echo esc_html(Obydullah_Restaurant_POS_Lite_Helpers::get_current_date()); ?></p>
-                <p><strong><?php esc_html_e('Currency Format:', 'obydullah-restaurant-pos-lite'); ?></strong>
-                    <?php echo esc_html(Obydullah_Restaurant_POS_Lite_Helpers::format_currency(100)); ?></p>
-                <p><strong><?php esc_html_e('VAT Rate:', 'obydullah-restaurant-pos-lite'); ?></strong>
-                    <?php echo esc_html(get_option('orpl_vat_rate', '0')); ?>%</p>
-                <p><strong><?php esc_html_e('VAT Enabled:', 'obydullah-restaurant-pos-lite'); ?></strong>
-                    <?php echo Obydullah_Restaurant_POS_Lite_Helpers::is_vat_enabled() ? esc_html__('Yes', 'obydullah-restaurant-pos-lite') : esc_html__('No', 'obydullah-restaurant-pos-lite'); ?>
-                </p>
-                <p><strong><?php esc_html_e('Tax Rate:', 'obydullah-restaurant-pos-lite'); ?></strong>
-                    <?php echo esc_html(get_option('orpl_tax_rate', '0')); ?>%</p>
-                <p><strong><?php esc_html_e('Tax Enabled:', 'obydullah-restaurant-pos-lite'); ?></strong>
-                    <?php
-                    $tax_rate = floatval(get_option('orpl_tax_rate', '0'));
-                    echo $tax_rate > 0 ? esc_html__('Yes', 'obydullah-restaurant-pos-lite') : esc_html__('No', 'obydullah-restaurant-pos-lite');
-                    ?>
-                </p>
-                <?php if (Obydullah_Restaurant_POS_Lite_Helpers::is_vat_enabled()): ?>
-                    <p><strong><?php esc_html_e('VAT Calculation Example (on $100):', 'obydullah-restaurant-pos-lite'); ?></strong>
+                <!-- Settings Preview Section -->
+                <div class="col-lg-4">
+                    <div class="bg-light p-4 rounded shadow-sm border">
+                        <h3 class="fs-5 fw-semibold mb-3"><?php esc_html_e('Settings Preview', 'obydullah-restaurant-pos-lite'); ?></h3>
+                        
+                        <div class="mb-3">
+                            <p class="mb-1">
+                                <strong><?php esc_html_e('Current Date Format:', 'obydullah-restaurant-pos-lite'); ?></strong>
+                                <?php echo esc_html(Obydullah_Restaurant_POS_Lite_Helpers::get_current_date()); ?>
+                            </p>
+                            <p class="mb-1">
+                                <strong><?php esc_html_e('Currency Format:', 'obydullah-restaurant-pos-lite'); ?></strong>
+                                <?php echo esc_html(Obydullah_Restaurant_POS_Lite_Helpers::format_currency(100)); ?>
+                            </p>
+                            <p class="mb-1">
+                                <strong><?php esc_html_e('VAT Rate:', 'obydullah-restaurant-pos-lite'); ?></strong>
+                                <span class="badge bg-info"><?php echo esc_html(get_option('orpl_vat_rate', '0')); ?>%</span>
+                                <?php if (Obydullah_Restaurant_POS_Lite_Helpers::is_vat_enabled()): ?>
+                                    <span class="badge bg-success ms-1"><?php esc_html_e('Enabled', 'obydullah-restaurant-pos-lite'); ?></span>
+                                <?php else: ?>
+                                    <span class="badge bg-secondary ms-1"><?php esc_html_e('Disabled', 'obydullah-restaurant-pos-lite'); ?></span>
+                                <?php endif; ?>
+                            </p>
+                            <p class="mb-1">
+                                <strong><?php esc_html_e('Tax Rate:', 'obydullah-restaurant-pos-lite'); ?></strong>
+                                <span class="badge bg-info"><?php echo esc_html(get_option('orpl_tax_rate', '0')); ?>%</span>
+                                <?php
+                                $tax_rate = floatval(get_option('orpl_tax_rate', '0'));
+                                if ($tax_rate > 0): ?>
+                                    <span class="badge bg-success ms-1"><?php esc_html_e('Enabled', 'obydullah-restaurant-pos-lite'); ?></span>
+                                <?php else: ?>
+                                    <span class="badge bg-secondary ms-1"><?php esc_html_e('Disabled', 'obydullah-restaurant-pos-lite'); ?></span>
+                                <?php endif; ?>
+                            </p>
+                        </div>
+
+                        <?php if (Obydullah_Restaurant_POS_Lite_Helpers::is_vat_enabled()): ?>
+                            <div class="mb-3 p-3 bg-white rounded border">
+                                <h4 class="fs-6 fw-semibold mb-2"><?php esc_html_e('VAT Calculation Example', 'obydullah-restaurant-pos-lite'); ?></h4>
+                                <p class="mb-1">
+                                    <small class="text-muted"><?php esc_html_e('On $100:', 'obydullah-restaurant-pos-lite'); ?></small>
+                                </p>
+                                <?php
+                                $totals = Obydullah_Restaurant_POS_Lite_Helpers::calculate_totals(100);
+                                ?>
+                                <p class="mb-0">
+                                    <span class="text-success fw-bold"><?php echo esc_html(Obydullah_Restaurant_POS_Lite_Helpers::format_currency($totals['total'])); ?></span>
+                                    <small class="text-muted">(<?php echo esc_html(Obydullah_Restaurant_POS_Lite_Helpers::format_currency($totals['subtotal'])); ?> + <?php echo esc_html(Obydullah_Restaurant_POS_Lite_Helpers::format_currency($totals['vat_amount'])); ?> VAT)</small>
+                                </p>
+                            </div>
+                        <?php endif; ?>
+
                         <?php
-                        $totals = Obydullah_Restaurant_POS_Lite_Helpers::calculate_totals(100);
-                        echo esc_html(Obydullah_Restaurant_POS_Lite_Helpers::format_currency($totals['total']) . ' (' .
-                            Obydullah_Restaurant_POS_Lite_Helpers::format_currency($totals['subtotal']) . ' + ' .
-                            Obydullah_Restaurant_POS_Lite_Helpers::format_currency($totals['vat_amount']) . ' VAT)');
-                        ?>
-                    </p>
-                <?php endif; ?>
-                <?php
-                $tax_rate = floatval(get_option('orpl_tax_rate', '0'));
-                if ($tax_rate > 0): ?>
-                    <p><strong><?php esc_html_e('Tax Calculation Example (on $100):', 'obydullah-restaurant-pos-lite'); ?></strong>
-                        <?php
-                        $tax_amount = (100 * $tax_rate) / 100;
-                        $total_with_tax = 100 + $tax_amount;
-                        echo esc_html(Obydullah_Restaurant_POS_Lite_Helpers::format_currency($total_with_tax) . ' (' .
-                            Obydullah_Restaurant_POS_Lite_Helpers::format_currency(100) . ' + ' .
-                            Obydullah_Restaurant_POS_Lite_Helpers::format_currency($tax_amount) . ' Tax)');
-                        ?>
-                    </p>
-                <?php endif; ?>
+                        $tax_rate = floatval(get_option('orpl_tax_rate', '0'));
+                        if ($tax_rate > 0): ?>
+                            <div class="p-3 bg-white rounded border">
+                                <h4 class="fs-6 fw-semibold mb-2"><?php esc_html_e('Tax Calculation Example', 'obydullah-restaurant-pos-lite'); ?></h4>
+                                <p class="mb-1">
+                                    <small class="text-muted"><?php esc_html_e('On $100:', 'obydullah-restaurant-pos-lite'); ?></small>
+                                </p>
+                                <?php
+                                $tax_amount = (100 * $tax_rate) / 100;
+                                $total_with_tax = 100 + $tax_amount;
+                                ?>
+                                <p class="mb-0">
+                                    <span class="text-success fw-bold"><?php echo esc_html(Obydullah_Restaurant_POS_Lite_Helpers::format_currency($total_with_tax)); ?></span>
+                                    <small class="text-muted">(<?php echo esc_html(Obydullah_Restaurant_POS_Lite_Helpers::format_currency(100)); ?> + <?php echo esc_html(Obydullah_Restaurant_POS_Lite_Helpers::format_currency($tax_amount)); ?> Tax)</small>
+                                </p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
             </div>
         </div>
         <?php
