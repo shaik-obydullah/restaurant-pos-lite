@@ -25,17 +25,6 @@ require_once ORPL_PATH . 'includes/class-obydullah-restaurant-pos-lite-handler.p
 require_once ORPL_PATH . 'includes/class-obydullah-restaurant-pos-lite-activator.php';
 require_once ORPL_PATH . 'includes/class-obydullah-restaurant-pos-lite-deactivator.php';
 
-// Load translations
-add_action('plugins_loaded', 'orpl_load_textdomain');
-function orpl_load_textdomain()
-{
-    load_plugin_textdomain(
-        'obydullah-restaurant-pos-lite',
-        false,
-        dirname(plugin_basename(__FILE__)) . '/languages'
-    );
-}
-
 // Init plugin
 add_action('plugins_loaded', 'orpl_init');
 function orpl_init()
