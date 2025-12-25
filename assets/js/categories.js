@@ -132,33 +132,19 @@
             );
 
             // Actions column
-            // var actions = $("<td>").addClass("text-right");
-            // actions.append(
-            //   $("<button>")
-            //     .addClass("btn btn-sm btn-warning mr-2 edit-category")
-            //     .text(this.config.strings.edit || "Edit")
-            // );
-            // actions.append(
-            //   $("<button>")
-            //     .addClass("btn btn-sm btn-danger delete-category")
-            //     .text(this.config.strings.delete || "Delete")
-            // );
+            var actions = $("<td>").addClass("text-right pos-row-actions");
 
-var actions = $("<td>").addClass("text-right pos-row-actions");
+            actions.append(
+              $("<button>")
+                .addClass("pos-action edit")
+                .text(this.config.strings.edit || "Edit")
+            );
 
-actions.append(
-  $("<button>")
-    .addClass("pos-action edit-category")
-    .text(this.config.strings.edit || "Edit")
-);
-
-actions.append(
-  $("<button>")
-    .addClass("pos-action delete-category")
-    .text(this.config.strings.delete || "Delete")
-);
-
-
+            actions.append(
+              $("<button>")
+                .addClass("pos-action delete")
+                .text(this.config.strings.delete || "Delete")
+            );
 
             row.append(actions);
             tbody.append(row);

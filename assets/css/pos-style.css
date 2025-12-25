@@ -170,21 +170,21 @@ Index
 }
 
 /* Edit action */
-.pos-row-actions .edit-category {
+.pos-row-actions .edit {
   color: #2271b1;
 }
 
-.pos-row-actions .edit-category:hover {
+.pos-row-actions .edit:hover {
   color: #135e96;
   border-color: #2271b1;
 }
 
 /* Delete action */
-.pos-row-actions .delete-category {
+.pos-row-actions .delete {
   color: #b32d2e;
 }
 
-.pos-row-actions .delete-category:hover {
+.pos-row-actions .delete:hover {
   color: #8a2424;
   border-color: #b32d2e;
 }
