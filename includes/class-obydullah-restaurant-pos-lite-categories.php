@@ -105,6 +105,7 @@ class Obydullah_Restaurant_POS_Lite_Categories
                                 </tbody>
                             </table>
                         </div>
+
                     </div>
                 </div>
             </div>

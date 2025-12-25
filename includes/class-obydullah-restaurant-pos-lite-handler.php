@@ -148,13 +148,21 @@ if (!class_exists('Obydullah_Restaurant_POS_Lite_Handler')) {
                 ORPL_VERSION
             );
 
+            wp_enqueue_script(
+                'orpl-admin-js',
+                ORPL_URL . 'assets/js/admin.js',
+                ['jquery'],
+                ORPL_VERSION,
+                true
+            );
+
             // Page-specific JS
             switch ($current_page) {
                 case 'obydullah-restaurant-pos-lite-categories':
                     wp_enqueue_script(
                         'orpl-categories-js',
                         ORPL_URL . 'assets/js/categories.js',
-                        ['jquery'],
+                        ['jquery', 'orpl-admin-js'],
                         ORPL_VERSION,
                         [
                             'in_footer' => true,
@@ -196,7 +204,7 @@ if (!class_exists('Obydullah_Restaurant_POS_Lite_Handler')) {
                     wp_enqueue_script(
                         'orpl-products-js',
                         ORPL_URL . 'assets/js/products.js',
-                        ['jquery'],
+                        ['jquery', 'orpl-admin-js'],
                         ORPL_VERSION,
                         [
                             'in_footer' => true,
@@ -247,7 +255,7 @@ if (!class_exists('Obydullah_Restaurant_POS_Lite_Handler')) {
                     wp_enqueue_script(
                         'orpl-stocks-js',
                         ORPL_URL . 'assets/js/stocks.js',
-                        ['jquery'],
+                        ['jquery', 'orpl-admin-js'],
                         ORPL_VERSION,
                         [
                             'in_footer' => true,
@@ -294,7 +302,7 @@ if (!class_exists('Obydullah_Restaurant_POS_Lite_Handler')) {
                     wp_enqueue_script(
                         'orpl-stock-adjustments-js',
                         ORPL_URL . 'assets/js/stock-adjustments.js',
-                        ['jquery'],
+                        ['jquery', 'orpl-admin-js'],
                         ORPL_VERSION,
                         [
                             'in_footer' => true,
@@ -339,7 +347,7 @@ if (!class_exists('Obydullah_Restaurant_POS_Lite_Handler')) {
                     wp_enqueue_script(
                         'orpl-customers-js',
                         ORPL_URL . 'assets/js/customers.js',
-                        ['jquery'],
+                        ['jquery', 'orpl-admin-js'],
                         ORPL_VERSION,
                         [
                             'in_footer' => true,
@@ -390,7 +398,7 @@ if (!class_exists('Obydullah_Restaurant_POS_Lite_Handler')) {
                     wp_enqueue_script(
                         'orpl-pos-js',
                         ORPL_URL . 'assets/js/pos.js',
-                        ['jquery'],
+                        ['jquery', 'orpl-admin-js'],
                         ORPL_VERSION,
                         [
                             'in_footer' => true,
@@ -460,7 +468,7 @@ if (!class_exists('Obydullah_Restaurant_POS_Lite_Handler')) {
                     wp_enqueue_script(
                         'orpl-sales-js',
                         ORPL_URL . 'assets/js/sales.js',
-                        ['jquery'],
+                        ['jquery', 'orpl-admin-js'],
                         ORPL_VERSION,
                         [
                             'in_footer' => true,
@@ -550,7 +558,7 @@ if (!class_exists('Obydullah_Restaurant_POS_Lite_Handler')) {
                     wp_enqueue_script(
                         'orpl-accounting-js',
                         ORPL_URL . 'assets/js/accounting.js',
-                        ['jquery'],
+                        ['jquery', 'orpl-admin-js'],
                         ORPL_VERSION,
                         [
                             'in_footer' => true,

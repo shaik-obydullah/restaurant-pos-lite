@@ -1,6 +1,9 @@
 /**
- * ORPL Product Management
+ * Product Management
+ * Plugin: Obydullah_Restaurant_POS_Lite
+ * Version: 1.0.0
  */
+
 (function ($) {
   "use strict";
 
@@ -65,12 +68,12 @@
       });
 
       // Edit product button (delegated)
-      $(document).on("click", ".edit-product", function () {
+      $(document).on("click", ".pos-action.edit", function () {
         self.handleEditProduct(this);
       });
 
       // Delete product button (delegated)
-      $(document).on("click", ".delete-product", function () {
+      $(document).on("click", ".pos-action.delete", function () {
         self.handleDeleteProduct(this);
       });
 
@@ -191,34 +194,50 @@
             $.each(response.data.products, function (_, product) {
               var row = $("<tr>").attr("data-product-id", product.id);
 
-              // Image column
-              var imageTd = $("<td>");
+              var imageTd = $("<td>").addClass("compact-image-cell");
               if (product.image) {
-                imageTd.append($("<img>").addClass("product-image").attr("src", product.image).attr("alt", product.name));
+                imageTd.append($("<img>").addClass("compact-thumb").attr("src", product.image).attr("alt", product.name));
               } else {
-                imageTd.append($("<div>").addClass("no-image").text(self.config.i18n.noImage));
+                imageTd.addClass("orpl-empty-cell").html("—");
               }
               row.append(imageTd);
 
-              // Name column
-              row.append($("<td>").text(product.name));
+              row.append($("<td>").addClass("text-ellipsis").text(product.name));
 
-              // Category column
-              row.append($("<td>").text(product.category_name || "N/A"));
-
-              // Status column with badge
-              var statusClass = product.status === "active" ? "status-active" : "status-inactive";
-              var statusText = product.status.charAt(0).toUpperCase() + product.status.slice(1);
-              row.append($("<td>").append($("<span>").addClass(statusClass).text(statusText)));
-
-              // Actions column
               row.append(
                 $("<td>")
-                  .addClass("text-center")
-                  .append('<button class="button button-small edit-product" data-id="' + product.id + '">' + self.config.i18n.edit + "</button> ")
-                  .append('<button class="button button-small button-link-delete delete-product" data-id="' + product.id + '">' + self.config.i18n.delete + "</button>")
+                  .addClass("compact-status")
+                  .text(product.category_name || "—")
               );
 
+              var statusClass = product.status === "active" ? "badge bg-success" : "badge bg-secondary";
+              var statusText = product.status.charAt(0).toUpperCase() + product.status.slice(1);
+
+              row.append(
+                $("<td>")
+                  .addClass("compact-status")
+                  .append(
+                    $("<span>")
+                      .addClass(statusClass + " badge-status")
+                      .text(statusText)
+                  )
+              );
+
+              var actions = $("<td>").addClass("pos-row-actions");
+              actions.append(
+                $("<button>")
+                  .addClass("pos-action edit")
+                  .text(self.config.i18n.edit || "Edit")
+                  .attr("data-id", product.id)
+              );
+              actions.append(
+                $("<button>")
+                  .addClass("pos-action delete")
+                  .text(self.config.i18n.delete || "Delete")
+                  .attr("data-id", product.id)
+              );
+
+              row.append(actions);
               tbody.append(row);
             });
 
@@ -269,16 +288,17 @@
       var action = id ? "orpl_edit_product" : "orpl_add_product";
       var name = $("#product-name").val().trim();
       var fk_category_id = $("#product-category").val();
-      var status = $("#product-status").val();
       var nonce = id ? self.config.editNonce : self.config.addNonce;
 
       // Validation
+
       if (!name) {
-        alert(self.config.i18n.enterName);
+        showLimeModal(self.config.i18n.enterName, "Validation Error");
         return false;
       }
+
       if (!fk_category_id) {
-        alert(self.config.i18n.selectCategoryError);
+        showLimeModal(self.config.i18n.selectCategoryError, "Validation Error");
         return false;
       }
 
@@ -291,7 +311,6 @@
       formData.append("action", action);
       formData.append("id", id);
       formData.append("nonce", nonce);
-
       $.ajax({
         url: self.config.ajaxUrl,
         type: "POST",
@@ -300,17 +319,24 @@
         contentType: false,
         success: function (response) {
           if (response.success) {
-            self.resetForm();
-            self.loadProducts(self.config.currentPage);
+            showLimeModal(self.config.i18n.successMessage || "Saved!", "Success");
+            const modal = $("#lime-alert-modal");
+            modal
+              .find("#lime-alert-close")
+              .off("click")
+              .on("click", function () {
+                self.resetForm();
+                self.loadProducts(self.config.currentPage);
+                modal.addClass("d-none");
+              });
           } else {
-            alert(self.config.i18n.error + " " + response.data);
+            showLimeModal(self.config.i18n.error + " " + response.data, "Error");
           }
         },
         error: function () {
-          alert(self.config.i18n.requestFailed);
+          showLimeModal(self.config.i18n.requestFailed, "Error");
         },
         complete: function () {
-          // Reset submitting state
           self.config.isSubmitting = false;
           self.setButtonLoading(false);
         },
@@ -363,40 +389,51 @@
      */
     handleDeleteProduct: function (button) {
       var self = this;
-
-      if (!confirm(self.config.i18n.confirmDelete)) {
-        return;
-      }
-
       var $button = $(button);
       var originalText = $button.text();
       var productId = $button.data("id");
 
-      // Disable button and show loading
-      $button.prop("disabled", true).text(self.config.i18n.deleting);
+      // Show confirmation modal
+      showLimeConfirm(
+        self.config.i18n.confirmDelete || "Are you sure you want to delete this product?",
+        function onYes() {
+          // User clicked Yes → disable button and show deleting text
+          $button.prop("disabled", true).text(self.config.i18n.deleting);
 
-      $.post(
-        self.config.ajaxUrl,
-        {
-          action: "orpl_delete_product",
-          id: productId,
-          nonce: self.config.deleteNonce,
+          $.post(
+            self.config.ajaxUrl,
+            {
+              action: "orpl_delete_product",
+              id: productId,
+              nonce: self.config.deleteNonce,
+            },
+            function (response) {
+              // Show success/error modal
+              showLimeModal(response.data, response.success ? "Success" : "Error");
+
+              // After modal closes, reload products if successful
+              if (response.success) {
+                const modal = $("#lime-alert-modal");
+                modal
+                  .find("#lime-alert-close")
+                  .off("click")
+                  .on("click", function () {
+                    self.loadProducts(self.config.currentPage);
+                    modal.addClass("d-none");
+                  });
+              }
+            }
+          )
+            .fail(function () {
+              showLimeModal(self.config.i18n.deleteFailed || "Delete request failed. Please try again.", "Error");
+            })
+            .always(function () {
+              // Re-enable button and restore original text
+              $button.prop("disabled", false).text(originalText);
+            });
         },
-        function (response) {
-          if (response.success) {
-            self.loadProducts(self.config.currentPage);
-          } else {
-            alert(response.data);
-          }
-        }
-      )
-        .fail(function () {
-          alert(self.config.i18n.deleteFailed);
-        })
-        .always(function () {
-          // Re-enable button
-          $button.prop("disabled", false).text(originalText);
-        });
+        "Confirm Delete"
+      );
     },
 
     /**

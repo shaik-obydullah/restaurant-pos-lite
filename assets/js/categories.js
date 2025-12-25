@@ -56,13 +56,13 @@
         self.resetForm();
       });
 
-      // Edit category button (delegated)
-      $(document).on("click", ".edit-category", function () {
+      // Edit category
+      $(document).on("click", ".pos-action.edit", function () {
         self.handleEditCategory(this);
       });
 
-      // Delete category button (delegated)
-      $(document).on("click", ".delete-category", function () {
+      // Delete category
+      $(document).on("click", ".pos-action.delete", function () {
         self.handleDeleteCategory(this);
       });
     },
@@ -109,24 +109,14 @@
             // Name column
             row.append($("<td>").text(cat.name));
 
-            // Status column with proper styling
+            // Status column
             var statusClass = cat.status === "active" ? "badge bg-success" : "badge bg-secondary";
             var statusText = cat.status.charAt(0).toUpperCase() + cat.status.slice(1);
+
             row.append(
               $("<td>").append(
                 $("<span>")
-                  .addClass(statusClass)
-                  .css({
-                    display: "inline-block",
-                    padding: "0.25em 0.4em",
-                    "font-size": "75%",
-                    "font-weight": "700",
-                    "line-height": "1",
-                    "text-align": "center",
-                    "white-space": "nowrap",
-                    "vertical-align": "baseline",
-                    "border-radius": "0.25rem",
-                  })
+                  .addClass(statusClass + " badge-status")
                   .text(statusText)
               )
             );
@@ -174,7 +164,7 @@
 
       // Validation
       if (!name) {
-        alert(this.config.strings.nameRequired || "Please enter a category name");
+        showLimeModal(self.config.strings.nameRequired || "Please enter a category name", "Warning");
         return false;
       }
 
@@ -196,18 +186,16 @@
           if (response.success) {
             self.resetForm();
             self.loadCategories();
-            // Show success message
-            alert(response.data);
+            showLimeModal(response.data, "Success");
           } else {
-            alert(this.config.strings.error + ": " + response.data);
+            showLimeModal((self.config.strings.error || "Error") + ": " + response.data, "Error");
           }
         }.bind(this)
       )
-        .fail(
-          function () {
-            alert(this.config.strings.requestFailed || "Request failed. Please try again.");
-          }.bind(this)
-        )
+        .fail(function () {
+          showLimeModal(self.config.strings.requestFailed || "Request failed. Please try again.", "Error");
+        })
+
         .always(function () {
           // Reset submitting state
           self.config.isSubmitting = false;
@@ -245,43 +233,39 @@
      */
     handleDeleteCategory: function (button) {
       var self = this;
-
-      if (!confirm(this.config.strings.confirmDelete)) {
-        return;
-      }
-
       var $button = $(button);
       var originalText = $button.text();
       var categoryId = $button.closest("tr").data("category-id");
 
-      // Disable button and show loading
-      $button.prop("disabled", true).text(this.config.strings.deleting);
+      showLimeConfirm(
+        this.config.strings.confirmDelete || "Are you sure you want to delete this category?",
+        function onYes() {
+          // User clicked Yes
+          $button.prop("disabled", true).text(self.config.strings.deleting);
 
-      $.post(
-        this.config.ajaxUrl,
-        {
-          action: "orpl_delete_product_category",
-          id: categoryId,
-          nonce: this.config.deleteNonce,
+          $.post(
+            self.config.ajaxUrl,
+            {
+              action: "orpl_delete_product_category",
+              id: categoryId,
+              nonce: self.config.deleteNonce,
+            },
+            function (response) {
+              if (response.success) {
+                self.loadCategories();
+              }
+              showLimeModal(response.data, response.success ? "Success" : "Error");
+            }
+          )
+            .fail(function () {
+              showLimeModal(self.config.strings.deleteFailed || "Delete request failed. Please try again.", "Error");
+            })
+            .always(function () {
+              $button.prop("disabled", false).text(originalText);
+            });
         },
-        function (response) {
-          if (response.success) {
-            self.loadCategories();
-            alert(response.data);
-          } else {
-            alert(response.data);
-          }
-        }
-      )
-        .fail(
-          function () {
-            alert(this.config.strings.deleteFailed || "Delete request failed. Please try again.");
-          }.bind(this)
-        )
-        .always(function () {
-          // Re-enable button
-          $button.prop("disabled", false).text(originalText);
-        });
+        "Confirm Delete"
+      );
     },
 
     /**
