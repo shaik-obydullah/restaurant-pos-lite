@@ -1,6 +1,9 @@
 /**
- * ORPL Stock Management
+ * Stock Management
+ * Plugin: Obydullah_Restaurant_POS_Lite
+ * Version: 1.0.0
  */
+
 (function ($) {
   "use strict";
 
@@ -88,11 +91,6 @@
         self.loadStocks(1);
       });
 
-      // Refresh button
-      $("#refresh-stocks").on("click", function () {
-        self.loadStocks(self.config.currentPage);
-      });
-
       // Pagination handlers
       $(".first-page").on("click", function (e) {
         e.preventDefault();
@@ -130,7 +128,7 @@
       });
 
       // Delete stock (delegated)
-      $(document).on("click", ".delete-stock", function () {
+      $(document).on("click", ".pos-action.delete", function () {
         self.handleDeleteStock(this);
       });
     },
@@ -199,7 +197,7 @@
               // Product column
               row.append($("<td>").text(stock.product_name || "N/A"));
 
-              // Net Cost column
+              // Buy Price column
               row.append($("<td>").text(parseFloat(stock.net_cost).toFixed(2)));
 
               // Sale Price column
@@ -218,27 +216,34 @@
               row.append(quantityCell);
 
               // Status column
-              let statusClass = "status-" + stock.status;
-              let statusText = "";
+              let statusClass = stock.status === "inStock" ? "badge bg-success" : stock.status === "outStock" ? "badge bg-danger" : "badge bg-warning"; // lowStock or any other
 
-              if (stock.status === "inStock") {
-                statusText = self.config.strings.inStock || "In Stock";
-              } else if (stock.status === "outStock") {
-                statusText = self.config.strings.outStock || "Out of Stock";
-              } else {
-                statusText = self.config.strings.lowStock || "Low Stock";
-              }
+              // Capitalize first letter for display
+              let statusText = stock.status.charAt(0).toUpperCase() + stock.status.slice(1);
 
+              // Append to row
               row.append(
-                $("<td>").append(
-                  $("<span>")
-                    .addClass("status-badge " + statusClass)
-                    .text(statusText)
-                )
+                $("<td>")
+                  .addClass("compact-status")
+                  .append(
+                    $("<span>")
+                      .addClass(statusClass + " badge-status")
+                      .text(statusText)
+                  )
               );
 
               // Actions column
-              row.append($('<td class="text-center">').append('<button class="button button-small button-link-delete delete-stock">' + (self.config.strings.delete || "Delete") + "</button>"));
+              row.append(
+                $("<td>")
+                  .addClass("pos-row-actions")
+                  .append(
+                    $("<button>")
+                      .addClass("pos-action delete")
+                      .text(self.config.strings.delete || "Delete")
+                      .attr("data-id", stock.id)
+                  )
+              );
+
               tbody.append(row);
             });
 
@@ -347,7 +352,7 @@
         return false;
       }
       if (net_cost <= 0) {
-        alert(self.config.strings.validNetCost || "Please enter a valid net cost");
+        alert(self.config.strings.validBuyPrice || "Please enter a valid buy price");
         return false;
       }
       if (sale_cost <= 0) {
@@ -399,40 +404,41 @@
      */
     handleDeleteStock: function (button) {
       var self = this;
+      var $button = $(button);
+      var originalText = $button.text();
+      var id = $button.closest("tr").data("stock-id");
 
-      if (!confirm(self.config.strings.confirmDelete || "Are you sure you want to delete this stock entry?")) {
-        return;
-      }
+      // Show confirmation modal instead of default confirm
+      showLimeConfirm(
+        self.config.strings.confirmDelete || "Are you sure you want to delete this stock entry?",
+        function onYes() {
+          // Disable button and show deleting text
+          $button.prop("disabled", true).text(self.config.strings.deleting || "Deleting...");
 
-      let $button = $(button);
-      let originalText = $button.text();
-      let id = $button.closest("tr").data("stock-id");
-
-      // Disable button and show loading
-      $button.prop("disabled", true).text(self.config.strings.deleting || "Deleting...");
-
-      $.post(
-        self.config.ajaxUrl,
-        {
-          action: "orpl_delete_stock",
-          id: id,
-          nonce: self.config.deleteNonce,
+          // Send AJAX request to delete stock
+          $.post(self.config.ajaxUrl, {
+            action: "orpl_delete_stock",
+            id: id,
+            nonce: self.config.deleteNonce,
+          })
+            .done(function (res) {
+              if (res.success) {
+                self.loadStocks(self.config.currentPage);
+                showLimeModal(res.data, "Success");
+              } else {
+                showLimeModal(res.data, "Error");
+              }
+            })
+            .fail(function () {
+              showLimeModal(self.config.strings.deleteFailed || "Delete request failed. Please try again.", "Error");
+            })
+            .always(function () {
+              // Re-enable button
+              $button.prop("disabled", false).text(originalText);
+            });
         },
-        function (res) {
-          if (res.success) {
-            self.loadStocks(self.config.currentPage);
-          } else {
-            alert(res.data);
-          }
-        }
-      )
-        .fail(() => {
-          alert(self.config.strings.deleteFailed || "Delete request failed. Please try again.");
-        })
-        .always(function () {
-          // Re-enable button
-          $button.prop("disabled", false).text(originalText);
-        });
+        "Confirm Delete"
+      );
     },
 
     /**

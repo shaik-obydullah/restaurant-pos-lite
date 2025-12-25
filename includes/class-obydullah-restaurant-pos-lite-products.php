@@ -121,9 +121,6 @@ class Obydullah_Restaurant_POS_Lite_Products
                                                 <span class="text-muted fs-5">×</span>
                                             </button>
                                         </div>
-                                        <button type="button" id="search-button" class="btn btn-primary btn-sm px-3">
-                                            <?php esc_html_e('Search', 'obydullah-restaurant-pos-lite'); ?>
-                                        </button>
                                     </div>
                                     <div class="form-text">
                                         <?php esc_html_e('Search by product name', 'obydullah-restaurant-pos-lite'); ?>
@@ -141,7 +138,7 @@ class Obydullah_Restaurant_POS_Lite_Products
                                         <th><?php esc_html_e('Name', 'obydullah-restaurant-pos-lite'); ?></th>
                                         <th width="120"><?php esc_html_e('Category', 'obydullah-restaurant-pos-lite'); ?></th>
                                         <th width="100"><?php esc_html_e('Status', 'obydullah-restaurant-pos-lite'); ?></th>
-                                        <th width="120" class="text-end"><?php esc_html_e('Actions', 'obydullah-restaurant-pos-lite'); ?></th>
+                                        <th width="120" class="text-right"><?php esc_html_e('Actions', 'obydullah-restaurant-pos-lite'); ?></th>
                                     </tr>
                                 </thead>
                                 <tbody id="product-list" class="bg-white">
