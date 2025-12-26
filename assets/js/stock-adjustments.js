@@ -1,6 +1,9 @@
 /**
- * ORPL Stock Adjustments Manager
+ * Stock Adjustments Manager
+ * Plugin: Obydullah_Restaurant_POS_Lite
+ * Version: 1.0.0
  */
+
 (function ($) {
   "use strict";
 
@@ -145,7 +148,7 @@
       });
 
       // Delete adjustment (delegated)
-      $(document).on("click", ".delete-adjustment", function () {
+      $(document).on("click", ".pos-action.delete", function () {
         self.handleDeleteAdjustment(this);
       });
     },
@@ -205,12 +208,10 @@
      */
     loadAdjustments: function (page) {
       var self = this;
-      
-      // If page is undefined, use current page or default to 1
       self.config.currentPage = page || self.config.currentPage || 1;
 
-      var tbody = $("#adjustment-list");
-      tbody.html('<tr><td colspan="6" class="text-center p-5"><span class="spinner is-active"></span> ' + self.config.strings.loadingAdjustments + "</td></tr>");
+      let tbody = $("#adjustment-list");
+      tbody.html('<tr><td colspan="6" class="loading-stocks"><span class="spinner is-active"></span> ' + (self.config.strings.loadingAdjustments || "Loading adjustments...") + "</td></tr>");
 
       $.ajax({
         url: self.config.ajaxUrl,
@@ -228,17 +229,17 @@
           tbody.empty();
           if (response.success) {
             if (!response.data.adjustments.length) {
-              tbody.append('<tr><td colspan="6" class="text-center p-5 text-muted">' + self.config.strings.noAdjustments + "</td></tr>");
+              tbody.append('<tr><td colspan="6" class="no-stocks">' + (self.config.strings.noAdjustments || "No adjustments found.") + "</td></tr>");
               self.updatePagination(response.data.pagination);
               return;
             }
 
             $.each(response.data.adjustments, function (_, adjustment) {
-              var row = $("<tr>").attr("data-adjustment-id", adjustment.id);
+              let row = $("<tr>").attr("data-adjustment-id", adjustment.id);
 
               // Date column
-              var date = new Date(adjustment.created_at);
-              var formattedDate =
+              let date = new Date(adjustment.created_at);
+              let formattedDate =
                 date.toLocaleDateString() +
                 " " +
                 date.toLocaleTimeString([], {
@@ -251,32 +252,49 @@
               row.append($("<td>").text(adjustment.product_name || "N/A"));
 
               // Type column
-              var typeText = adjustment.adjustment_type === "increase" ? self.config.strings.increase : self.config.strings.decrease;
-              row.append($("<td>").text(typeText));
+              let typeClass = adjustment.adjustment_type === "increase" ? "badge bg-success" : "badge bg-danger";
+              let typeText = adjustment.adjustment_type === "increase" ? self.config.strings.increase : self.config.strings.decrease;
+
+              row.append(
+                $("<td>")
+                  .addClass("compact-status")
+                  .append(
+                    $("<span>")
+                      .addClass(typeClass + " badge-status")
+                      .text(typeText)
+                  )
+              );
 
               // Quantity column
-              var quantityText = (adjustment.adjustment_type === "increase" ? "+" : "-") + adjustment.quantity;
-              var quantityClass = adjustment.adjustment_type === "increase" ? "text-success" : "text-danger";
-              row.append($("<td>").append($("<span>").addClass(quantityClass).text(quantityText)));
+              let quantityText = (adjustment.adjustment_type === "increase" ? "+" : "-") + adjustment.quantity;
+              let quantityClass = adjustment.adjustment_type === "increase" ? "quantity-increase" : "quantity-decrease";
+              row.append($("<td>").addClass(quantityClass).text(quantityText));
 
               // Note column
               row.append($("<td>").text(adjustment.note || "-"));
 
               // Actions column
-              var actions = $('<td class="text-center">');
-              actions.append($("<button>").addClass("btn btn-sm btn-danger delete-adjustment").text(self.config.strings.delete));
-              row.append(actions);
+              row.append(
+                $("<td>")
+                  .addClass("pos-row-actions")
+                  .append(
+                    $("<button>")
+                      .addClass("pos-action delete")
+                      .text(self.config.strings.delete || "Delete")
+                      .attr("data-id", adjustment.id)
+                  )
+              );
 
               tbody.append(row);
             });
 
             self.updatePagination(response.data.pagination);
           } else {
-            tbody.append('<tr><td colspan="6" class="text-center text-danger">' + response.data + "</td></tr>");
+            tbody.append('<tr><td colspan="6" class="error-message">' + response.data + "</td></tr>");
           }
         },
         error: function () {
-          tbody.html('<tr><td colspan="6" class="text-center text-danger">' + self.config.strings.loadError + "</td></tr>");
+          tbody.html('<tr><td colspan="6" class="error-message">' + (self.config.strings.loadError || "Failed to load adjustments.") + "</td></tr>");
         },
       });
     },
@@ -286,7 +304,7 @@
      */
     updatePagination: function (pagination) {
       var self = this;
-      
+
       // Set values from pagination response
       self.config.totalPages = pagination.total_pages;
       self.config.totalItems = pagination.total_items;
@@ -406,40 +424,42 @@
      */
     handleDeleteAdjustment: function (button) {
       var self = this;
-
-      if (!confirm(self.config.strings.confirmDelete)) {
-        return;
-      }
-
       var $button = $(button);
       var originalText = $button.text();
       var id = $button.closest("tr").data("adjustment-id");
 
-      // Disable button and show loading
-      $button.prop("disabled", true).text(self.config.strings.deleting);
+      if (!id) {
+        showLimeModal("Invalid adjustment ID.", "Error");
+        return;
+      }
 
-      $.post(
-        self.config.ajaxUrl,
-        {
-          action: "orpl_delete_stock_adjustment",
-          id: id,
-          nonce: self.config.deleteNonce,
+      showLimeConfirm(
+        self.config.strings.confirmDelete || "Are you sure you want to delete this adjustment?",
+        function onYes() {
+          // Disable button and show deleting text
+          $button.prop("disabled", true).text(self.config.strings.deleting || "Deleting...");
+
+          $.post(self.config.ajaxUrl, {
+            action: "orpl_delete_stock_adjustment",
+            id: id,
+            nonce: self.config.deleteNonce,
+          })
+            .done(function (response) {
+              if (response.success) {
+                self.loadAdjustments(self.config.currentPage);
+                showLimeModal(response.data || "Adjustment deleted successfully.", "Success");
+              } else {
+                $button.prop("disabled", false).text(originalText);
+                showLimeModal(response.data || "Delete failed.", "Error");
+              }
+            })
+            .fail(function () {
+              $button.prop("disabled", false).text(originalText);
+              showLimeModal(self.config.strings.deleteFailed || "Delete request failed. Please try again.", "Error");
+            });
         },
-        function (response) {
-          if (response.success) {
-            self.loadAdjustments(self.config.currentPage);
-          } else {
-            alert(response.data);
-          }
-        }
-      )
-        .fail(function () {
-          alert(self.config.strings.deleteFailed);
-        })
-        .always(function () {
-          // Re-enable button
-          $button.prop("disabled", false).text(originalText);
-        });
+        self.config.strings.confirmTitle || "Confirm Delete"
+      );
     },
 
     /**

@@ -71,96 +71,117 @@ class Obydullah_Restaurant_POS_Lite_Sales
 		?>
 		<div class="wrap">
 			<h1 class="wp-heading-inline mb-3">
-				<?php esc_html_e('Sales', 'obydullah-restaurant-pos-lite'); ?>
+				<?php esc_html_e('Sales Management', 'obydullah-restaurant-pos-lite'); ?>
 			</h1>
 			<hr class="wp-header-end">
 
 			<div class="row">
 				<div class="col-lg-12">
 					<div class="bg-light p-4 rounded shadow-sm border">
-						<!-- Search and Filter Section -->
-						<div class="sales-filters mb-4 p-3 bg-white border rounded shadow-sm">
-							<div class="d-flex flex-wrap align-items-center gap-4">
-								<!-- Search by Invoice ID -->
-								<div class="filter-group">
-									<label for="search-invoice" class="form-label small text-muted mb-1">
+						<h2 class="h5 mb-3 fw-semibold">
+							<?php esc_html_e('Sales History', 'obydullah-restaurant-pos-lite'); ?>
+						</h2>
+
+						<!-- Search and Filter Section - Matches Stock page -->
+						<div class="search-section mb-4 p-3 bg-white border rounded shadow-sm">
+							<div class="d-flex flex-wrap align-items-center gap-2">
+								<div class="search-group flex-grow-1">
+									<label for="search-invoice" class="form-label mb-1">
 										<?php esc_html_e('Search Invoice', 'obydullah-restaurant-pos-lite'); ?>
 									</label>
-									<input type="text" id="search-invoice" class="form-control form-control-sm" style="width: 200px;"
-										placeholder="<?php esc_attr_e('Invoice number...', 'obydullah-restaurant-pos-lite'); ?>">
-								</div>
-
-								<!-- Date Range Filter -->
-								<div class="filter-group">
-									<label class="form-label small text-muted mb-1">
-										<?php esc_html_e('Date Range', 'obydullah-restaurant-pos-lite'); ?>
-									</label>
 									<div class="d-flex align-items-center gap-2">
-										<input type="date" id="date-from" class="form-control form-control-sm" style="width: 130px;">
-										<span class="text-muted small"><?php esc_html_e('to', 'obydullah-restaurant-pos-lite'); ?></span>
-										<input type="date" id="date-to" class="form-control form-control-sm" style="width: 130px;">
+										<div class="position-relative flex-grow-1">
+											<input type="text" id="search-invoice"
+												class="form-control form-control-sm"
+												placeholder="<?php esc_attr_e('Invoice number...', 'obydullah-restaurant-pos-lite'); ?>">
+											<button type="button" id="clear-invoice-search"
+												class="btn btn-sm btn-link text-decoration-none position-absolute end-0 top-50 translate-middle-y"
+												style="display: none; padding: 0;">
+												<span class="text-muted fs-5">×</span>
+											</button>
+										</div>
 									</div>
-								</div>
-
-								<!-- Sale Type Filter -->
-								<div class="filter-group">
-									<label for="sale-type" class="form-label small text-muted mb-1">
-										<?php esc_html_e('Sale Type', 'obydullah-restaurant-pos-lite'); ?>
-									</label>
-									<select id="sale-type" class="form-control form-control-sm" style="width: 150px;">
-										<option value=""><?php esc_html_e('All Types', 'obydullah-restaurant-pos-lite'); ?></option>
-										<option value="dineIn"><?php esc_html_e('Dine In', 'obydullah-restaurant-pos-lite'); ?></option>
-										<option value="takeAway"><?php esc_html_e('Take Away', 'obydullah-restaurant-pos-lite'); ?></option>
-										<option value="pickUp"><?php esc_html_e('Pick Up', 'obydullah-restaurant-pos-lite'); ?></option>
-									</select>
-								</div>
-
-								<!-- Status Filter -->
-								<div class="filter-group">
-									<label for="sale-status" class="form-label small text-muted mb-1">
-										<?php esc_html_e('Sale Status', 'obydullah-restaurant-pos-lite'); ?>
-									</label>
-									<select id="sale-status" class="form-control form-control-sm" style="width: 150px;">
-										<option value=""><?php esc_html_e('All Status', 'obydullah-restaurant-pos-lite'); ?></option>
-										<option value="completed"><?php esc_html_e('Completed', 'obydullah-restaurant-pos-lite'); ?></option>
-										<option value="saveSale"><?php esc_html_e('Saved', 'obydullah-restaurant-pos-lite'); ?></option>
-										<option value="canceled"><?php esc_html_e('Canceled', 'obydullah-restaurant-pos-lite'); ?></option>
-									</select>
-								</div>
-
-								<!-- Action Buttons -->
-								<div class="filter-group align-self-end">
-									<div class="d-flex align-items-center gap-2 mt-2">
-										<button type="button" id="search-sales" class="btn btn-primary btn-sm px-3">
-											<?php esc_html_e('Search', 'obydullah-restaurant-pos-lite'); ?>
-										</button>
-										<button type="button" id="reset-filters" class="btn btn-outline-secondary btn-sm px-3 ml-1">
-											<?php esc_html_e('Reset', 'obydullah-restaurant-pos-lite'); ?>
-										</button>
+									<div class="form-text">
+										<?php esc_html_e('Search by invoice number', 'obydullah-restaurant-pos-lite'); ?>
 									</div>
 								</div>
 							</div>
 						</div>
 
-						<!-- Sales Table -->
+						<!-- Quick Filters Row - Fixed button alignment -->
+						<div class="row g-2 mb-3">
+							<div class="col-md-3">
+								<label for="date-from" class="form-label small mb-1">
+									<?php esc_html_e('Date From', 'obydullah-restaurant-pos-lite'); ?>
+								</label>
+								<input type="date" id="date-from" class="form-control form-control-sm">
+							</div>
+							<div class="col-md-3">
+								<label for="date-to" class="form-label small mb-1">
+									<?php esc_html_e('Date To', 'obydullah-restaurant-pos-lite'); ?>
+								</label>
+								<input type="date" id="date-to" class="form-control form-control-sm">
+							</div>
+							<div class="col-md-3">
+								<label for="sale-type" class="form-label small mb-1">
+									<?php esc_html_e('Sale Type', 'obydullah-restaurant-pos-lite'); ?>
+								</label>
+								<select id="sale-type" class="form-control form-control-sm">
+									<option value=""><?php esc_html_e('All Types', 'obydullah-restaurant-pos-lite'); ?></option>
+									<option value="dineIn"><?php esc_html_e('Dine In', 'obydullah-restaurant-pos-lite'); ?></option>
+									<option value="takeAway"><?php esc_html_e('Take Away', 'obydullah-restaurant-pos-lite'); ?></option>
+									<option value="pickUp"><?php esc_html_e('Pick Up', 'obydullah-restaurant-pos-lite'); ?></option>
+									<option value="delivery"><?php esc_html_e('Delivery', 'obydullah-restaurant-pos-lite'); ?></option>
+								</select>
+							</div>
+							<div class="col-md-3">
+								<label for="sale-status" class="form-label small mb-1">
+									<?php esc_html_e('Sale Status', 'obydullah-restaurant-pos-lite'); ?>
+								</label>
+								<select id="sale-status" class="form-control form-control-sm">
+									<option value=""><?php esc_html_e('All Status', 'obydullah-restaurant-pos-lite'); ?></option>
+									<option value="completed"><?php esc_html_e('Completed', 'obydullah-restaurant-pos-lite'); ?></option>
+									<option value="saveSale"><?php esc_html_e('Saved', 'obydullah-restaurant-pos-lite'); ?></option>
+									<option value="pending"><?php esc_html_e('Pending', 'obydullah-restaurant-pos-lite'); ?></option>
+									<option value="canceled"><?php esc_html_e('Canceled', 'obydullah-restaurant-pos-lite'); ?></option>
+								</select>
+							</div>
+						</div>
+
+						<!-- Action Buttons Row - Matches Stock page -->
+						<div class="row g-2 mb-3">
+							<div class="col-md-12">
+								<div class="d-flex align-items-center gap-2">
+									<button type="button" id="search-sales" class="btn btn-primary btn-sm">
+										<span class="btn-text"><?php esc_html_e('Search', 'obydullah-restaurant-pos-lite'); ?></span>
+										<span class="spinner" style="display: none; margin-left: 5px;"></span>
+									</button>
+									<button type="button" id="reset-filters" class="btn btn-outline-secondary btn-sm ml-1">
+										<?php esc_html_e('Reset', 'obydullah-restaurant-pos-lite'); ?>
+									</button>
+								</div>
+							</div>
+						</div>
+
+						<!-- Sales Table - Matches Stock page structure -->
 						<div class="table-responsive">
-							<table class="table table-striped table-hover table-bordered mb-3">
+							<table class="table table-striped table-hover table-bordered mb-2">
 								<thead>
 									<tr class="bg-primary text-white">
-										<th><?php esc_html_e('Invoice ID', 'obydullah-restaurant-pos-lite'); ?></th>
-										<th><?php esc_html_e('Date', 'obydullah-restaurant-pos-lite'); ?></th>
+										<th width="120"><?php esc_html_e('Invoice ID', 'obydullah-restaurant-pos-lite'); ?></th>
+										<th width="100"><?php esc_html_e('Date', 'obydullah-restaurant-pos-lite'); ?></th>
 										<th><?php esc_html_e('Customer', 'obydullah-restaurant-pos-lite'); ?></th>
-										<th><?php esc_html_e('Type', 'obydullah-restaurant-pos-lite'); ?></th>
-										<th><?php esc_html_e('Net Price', 'obydullah-restaurant-pos-lite'); ?></th>
-										<th><?php esc_html_e('Tax', 'obydullah-restaurant-pos-lite'); ?></th>
-										<th><?php esc_html_e('Vat', 'obydullah-restaurant-pos-lite'); ?></th>
-										<th><?php esc_html_e('Discount', 'obydullah-restaurant-pos-lite'); ?></th>
-										<th><?php esc_html_e('Grand Total', 'obydullah-restaurant-pos-lite'); ?></th>
-										<th><?php esc_html_e('Status', 'obydullah-restaurant-pos-lite'); ?></th>
-										<th class="text-center"><?php esc_html_e('Actions', 'obydullah-restaurant-pos-lite'); ?></th>
+										<th width="100"><?php esc_html_e('Type', 'obydullah-restaurant-pos-lite'); ?></th>
+										<th width="100"><?php esc_html_e('Net Price', 'obydullah-restaurant-pos-lite'); ?></th>
+										<th width="80"><?php esc_html_e('Tax', 'obydullah-restaurant-pos-lite'); ?></th>
+										<th width="80"><?php esc_html_e('Vat', 'obydullah-restaurant-pos-lite'); ?></th>
+										<th width="100"><?php esc_html_e('Discount', 'obydullah-restaurant-pos-lite'); ?></th>
+										<th width="120"><?php esc_html_e('Grand Total', 'obydullah-restaurant-pos-lite'); ?></th>
+										<th width="100"><?php esc_html_e('Status', 'obydullah-restaurant-pos-lite'); ?></th>
+										<th width="150" class="text-right"><?php esc_html_e('Actions', 'obydullah-restaurant-pos-lite'); ?></th>
 									</tr>
 								</thead>
-								<tbody id="sales-list">
+								<tbody id="sales-list" class="bg-white">
 									<tr>
 										<td colspan="11" class="text-center p-4">
 											<span class="spinner is-active"></span>
@@ -171,38 +192,23 @@ class Obydullah_Restaurant_POS_Lite_Sales
 							</table>
 						</div>
 
-						<!-- Pagination -->
-						<div class="d-flex justify-content-between align-items-center">
+						<!-- Pagination - Exact same as Stock page -->
+						<div class="d-flex flex-wrap justify-content-between align-items-center mt-2">
 							<div class="tablenav-pages">
-								<span class="displaying-num" id="displaying-num">0
-									<?php esc_html_e('items', 'obydullah-restaurant-pos-lite'); ?></span>
-								<span class="pagination-links d-inline-flex align-items-center gap-1 ms-2">
-									<a class="first-page btn btn-sm btn-secondary" href="#">
-										<span class="screen-reader-text"><?php esc_html_e('First page', 'obydullah-restaurant-pos-lite'); ?></span>
-										<span aria-hidden="true">«</span>
-									</a>
-									<a class="prev-page btn btn-sm btn-secondary" href="#">
-										<span class="screen-reader-text"><?php esc_html_e('Previous page', 'obydullah-restaurant-pos-lite'); ?></span>
-										<span aria-hidden="true">‹</span>
-									</a>
-									<span class="paging-input d-inline-flex align-items-center gap-1">
-										<label for="current-page-selector" class="screen-reader-text"><?php esc_html_e('Current Page', 'obydullah-restaurant-pos-lite'); ?></label>
-										<input class="current-page form-control form-control-sm" style="width: 50px;" id="current-page-selector" type="text" name="paged" value="1" size="3" aria-describedby="table-paging">
-										<span class="tablenav-paging-text m-1">
-											<?php esc_html_e('of', 'obydullah-restaurant-pos-lite'); ?> <span class="total-pages">1</span></span>
+								<span class="displaying-num" id="displaying-num">0 <?php esc_html_e('items', 'obydullah-restaurant-pos-lite'); ?></span>
+								<span class="pagination-links ms-2">
+									<a class="first-page btn btn-sm btn-dark" href="#" title="<?php esc_attr_e('First page', 'obydullah-restaurant-pos-lite'); ?>">«</a>
+									<a class="prev-page btn btn-sm btn-dark" href="#" title="<?php esc_attr_e('Previous page', 'obydullah-restaurant-pos-lite'); ?>">‹</a>
+									<span class="paging-input">
+										<input class="current-page form-control form-control-sm" id="current-page-selector" type="text" name="paged" value="1">
+										<span class="tablenav-paging-text"><?php esc_html_e('of', 'obydullah-restaurant-pos-lite'); ?> <span class="total-pages">1</span></span>
 									</span>
-									<a class="next-page btn btn-sm btn-secondary" href="#">
-										<span class="screen-reader-text"><?php esc_html_e('Next page', 'obydullah-restaurant-pos-lite'); ?></span>
-										<span aria-hidden="true">›</span>
-									</a>
-									<a class="last-page btn btn-sm btn-secondary" href="#">
-										<span class="screen-reader-text"><?php esc_html_e('Last page', 'obydullah-restaurant-pos-lite'); ?></span>
-										<span aria-hidden="true">»</span>
-									</a>
+									<a class="next-page btn btn-sm btn-dark" href="#" title="<?php esc_attr_e('Next page', 'obydullah-restaurant-pos-lite'); ?>">›</a>
+									<a class="last-page btn btn-sm btn-dark" href="#" title="<?php esc_attr_e('Last page', 'obydullah-restaurant-pos-lite'); ?>">»</a>
 								</span>
 							</div>
 							<div class="tablenav-pages">
-								<select id="per-page-select" class="form-control form-control-sm ml-2">
+								<select id="per-page-select" class="form-control form-control-sm">
 									<option value="10">10 <?php esc_html_e('per page', 'obydullah-restaurant-pos-lite'); ?></option>
 									<option value="20">20 <?php esc_html_e('per page', 'obydullah-restaurant-pos-lite'); ?></option>
 									<option value="50">50 <?php esc_html_e('per page', 'obydullah-restaurant-pos-lite'); ?></option>
@@ -369,7 +375,8 @@ class Obydullah_Restaurant_POS_Lite_Sales
 		);
 
 		$sale->items = $items;
-
+		$sale->shop_info = Obydullah_Restaurant_POS_Lite_Helpers::get_shop_info();
+		
 		wp_send_json_success($sale);
 	}
 

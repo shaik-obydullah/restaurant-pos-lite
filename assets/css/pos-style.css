@@ -316,6 +316,38 @@ tr:hover .pos-row-actions {
 /* ==========================================================================
    7. POS Page Layout & Components
    ========================================================================== */
+
+.orpl-cart-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.orpl-cart-item-name {
+  flex: 2;
+  padding-right: 15px;
+}
+
+.orpl-cart-item-qty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orpl-cart-item-price {
+  flex: 1;
+  text-align: right;
+  padding: 0 15px;
+  font-weight: bold;
+}
+
+.orpl-cart-item-remove {
+  flex: 0 0 auto;
+}
+
 .orpl-pos-container {
   max-width: 1400px;
   margin: 0 auto;
@@ -434,6 +466,28 @@ tr:hover .pos-row-actions {
 .orpl-stocks-grid::-webkit-scrollbar-thumb {
   background: #c1c1c1;
   border-radius: 3px;
+}
+
+.saved-sale-info {
+  flex: 1;
+}
+
+.saved-sale-actions {
+  flex-shrink: 0;
+  margin-left: 15px;
+}
+
+.load-saved-btn,
+.delete-saved-btn {
+  padding: 2px 8px;
+  font-size: 12px;
+  min-width: 60px;
+}
+
+.orpl-saved-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 /* ==========================================================================

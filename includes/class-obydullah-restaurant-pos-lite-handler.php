@@ -420,7 +420,8 @@ if (!class_exists('Obydullah_Restaurant_POS_Lite_Handler')) {
                                 'stocks' => wp_create_nonce('orpl_get_products_by_category'),
                                 'saved' => wp_create_nonce('orpl_get_saved_sales'),
                                 'load' => wp_create_nonce('orpl_load_saved_sale'),
-                                'process' => wp_create_nonce('orpl_process_sale')
+                                'process' => wp_create_nonce('orpl_process_sale'),
+                                'delete_saved' => wp_create_nonce('orpl_delete_saved_sale')
                             ],
                             'strings' => [
                                 'allStocks' => __('All Stocks', 'obydullah-restaurant-pos-lite'),
@@ -436,7 +437,10 @@ if (!class_exists('Obydullah_Restaurant_POS_Lite_Handler')) {
                                 'error' => __('Error:', 'obydullah-restaurant-pos-lite'),
                                 'loadingSaved' => __('Loading saved sales...', 'obydullah-restaurant-pos-lite'),
                                 'noSaved' => __('No saved sales', 'obydullah-restaurant-pos-lite'),
-                                'requestFailed' => __('An error occurred. Please try again.', 'obydullah-restaurant-pos-lite')
+                                'requestFailed' => __('An error occurred. Please try again.', 'obydullah-restaurant-pos-lite'),
+                                'confirmDeleteSaved' => __('Are you sure you want to delete this saved sale?', 'obydullah-restaurant-pos-lite'),
+                                'saleDeleted' => __('Saved sale deleted successfully!', 'obydullah-restaurant-pos-lite'),
+                                'deleteFailed' => __('Failed to delete saved sale. Please try again.', 'obydullah-restaurant-pos-lite')
                             ]
                         ]
                     );

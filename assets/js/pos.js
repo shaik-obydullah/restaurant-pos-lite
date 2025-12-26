@@ -1,7 +1,8 @@
 /**
- * Obydullah Restaurant POS Lite - POS JavaScript
+ * POS System
+ * Plugin: Obydullah_Restaurant_POS_Lite
+ * Version: 1.0.0
  */
-
 (function ($) {
   "use strict";
 
@@ -106,6 +107,31 @@
      */
     bindEvents: function () {
       var self = this;
+
+      // Load saved sales
+      this.elements.loadSavedBtn.click(function () {
+        self.loadSavedSales();
+      });
+
+      // Saved sales list click (delegated)
+      this.elements.savedList
+        .on("click", ".load-saved-btn", function (e) {
+          e.stopPropagation();
+          var saleId = $(this).data("sale-id");
+          self.loadSavedSale(saleId);
+        })
+        .on("click", ".delete-saved-btn", function (e) {
+          e.stopPropagation();
+          var saleId = $(this).data("sale-id");
+          self.deleteSavedSale(saleId);
+        })
+        .on("click", ".orpl-saved-item", function (e) {
+          // Only trigger if not clicking on buttons
+          if (!$(e.target).hasClass("load-saved-btn") && !$(e.target).hasClass("delete-saved-btn")) {
+            var saleId = $(this).data("sale-id");
+            self.loadSavedSale(saleId);
+          }
+        });
 
       // Order type change
       this.elements.orderTypeInputs.change(function () {
@@ -214,6 +240,48 @@
           this.elements.pickupOptions.show();
           break;
       }
+    },
+
+    /**
+     * Delete a saved sale
+     */
+    deleteSavedSale: function (saleId) {
+      var self = this;
+
+      showLimeConfirm(
+        this.config.strings.confirmDeleteSaved || "Are you sure you want to delete this saved sale?",
+        function onYes() {
+          $.ajax({
+            url: self.config.ajaxUrl,
+            type: "POST",
+            data: {
+              action: "orpl_delete_saved_sale",
+              nonce: self.config.nonces.delete_saved,
+              sale_id: saleId,
+            },
+            success: function (response) {
+              if (response.success) {
+                showLimeModal(self.config.strings.saleDeleted || "Saved sale deleted successfully!", "Success");
+
+                // Refresh the saved sales list
+                self.loadSavedSales();
+
+                // If the deleted sale was currently loaded, clear the current sale
+                if (self.config.savedSaleId == saleId) {
+                  self.config.savedSaleId = "";
+                  self.elements.currentSaleId.val("");
+                }
+              } else {
+                showLimeModal(self.config.strings.error + ": " + response.data, "Error");
+              }
+            },
+            error: function () {
+              showLimeModal(self.config.strings.deleteFailed || "Failed to delete saved sale. Please try again.", "Error");
+            },
+          });
+        },
+        "Confirm Delete"
+      );
     },
 
     /**
@@ -394,10 +462,16 @@
                 var customerName = sale.customer_name || "";
                 var grandTotal = parseFloat(sale.grand_total || 0).toFixed(2);
 
-                html += '<div class="orpl-saved-item" data-sale-id="' + sale.id + '">';
+                html += '<div class="orpl-saved-item d-flex justify-content-between align-items-center p-2 mb-2 border rounded" data-sale-id="' + sale.id + '">';
+                html += '<div class="saved-sale-info">';
                 html += "<div><strong>" + invoiceId + "</strong></div>";
                 html += "<div>" + customerName + " - " + self.config.currencySymbol + grandTotal + "</div>";
-                html += "<small>" + formattedDate + "</small>";
+                html += "<small class='text-muted'>" + formattedDate + "</small>";
+                html += "</div>";
+                html += '<div class="saved-sale-actions">';
+                html += '<button class="btn btn-sm btn-success load-saved-btn" data-sale-id="' + sale.id + '" title="Load Sale">Load</button>';
+                html += '<button class="btn btn-sm btn-danger delete-saved-btn ml-2" data-sale-id="' + sale.id + '" title="Delete Sale">Delete</button>';
+                html += "</div>";
                 html += "</div>";
               });
             }
@@ -414,9 +488,26 @@
       var self = this;
 
       // Confirm if cart is not empty
-      if (self.config.cart.length > 0 && !confirm(self.config.strings.confirmLoadSaved)) {
+      if (self.config.cart.length > 0) {
+        showLimeConfirm(
+          self.config.strings.confirmLoadSaved || "Are you sure you want to load this saved sale? Current cart will be cleared.",
+          function onYes() {
+            self.performLoadSavedSale(saleId);
+          },
+          "Confirm Load"
+        );
         return;
       }
+
+      // If cart is empty, load directly
+      this.performLoadSavedSale(saleId);
+    },
+
+    /**
+     * Perform the actual saved sale loading
+     */
+    performLoadSavedSale: function (saleId) {
+      var self = this;
 
       $.ajax({
         url: self.config.ajaxUrl,
@@ -449,9 +540,9 @@
             self.updateCartDisplay();
 
             // Show success message
-            alert(self.config.strings.saleLoaded);
+            showLimeModal(self.config.strings.saleLoaded || "Sale loaded successfully!", "Success");
           } else {
-            alert(self.config.strings.error + ": " + response.data);
+            showLimeModal(self.config.strings.error + ": " + response.data, "Error");
           }
         },
       });
@@ -512,10 +603,14 @@
      */
     removeCartItem: function (index) {
       if (index >= 0 && index < this.config.cart.length) {
-        if (confirm(this.config.strings.confirmRemove)) {
-          this.config.cart.splice(index, 1);
-          this.updateCartDisplay();
-        }
+        showLimeConfirm(
+          this.config.strings.confirmRemove || "Are you sure you want to remove this item?",
+          function onYes() {
+            this.config.cart.splice(index, 1);
+            this.updateCartDisplay();
+          }.bind(this),
+          "Confirm Remove"
+        );
       }
     },
 
@@ -527,12 +622,16 @@
         return;
       }
 
-      if (confirm(this.config.strings.confirmClear)) {
-        this.config.cart = [];
-        this.config.savedSaleId = "";
-        this.elements.currentSaleId.val("");
-        this.updateCartDisplay();
-      }
+      showLimeConfirm(
+        this.config.strings.confirmClear || "Are you sure you want to clear the cart?",
+        function onYes() {
+          this.config.cart = [];
+          this.config.savedSaleId = "";
+          this.elements.currentSaleId.val("");
+          this.updateCartDisplay();
+        }.bind(this),
+        "Confirm Clear Cart"
+      );
     },
 
     /**
@@ -603,7 +702,7 @@
 
       // Check if cart is empty
       if (this.config.cart.length === 0) {
-        alert(this.config.strings.cartEmptyAlert);
+        showLimeModal(this.config.strings.cartEmptyAlert || "Cart is empty. Add items first.", "Cart Empty");
         return;
       }
 
@@ -652,7 +751,7 @@
           button.prop("disabled", false).text(originalText);
 
           if (response.success) {
-            alert(response.data.message);
+            showLimeModal(response.data.message || "Sale processed successfully!", "Success");
 
             if (action === "complete") {
               // Clear cart and reset form
@@ -668,13 +767,13 @@
             // Refresh saved sales list
             self.loadSavedSales();
           } else {
-            alert(self.config.strings.error + ": " + response.data);
+            showLimeModal(self.config.strings.error + ": " + response.data, "Error");
           }
         },
         error: function () {
           // Reset button
           button.prop("disabled", false).text(originalText);
-          alert(self.config.strings.requestFailed);
+          showLimeModal(self.config.strings.requestFailed || "Request failed. Please try again.", "Error");
         },
       });
     },

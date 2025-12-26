@@ -150,40 +150,53 @@ class Obydullah_Restaurant_POS_Lite_Accounting
 
                 <!-- Right: Accounting Table -->
                 <div class="col-lg-8">
-                    <div class="bg-light p-4 rounded shadow-sm border">
-                        <!-- Date Filter -->
-                        <div class="accounting-filters mb-3 d-flex flex-wrap align-items-center gap-2">
-                            <label for="date-from" class="form-label mb-0 p-1">
-                                <?php esc_html_e('From Date', 'obydullah-restaurant-pos-lite'); ?>
-                            </label>
-                            <input type="date" id="date-from" class="form-control-sm">
+                    <div class="bg-light p-3 rounded shadow-sm border">
+                        <h2 class="h5 mb-3 fw-semibold">
+                            <?php esc_html_e('Accounting Entries', 'obydullah-restaurant-pos-lite'); ?>
+                        </h2>
 
-                            <label for="date-to" class="form-label mb-0 p-1">
-                                <?php esc_html_e('To Date', 'obydullah-restaurant-pos-lite'); ?>
-                            </label>
-                            <input type="date" id="date-to" class="form-control-sm">
-
-                            <button type="button" id="search-entries" class="btn btn-primary btn-sm ml-1">
-                                <?php esc_html_e('Filter', 'obydullah-restaurant-pos-lite'); ?>
-                            </button>
-
-                            <button type="button" id="reset-filters" class="btn btn-secondary btn-sm ml-1">
-                                <?php esc_html_e('Reset', 'obydullah-restaurant-pos-lite'); ?>
-                            </button>
+                        <!-- Date Filter Section -->
+                        <div class="search-section mb-3">
+                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                <div class="search-group flex-grow-1">
+                                    <label for="date-from" class="form-label mb-1">
+                                        <?php esc_html_e('Date Range', 'obydullah-restaurant-pos-lite'); ?>
+                                    </label>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <input type="date" id="date-from" class="form-control form-control-sm"
+                                                placeholder="<?php esc_attr_e('From Date', 'obydullah-restaurant-pos-lite'); ?>">
+                                            <span class="text-muted ml-1 mr-1"><?php esc_html_e('to', 'obydullah-restaurant-pos-lite'); ?></span>
+                                            <input type="date" id="date-to" class="form-control form-control-sm"
+                                                placeholder="<?php esc_attr_e('To Date', 'obydullah-restaurant-pos-lite'); ?>">
+                                            <button type="button" id="search-entries" class="btn btn-sm btn-dark">
+                                                <?php esc_html_e('Filter', 'obydullah-restaurant-pos-lite'); ?>
+                                            </button>
+                                            <button type="button" id="reset-filters" class="btn btn-sm btn-outline-secondary ml-1">
+                                                <?php esc_html_e('Reset', 'obydullah-restaurant-pos-lite'); ?>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="form-text">
+                                        <?php esc_html_e('Filter entries by date range', 'obydullah-restaurant-pos-lite'); ?>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
+                        <!-- Accounting Entries Table -->
                         <div class="table-responsive">
-                            <table class="table table-striped table-hover table-bordered mb-3">
+                            <table class="table table-striped table-hover table-bordered mb-2">
                                 <thead>
                                     <tr class="bg-primary text-white">
                                         <th><?php esc_html_e('Date', 'obydullah-restaurant-pos-lite'); ?></th>
                                         <th><?php esc_html_e('Description', 'obydullah-restaurant-pos-lite'); ?></th>
-                                        <th><?php esc_html_e('Income', 'obydullah-restaurant-pos-lite'); ?></th>
-                                        <th><?php esc_html_e('Expense', 'obydullah-restaurant-pos-lite'); ?></th>
-                                        <th class="text-center"><?php esc_html_e('Actions', 'obydullah-restaurant-pos-lite'); ?></th>
+                                        <th width="120"><?php esc_html_e('Income', 'obydullah-restaurant-pos-lite'); ?></th>
+                                        <th width="120"><?php esc_html_e('Expense', 'obydullah-restaurant-pos-lite'); ?></th>
+                                        <th width="100" class="text-right"><?php esc_html_e('Actions', 'obydullah-restaurant-pos-lite'); ?></th>
                                     </tr>
                                 </thead>
-                                <tbody id="accounting-list">
+                                <tbody id="accounting-list" class="bg-white">
                                     <tr>
                                         <td colspan="5" class="text-center p-4">
                                             <span class="spinner is-active"></span>
@@ -195,33 +208,18 @@ class Obydullah_Restaurant_POS_Lite_Accounting
                         </div>
 
                         <!-- Pagination -->
-                        <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center mt-2">
                             <div class="tablenav-pages">
-                                <span class="displaying-num" id="displaying-num">0
-                                    <?php esc_html_e('items', 'obydullah-restaurant-pos-lite'); ?></span>
-                                <span class="pagination-links d-inline-flex align-items-center gap-1 ms-2">
-                                    <a class="first-page btn btn-sm btn-secondary" href="#">
-                                        <span class="screen-reader-text"><?php esc_html_e('First page', 'obydullah-restaurant-pos-lite'); ?></span>
-                                        <span aria-hidden="true">«</span>
-                                    </a>
-                                    <a class="prev-page btn btn-sm btn-secondary" href="#">
-                                        <span class="screen-reader-text"><?php esc_html_e('Previous page', 'obydullah-restaurant-pos-lite'); ?></span>
-                                        <span aria-hidden="true">‹</span>
-                                    </a>
-                                    <span class="paging-input d-inline-flex align-items-center gap-1">
-                                        <label for="current-page-selector" class="screen-reader-text"><?php esc_html_e('Current Page', 'obydullah-restaurant-pos-lite'); ?></label>
-                                        <input class="current-page form-control form-control-sm" style="width: 50px;" id="current-page-selector" type="text" name="paged" value="1" size="3" aria-describedby="table-paging">
-                                        <span class="tablenav-paging-text mt-1">
-                                            <?php esc_html_e('of', 'obydullah-restaurant-pos-lite'); ?> <span class="total-pages">1</span></span>
+                                <span class="displaying-num" id="displaying-num">0 <?php esc_html_e('items', 'obydullah-restaurant-pos-lite'); ?></span>
+                                <span class="pagination-links ms-2">
+                                    <a class="first-page btn btn-sm btn-dark" href="#" title="<?php esc_attr_e('First page', 'obydullah-restaurant-pos-lite'); ?>">«</a>
+                                    <a class="prev-page btn btn-sm btn-dark" href="#" title="<?php esc_attr_e('Previous page', 'obydullah-restaurant-pos-lite'); ?>">‹</a>
+                                    <span class="paging-input">
+                                        <input class="current-page form-control form-control-sm" id="current-page-selector" type="text" name="paged" value="1">
+                                        <span class="tablenav-paging-text"><?php esc_html_e('of', 'obydullah-restaurant-pos-lite'); ?> <span class="total-pages">1</span></span>
                                     </span>
-                                    <a class="next-page btn btn-sm btn-secondary" href="#">
-                                        <span class="screen-reader-text"><?php esc_html_e('Next page', 'obydullah-restaurant-pos-lite'); ?></span>
-                                        <span aria-hidden="true">›</span>
-                                    </a>
-                                    <a class="last-page btn btn-sm btn-secondary" href="#">
-                                        <span class="screen-reader-text"><?php esc_html_e('Last page', 'obydullah-restaurant-pos-lite'); ?></span>
-                                        <span aria-hidden="true">»</span>
-                                    </a>
+                                    <a class="next-page btn btn-sm btn-dark" href="#" title="<?php esc_attr_e('Next page', 'obydullah-restaurant-pos-lite'); ?>">›</a>
+                                    <a class="last-page btn btn-sm btn-dark" href="#" title="<?php esc_attr_e('Last page', 'obydullah-restaurant-pos-lite'); ?>">»</a>
                                 </span>
                             </div>
                             <div class="tablenav-pages">

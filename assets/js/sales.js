@@ -1,5 +1,7 @@
 /**
- * ORPL Sales Manager
+ * Sales Management
+ * Plugin: Obydullah_Restaurant_POS_Lite
+ * Version: 1.0.0
  */
 (function ($) {
   "use strict";
@@ -81,12 +83,14 @@
       });
 
       // Enter key in search
-      $("#search-invoice").on("keypress", function (e) {
-        if (e.which === 13) {
-          $("#search-sales").click();
-        }
-      });
+      $("#search-invoice").on("change", function () {
+        clearTimeout(self.searchTimeout);
+        self.config.searchTerm = $(this).val().trim();
 
+        self.searchTimeout = setTimeout(() => {
+          self.loadORPLSales(1);
+        }, 500);
+      });
       // Per page change
       $("#per-page-select").on("change", function () {
         self.config.perPage = parseInt($(this).val());
@@ -125,12 +129,12 @@
       });
 
       // Print sale (delegated)
-      $(document).on("click", ".print-sale", function () {
+      $(document).on("click", ".pos-action.print", function () {
         self.handlePrintSale(this);
       });
 
       // Delete sale (delegated)
-      $(document).on("click", ".delete-sale", function () {
+      $(document).on("click", ".pos-action.delete", function () {
         self.handleDeleteSale(this);
       });
     },
@@ -181,14 +185,14 @@
     },
 
     /**
-     * Load sales via AJAX
+     * Load sales with pagination and filters
      */
     loadORPLSales: function (page = 1) {
       var self = this;
       self.config.currentPage = page;
 
       let tbody = $("#sales-list");
-      tbody.html('<tr><td colspan="11" class="text-center p-4"><span class="spinner is-active"></span> ' + self.config.strings.loading_sales + "</td></tr>");
+      tbody.html('<tr><td colspan="11" class="loading-sales"><span class="spinner is-active"></span> ' + (self.config.strings.loadingSales || "Loading sales...") + "</td></tr>");
 
       $.ajax({
         url: self.config.ajaxUrl,
@@ -197,7 +201,7 @@
           action: "orpl_get_sales",
           page: self.config.currentPage,
           per_page: self.config.perPage,
-          search: self.config.currentSearch,
+          search: self.config.searchTerm,
           date_from: self.config.dateFrom,
           date_to: self.config.dateTo,
           sale_type: self.config.saleType,
@@ -205,91 +209,104 @@
           nonce: self.config.nonces.get_sales,
         },
         success: function (response) {
-          let tbody = $("#sales-list").empty();
+          tbody.empty();
           if (response.success) {
-            self.updatePagination({
-              total_items: response.data.total,
-              total_pages: Math.ceil(response.data.total / self.config.perPage),
-            });
-
             if (!response.data.sales.length) {
-              let message = self.config.currentSearch || self.config.dateFrom || self.config.dateTo || self.config.saleType || self.config.saleStatus ? self.config.strings.no_sales_matching : self.config.strings.no_sales;
-              tbody.append('<tr><td colspan="11" class="text-center p-4 text-muted">' + message + "</td></tr>");
+              tbody.append('<tr><td colspan="11" class="no-sales">' + (self.config.strings.noSales || "No sales found.") + "</td></tr>");
+              self.updatePagination(response.data);
               return;
             }
 
             $.each(response.data.sales, function (_, sale) {
               let row = $("<tr>").attr("data-sale-id", sale.id);
 
-              // Invoice ID
-              row.append($("<td>").append($("<strong>").text(sale.invoice_id || self.config.strings.na)));
+              // Invoice ID column
+              row.append($("<td>").text(sale.invoice_id || "N/A"));
 
-              // Date
+              // Date column
               let saleDate = new Date(sale.created_at);
               let formattedDate = saleDate.toLocaleDateString() + " " + saleDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
               row.append($("<td>").text(formattedDate));
 
-              // Customer
-              row.append($("<td>").text(sale.customer_name || self.config.strings.walkin_customer));
+              // Customer column
+              row.append($("<td>").text(sale.customer_name || self.config.strings.walkin_customer || "Walk-in"));
 
-              // Sale Type
-              let typeText = self.formatSaleType(sale.sale_type);
+              // Type column
+              let typeClass = sale.sale_type === "dineIn" ? "badge bg-primary" : sale.sale_type === "takeAway" ? "badge bg-info" : sale.sale_type === "pickUp" ? "badge bg-warning" : "badge bg-secondary";
+              let typeText = sale.sale_type === "dineIn" ? "Dine In" : sale.sale_type === "takeAway" ? "Take Away" : sale.sale_type === "pickUp" ? "Pick Up" : sale.sale_type || "N/A";
+
               row.append(
-                $("<td>").append(
-                  $("<span>")
-                    .addClass("sale-type-" + sale.sale_type)
-                    .text(typeText)
-                )
+                $("<td>")
+                  .addClass("compact-status")
+                  .append(
+                    $("<span>")
+                      .addClass(typeClass + " badge-status")
+                      .text(typeText)
+                  )
               );
 
-              // Net Price
+              // Net Price column
               row.append($("<td>").text(self.formatCurrency(sale.net_price)));
 
-              // Tax
-              let totalTax = parseFloat(sale.tax_amount || 0);
-              row.append($("<td>").text(self.formatCurrency(totalTax)));
+              // Tax column
+              row.append($("<td>").text(self.formatCurrency(sale.tax_amount)));
 
-              // VAT
-              let totalVat = parseFloat(sale.vat_amount || 0);
-              row.append($("<td>").text(self.formatCurrency(totalVat)));
+              // VAT column
+              row.append($("<td>").text(self.formatCurrency(sale.vat_amount)));
 
-              // Discount
-              row.append($("<td>").text(self.formatCurrency(sale.discount_amount)));
+              // Discount column
+              let discountAmount = parseFloat(sale.discount_amount || 0);
+              let discountCell = $("<td>").text(self.formatCurrency(discountAmount));
+              if (discountAmount > 0) {
+                discountCell.addClass("discount-applied");
+              }
+              row.append(discountCell);
 
-              // Grand Total
-              row.append($("<td>").append($("<strong>").text(self.formatCurrency(sale.grand_total))));
+              // Grand Total column
+              row.append($("<td>").text(self.formatCurrency(sale.grand_total)));
 
-              // Status
-              let statusText = self.formatSaleStatus(sale.status);
+              // Status column
+              let statusClass = sale.status === "completed" ? "badge bg-success" : sale.status === "saveSale" ? "badge bg-warning" : sale.status === "pending" ? "badge bg-info" : "badge bg-danger"; // canceled or any other
+              let statusText = sale.status === "completed" ? "Completed" : sale.status === "saveSale" ? "Saved" : sale.status === "pending" ? "Pending" : sale.status === "canceled" ? "Canceled" : sale.status || "N/A";
+
               row.append(
-                $("<td>").append(
-                  $("<span>")
-                    .addClass("status-" + sale.status)
-                    .text(statusText)
-                )
+                $("<td>")
+                  .addClass("compact-status")
+                  .append(
+                    $("<span>")
+                      .addClass(statusClass + " badge-status")
+                      .text(statusText)
+                  )
               );
 
-              // Actions
-              let actionsTd = $("<td class='text-center'>");
-              let actionsDiv = $("<div>").addClass("sale-actions d-flex gap-2 justify-content-center");
-
-              // Print button
-              actionsDiv.append($("<button>").addClass("btn btn-sm btn-primary print-sale").text(self.config.strings.print));
-
-              // Delete button
-              actionsDiv.append($("<button>").addClass("btn btn-sm btn-danger delete-sale ml-1").text(self.config.strings.delete));
-
-              actionsTd.append(actionsDiv);
-              row.append(actionsTd);
+              // Actions column
+              row.append(
+                $("<td>")
+                  .addClass("pos-row-actions")
+                  .append(
+                    $("<button>")
+                      .addClass("pos-action print")
+                      .text(self.config.strings.print || "Print")
+                      .attr("data-id", sale.id)
+                  )
+                  .append(
+                    $("<button>")
+                      .addClass("pos-action delete")
+                      .text(self.config.strings.delete || "Delete")
+                      .attr("data-id", sale.id)
+                  )
+              );
 
               tbody.append(row);
             });
+
+            self.updatePagination(response.data);
           } else {
-            tbody.append('<tr><td colspan="11" class="text-center text-danger">' + response.data + "</td></tr>");
+            tbody.append('<tr><td colspan="11" class="error-message">' + response.data + "</td></tr>");
           }
         },
         error: function () {
-          $("#sales-list").html('<tr><td colspan="11" class="text-center text-danger">' + self.config.strings.failed_load + "</td></tr>");
+          $("#sales-list").html('<tr><td colspan="11" class="error-message">' + (self.config.strings.loadError || "Failed to load sales.") + "</td></tr>");
         },
       });
     },
@@ -316,86 +333,173 @@
         },
         success: function (response) {
           if (response.success) {
-            // Open print window with sale data
-            let printWindow = window.open("", "_blank");
             let sale = response.data;
-            let shopInfo = self.config.shopInfo;
+
+            // Use shop info from sale data or fallback to config
+            let shop = sale.shop_info || self.config.shop_info || {};
 
             let printContent = `
 <!DOCTYPE html>
 <html>
 <head>
-    <title>${self.config.strings.invoice} ${sale.invoice_id || self.config.strings.na}</title>
+    <title>Invoice #${sale.invoice_id || sale.id}</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .invoice-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
-        .shop-info { margin-bottom: 15px; }
-        .invoice-details { margin-bottom: 20px; display: flex; justify-content: space-between; }
-        .customer-info, .invoice-info { flex: 1; }
-        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        .items-table th { background: #f8f9fa; border: 1px solid #ddd; padding: 10px; text-align: left; }
-        .items-table td { border: 1px solid #ddd; padding: 8px; }
-        .summary-table { width: 300px; margin-left: auto; border-collapse: collapse; }
-        .summary-table td { padding: 8px; border-bottom: 1px solid #ddd; }
-        .summary-table tr.total td { font-weight: bold; border-top: 2px solid #333; }
-        .thank-you { text-align: center; margin-top: 30px; font-style: italic; color: #666; }
-        @media print { 
-            body { margin: 0; font-size: 12px; }
-            .invoice-header { border-bottom-color: #000; }
-            .summary-table tr.total td { border-top-color: #000; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Courier New', monospace; 
+            font-size: 14px;
+            line-height: 1.3;
+            padding: 10px;
+            max-width: 80mm;
+            margin: 0 auto;
+        }
+        .header { 
+            text-align: center;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px dashed #000;
+        }
+        .shop-name { 
+            font-weight: bold;
+            font-size: 18px;
+            text-transform: uppercase;
+        }
+        .shop-address { 
+            font-size: 12px;
+            margin: 2px 0;
+        }
+        .shop-phone { 
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        .invoice-title { 
+            font-weight: bold;
+            text-align: center;
+            margin: 5px 0;
+            font-size: 16px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 3px 0;
+            font-size: 12px;
+        }
+        .info-label {
+            font-weight: bold;
+        }
+        .divider {
+            border-top: 1px dashed #000;
+            margin: 8px 0;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 5px 0;
+        }
+        .items-table th {
+            text-align: left;
+            padding: 3px 0;
+            border-bottom: 1px dashed #000;
+            font-weight: bold;
+        }
+        .items-table td {
+            padding: 2px 0;
+            vertical-align: top;
+        }
+        .items-table .name {
+            width: 60%;
+        }
+        .items-table .qty {
+            width: 15%;
+            text-align: center;
+        }
+        .items-table .price {
+            width: 25%;
+            text-align: right;
+        }
+        .totals {
+            margin-top: 10px;
+            width: 100%;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 2px 0;
+        }
+        .total-row.total {
+            font-weight: bold;
+            border-top: 2px solid #000;
+            padding-top: 5px;
+            margin-top: 5px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px dashed #000;
+            font-size: 11px;
+        }
+        @media print {
+            body { 
+                padding: 0;
+                margin: 0;
+            }
+            .no-print { display: none; }
         }
     </style>
 </head>
 <body>
-    <div class="invoice-header">
-        <div class="shop-info">
-            ${shopInfo.name ? `<h2>${shopInfo.name}</h2>` : ""}
-            ${shopInfo.address ? `<p>${shopInfo.address}</p>` : ""}
-            ${shopInfo.phone ? `<p>${self.config.strings.phone}: ${shopInfo.phone}</p>` : ""}
-        </div>
-        <h3>${self.config.strings.invoice.toUpperCase()} #${sale.invoice_id || self.config.strings.na}</h3>
+    <!-- Header -->
+    <div class="header">
+        ${shop.name ? `<div class="shop-name">${shop.name}</div>` : ""}
+        ${shop.address ? `<div class="shop-address">${shop.address}</div>` : ""}
+        ${shop.phone ? `<div class="shop-phone">Tel: ${shop.phone}</div>` : ""}
     </div>
     
-    <div class="invoice-details">
-        <div class="customer-info">
-            <p><strong>${self.config.strings.customer}:</strong> ${sale.customer_name || self.config.strings.walkin_customer}</p>
-            ${
-              sale.customer_mobile
-                ? `
-            <p><strong>${self.config.strings.mobile}:</strong> ${sale.customer_mobile}</p>
-            `
-                : ""
-            }
-            ${
-              sale.customer_email
-                ? `
-            <p><strong>${self.config.strings.email}:</strong> ${sale.customer_email}</p>
-            `
-                : ""
-            }
-            ${
-              sale.customer_address
-                ? `
-            <p><strong>${self.config.strings.address}:</strong> ${sale.customer_address}</p>
-            `
-                : ""
-            }
-            <p><strong>${self.config.strings.order_type}:</strong> ${self.formatSaleType(sale.sale_type)}</p>
-            ${sale.cooking_instructions ? `<p><strong>${self.config.strings.cooking_instructions}:</strong> ${sale.cooking_instructions}</p>` : ""}
-        </div>
-        <div class="invoice-info">
-            <p><strong>${self.config.strings.date}:</strong> ${new Date(sale.created_at).toLocaleString()}</p>
-            <p><strong>${self.config.strings.status}:</strong> ${self.formatSaleStatus(sale.status)}</p>
-        </div>
-    </div>
+    <!-- Invoice Title -->
+    <div class="invoice-title">INVOICE</div>
     
+    <!-- Basic Info -->
+    <div class="info-row">
+        <span class="info-label">Invoice #:</span>
+        <span>${sale.invoice_id || sale.id}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Date:</span>
+        <span>${new Date(sale.created_at).toLocaleDateString()}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Time:</span>
+        <span>${new Date(sale.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Customer:</span>
+        <span>${sale.customer_name || "Walk-in Customer"}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Type:</span>
+        <span>${self.formatSaleType(sale.sale_type)}</span>
+    </div>
+    ${
+      sale.table_number
+        ? `
+    <div class="info-row">
+        <span class="info-label">Table:</span>
+        <span>${sale.table_number}</span>
+    </div>
+    `
+        : ""
+    }
+    
+    <div class="divider"></div>
+    
+    <!-- Items -->
     <table class="items-table">
         <thead>
             <tr>
-                <th>${self.config.strings.item}</th>
-                <th>${self.config.strings.quantity}</th>
-                <th>${self.config.strings.price}</th>
-                <th>${self.config.strings.total}</th>
+                <th class="name">ITEM</th>
+                <th class="qty">QTY</th>
+                <th class="price">AMOUNT</th>
             </tr>
         </thead>
         <tbody>
@@ -403,57 +507,140 @@
               sale.items && sale.items.length > 0
                 ? sale.items
                     .map(
-                      (item) => `
-                <tr>
-                    <td>${item.product_name}</td>
-                    <td>${item.quantity}</td>
-                    <td>${self.formatCurrency(item.unit_price)}</td>
-                    <td>${self.formatCurrency(item.total_price)}</td>
-                </tr>
+                      (item, index) => `
+            <tr>
+                <td class="name">${item.product_name || "Item"}</td>
+                <td class="qty">${item.quantity}</td>
+                <td class="price">${self.formatCurrency(item.total_price)}</td>
+            </tr>
             `
                     )
                     .join("")
-                : `<tr><td colspan="4" style="text-align:center;">${self.config.strings.no_items}</td></tr>`
+                : `
+            <tr>
+                <td colspan="3" style="text-align: center;">No items</td>
+            </tr>
+            `
             }
         </tbody>
     </table>
     
-    <table class="summary-table">
-        <tr>
-            <td>${self.config.strings.net_price}:</td>
-            <td>${self.formatCurrency(sale.net_price || 0)}</td>
-        </tr>
-        <tr>
-            <td>${self.config.strings.tax}:</td>
-            <td>${self.formatCurrency(parseFloat(sale.tax_amount || 0))}</td>
-        </tr>
-        <tr>
-            <td>${self.config.strings.vat}:</td>
-            <td>${self.formatCurrency(parseFloat(sale.vat_amount || 0))}</td>
-        </tr>
-        <tr>
-            <td>${self.config.strings.shipping}:</td>
-            <td>${self.formatCurrency(sale.shipping_cost || 0)}</td>
-        </tr>
-        <tr>
-            <td>${self.config.strings.discount}:</td>
-            <td>${self.formatCurrency(sale.discount_amount || 0)}</td>
-        </tr>
-        <tr class="total">
-            <td>${self.config.strings.grand_total}:</td>
-            <td>${self.formatCurrency(sale.grand_total || 0)}</td>
-        </tr>
-    </table>
+    <div class="divider"></div>
     
-    ${sale.note ? `<div style="margin-top: 20px;"><strong>${self.config.strings.note}:</strong> ${sale.note}</div>` : ""}
+    <div class="totals">
+        <div class="total-row">
+            <span>Subtotal:</span>
+            <span>${self.formatCurrency(sale.net_price || 0)}</span>
+        </div>
+        ${
+          sale.tax_amount && parseFloat(sale.tax_amount) > 0
+            ? `
+        <div class="total-row">
+            <span>Tax (${parseFloat(sale.tax_rate || 0)}%):</span>
+            <span>${self.formatCurrency(sale.tax_amount)}</span>
+        </div>
+        `
+            : ""
+        }
+        ${
+          sale.vat_amount && parseFloat(sale.vat_amount) > 0
+            ? `
+        <div class="total-row">
+            <span>VAT (${parseFloat(sale.vat_rate || 0)}%):</span>
+            <span>${self.formatCurrency(sale.vat_amount)}</span>
+        </div>
+        `
+            : ""
+        }
+        ${
+          sale.discount_amount && parseFloat(sale.discount_amount) > 0
+            ? `
+        <div class="total-row">
+            <span>Discount:</span>
+            <span>-${self.formatCurrency(sale.discount_amount)}</span>
+        </div>
+        `
+            : ""
+        }
+        ${
+          sale.shipping_cost && parseFloat(sale.shipping_cost) > 0
+            ? `
+        <div class="total-row">
+            <span>Shipping:</span>
+            <span>${self.formatCurrency(sale.shipping_cost)}</span>
+        </div>
+        `
+            : ""
+        }
+        <div class="total-row total">
+            <span>TOTAL:</span>
+            <span>${self.formatCurrency(sale.grand_total || 0)}</span>
+        </div>
+    </div>
+    
+    <!-- Payment Method (Optional) -->
+    ${
+      sale.payment_method
+        ? `
+    <div class="info-row" style="margin-top: 8px;">
+        <span class="info-label">Payment:</span>
+        <span>${sale.payment_method}</span>
+    </div>
+    `
+        : ""
+    }
+    
+    <!-- Notes -->
+    ${
+      sale.note
+        ? `
+    <div style="margin-top: 10px; padding: 5px; border: 1px dashed #666; font-size: 11px;">
+        <strong>Note:</strong> ${sale.note}
+    </div>
+    `
+        : ""
+    }
+    
+    ${
+      sale.cooking_instructions
+        ? `
+    <div style="margin-top: 5px; padding: 5px; border: 1px dashed #666; font-size: 11px;">
+        <strong>Cooking Instructions:</strong> ${sale.cooking_instructions}
+    </div>
+    `
+        : ""
+    }
+    
+    <!-- Footer -->
+    <div class="footer">
+        Thank you for your business!<br>
+        Please keep this receipt<br>
+        ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+    </div>
 </body>
 </html>
-                        `;
+        `;
 
-            printWindow.document.write(printContent);
-            printWindow.document.close();
-            printWindow.focus();
-            printWindow.print();
+            let printWindow = window.open("", "_blank");
+            if (!printWindow) {
+              alert("Please allow popups to print the invoice.");
+              return;
+            }
+
+            printWindow.document.head.innerHTML = `<title>Invoice #${sale.invoice_id || sale.id}</title>`;
+            printWindow.document.body.innerHTML = printContent;
+
+            // Wait for content to load, then print
+            printWindow.onload = function () {
+              setTimeout(() => {
+                printWindow.focus();
+                printWindow.print();
+                // Optional: close after printing
+                printWindow.onafterprint = function () {
+                  printWindow.close();
+                };
+              }, 100);
+            };
           } else {
             alert(self.config.strings.error + ": " + response.data);
           }
@@ -465,44 +652,55 @@
     },
 
     /**
-     * Handle delete sale button click
+     * Escape HTML to prevent XSS
+     */
+    escapeHtml: function (text) {
+      if (text === null || text === undefined) return "";
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    },
+
+    /**
+     * Handle delete sale
      */
     handleDeleteSale: function (button) {
       var self = this;
+      var $button = $(button);
+      var originalText = $button.text();
+      var id = $button.closest("tr").data("sale-id");
 
-      if (!confirm(self.config.strings.confirm_delete)) {
-        return;
-      }
+      // Show confirmation modal instead of default confirm
+      showLimeConfirm(
+        self.config.strings.confirmDelete || "Are you sure you want to delete this sale?",
+        function onYes() {
+          // Disable button and show deleting text
+          $button.prop("disabled", true).text(self.config.strings.deleting || "Deleting...");
 
-      let $button = $(button);
-      let originalText = $button.text();
-      let saleId = $button.closest("tr").data("sale-id");
-
-      // Disable button and show loading
-      $button.prop("disabled", true).text(self.config.strings.deleting);
-
-      $.post(
-        self.config.ajaxUrl,
-        {
-          action: "orpl_delete_sale",
-          id: saleId,
-          nonce: self.config.nonces.delete_sale,
+          // Send AJAX request to delete sale
+          $.post(self.config.ajaxUrl, {
+            action: "orpl_delete_sale",
+            id: id,
+            nonce: self.config.nonces.delete_sale,
+          })
+            .done(function (res) {
+              if (res.success) {
+                self.loadORPLSales(self.config.currentPage);
+                showLimeModal(res.data, "Success");
+              } else {
+                showLimeModal(res.data, "Error");
+              }
+            })
+            .fail(function () {
+              showLimeModal(self.config.strings.deleteFailed || "Delete request failed. Please try again.", "Error");
+            })
+            .always(function () {
+              // Re-enable button
+              $button.prop("disabled", false).text(originalText);
+            });
         },
-        function (res) {
-          if (res.success) {
-            self.loadORPLSales(self.config.currentPage);
-          } else {
-            alert(res.data);
-          }
-        }
-      )
-        .fail(function () {
-          alert(self.config.strings.delete_failed);
-        })
-        .always(function () {
-          // Re-enable button
-          $button.prop("disabled", false).text(originalText);
-        });
+        "Confirm Delete"
+      );
     },
   };
 

@@ -123,13 +123,12 @@ class Obydullah_Restaurant_POS_Lite_Customers
                                     </select>
                                 </div>
                             </div>
-
-                            <div class="mt-4 d-flex gap-2">
-                                <button type="submit" id="submit-customer" class="btn btn-primary flex-grow-1">
+                            <div class="d-flex mt-4">
+                                <button type="submit" id="submit-customer" class="btn-primary mr-2">
                                     <span class="btn-text"><?php esc_html_e('Save Customer', 'obydullah-restaurant-pos-lite'); ?></span>
-                                    <span class="spinner" style="display:none;"></span>
+                                    <span class="spinner" style="display: none; margin-left: 5px;"></span>
                                 </button>
-                                <button type="button" id="cancel-edit" class="btn btn-secondary" style="display:none;">
+                                <button type="button" id="cancel-edit" class="btn-secondary" style="display: none;">
                                     <?php esc_html_e('Cancel', 'obydullah-restaurant-pos-lite'); ?>
                                 </button>
                             </div>
@@ -138,62 +137,68 @@ class Obydullah_Restaurant_POS_Lite_Customers
                 </div>
 
                 <!-- Right: Customers Table -->
-                <div class="col-md-8">
-                    <div class="bg-light p-4 rounded shadow-sm border">
+                <div class="col-lg-8">
+                    <div class="bg-light p-3 rounded shadow-sm border">
+                        <h2 class="h5 mb-3 fw-semibold">
+                            <?php esc_html_e('Customer Management', 'obydullah-restaurant-pos-lite'); ?>
+                        </h2>
+
                         <!-- Search and Filter Section -->
-                        <div class="customer-filters mb-4 p-3 bg-white border rounded shadow-sm">
-                            <div class="d-flex flex-wrap align-items-center gap-4">
-                                <!-- Search -->
-                                <div class="filter-group">
-                                    <label for="customer-search" class="form-label small text-muted mb-1">
-                                        <?php esc_html_e('Search Customer', 'obydullah-restaurant-pos-lite'); ?>
+                        <div class="search-section mb-3">
+                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                <div class="search-group flex-grow-1">
+                                    <label for="customer-search" class="form-label mb-1">
+                                        <?php esc_html_e('Search Customers', 'obydullah-restaurant-pos-lite'); ?>
                                     </label>
-                                    <input type="text" id="customer-search" class="form-control form-control-sm" style="width: 220px;"
-                                        placeholder="<?php esc_attr_e('Name or mobile...', 'obydullah-restaurant-pos-lite'); ?>">
-                                </div>
-
-                                <!-- Status Filter -->
-                                <div class="filter-group">
-                                    <label for="status-filter" class="form-label small text-muted mb-1">
-                                        <?php esc_html_e('Customer Status', 'obydullah-restaurant-pos-lite'); ?>
-                                    </label>
-                                    <select id="status-filter" class="form-control form-control-sm" style="width: 160px;">
-                                        <option value=""><?php esc_html_e('All Status', 'obydullah-restaurant-pos-lite'); ?></option>
-                                        <option value="active"><?php esc_html_e('Active', 'obydullah-restaurant-pos-lite'); ?></option>
-                                        <option value="inactive"><?php esc_html_e('Inactive', 'obydullah-restaurant-pos-lite'); ?></option>
-                                    </select>
-                                </div>
-
-                                <!-- Action Buttons -->
-                                <div class="filter-group align-self-end">
-                                    <div class="d-flex align-items-center gap-2 mt-2">
-                                        <button type="button" id="refresh-customers" class="btn btn-primary btn-sm px-3">
-                                            <?php esc_html_e('Search', 'obydullah-restaurant-pos-lite'); ?>
-                                        </button>
-                                        <button type="button" id="reset-filters" class="btn btn-outline-secondary btn-sm px-3">
-                                            <?php esc_html_e('Reset', 'obydullah-restaurant-pos-lite'); ?>
-                                        </button>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="position-relative flex-grow-1">
+                                            <input type="text" id="customer-search"
+                                                class="form-control form-control-sm"
+                                                placeholder="<?php esc_attr_e('Customer name or mobile', 'obydullah-restaurant-pos-lite'); ?>">
+                                            <button type="button" id="clear-customer-search"
+                                                class="btn btn-sm btn-link text-decoration-none position-absolute end-0 top-50 translate-middle-y"
+                                                style="display: none; padding: 0;">
+                                                <span class="text-muted fs-5">×</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="form-text">
+                                        <?php esc_html_e('Search by customer name, email or mobile', 'obydullah-restaurant-pos-lite'); ?>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Quick Filters Row - Fixed button alignment -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-4">
+                                <label for="status-filter" class="form-label small mb-1">
+                                    <?php esc_html_e('Customer Status', 'obydullah-restaurant-pos-lite'); ?>
+                                </label>
+                                <select id="status-filter" class="form-control form-control-sm">
+                                    <option value=""><?php esc_html_e('All Status', 'obydullah-restaurant-pos-lite'); ?></option>
+                                    <option value="active"><?php esc_html_e('Active', 'obydullah-restaurant-pos-lite'); ?></option>
+                                    <option value="inactive"><?php esc_html_e('Inactive', 'obydullah-restaurant-pos-lite'); ?></option>
+                                </select>
+                            </div>
+                        </div>
+
                         <!-- Customers Table -->
                         <div class="table-responsive">
-                            <table class="table table-striped table-hover table-bordered mb-3">
+                            <table class="table table-striped table-hover table-bordered mb-2">
                                 <thead>
                                     <tr class="bg-primary text-white">
                                         <th><?php esc_html_e('Name', 'obydullah-restaurant-pos-lite'); ?></th>
                                         <th><?php esc_html_e('Email', 'obydullah-restaurant-pos-lite'); ?></th>
                                         <th><?php esc_html_e('Mobile', 'obydullah-restaurant-pos-lite'); ?></th>
                                         <th><?php esc_html_e('Address', 'obydullah-restaurant-pos-lite'); ?></th>
-                                        <th><?php esc_html_e('Status', 'obydullah-restaurant-pos-lite'); ?></th>
-                                        <th class="text-center"><?php esc_html_e('Actions', 'obydullah-restaurant-pos-lite'); ?></th>
+                                        <th width="100"><?php esc_html_e('Status', 'obydullah-restaurant-pos-lite'); ?></th>
+                                        <th width="100" class="text-right"><?php esc_html_e('Actions', 'obydullah-restaurant-pos-lite'); ?></th>
                                     </tr>
                                 </thead>
-                                <tbody id="customer-list">
+                                <tbody id="customer-list" class="bg-white">
                                     <tr>
-                                        <td colspan="6" class="text-center p-4">
+                                        <td colspan="7" class="text-center p-4">
                                             <span class="spinner is-active"></span>
                                             <?php esc_html_e('Loading customers...', 'obydullah-restaurant-pos-lite'); ?>
                                         </td>
@@ -203,33 +208,18 @@ class Obydullah_Restaurant_POS_Lite_Customers
                         </div>
 
                         <!-- Pagination -->
-                        <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center mt-2">
                             <div class="tablenav-pages">
-                                <span class="displaying-num" id="displaying-num">0
-                                    <?php esc_html_e('items', 'obydullah-restaurant-pos-lite'); ?></span>
-                                <span class="pagination-links d-inline-flex align-items-center gap-1 ms-2">
-                                    <a class="first-page btn btn-sm btn-secondary" href="#">
-                                        <span class="screen-reader-text"><?php esc_html_e('First page', 'obydullah-restaurant-pos-lite'); ?></span>
-                                        <span aria-hidden="true">«</span>
-                                    </a>
-                                    <a class="prev-page btn btn-sm btn-secondary" href="#">
-                                        <span class="screen-reader-text"><?php esc_html_e('Previous page', 'obydullah-restaurant-pos-lite'); ?></span>
-                                        <span aria-hidden="true">‹</span>
-                                    </a>
-                                    <span class="paging-input d-inline-flex align-items-center gap-1">
-                                        <label for="current-page-selector" class="screen-reader-text"><?php esc_html_e('Current Page', 'obydullah-restaurant-pos-lite'); ?></label>
-                                        <input class="current-page form-control form-control-sm" style="width: 50px;" id="current-page-selector" type="text" name="paged" value="1" size="3" aria-describedby="table-paging">
-                                        <span class="tablenav-paging-text m-1">
-                                            <?php esc_html_e('of', 'obydullah-restaurant-pos-lite'); ?> <span class="total-pages">1</span></span>
+                                <span class="displaying-num" id="displaying-num">0 <?php esc_html_e('items', 'obydullah-restaurant-pos-lite'); ?></span>
+                                <span class="pagination-links ms-2">
+                                    <a class="first-page btn btn-sm btn-dark" href="#" title="<?php esc_attr_e('First page', 'obydullah-restaurant-pos-lite'); ?>">«</a>
+                                    <a class="prev-page btn btn-sm btn-dark" href="#" title="<?php esc_attr_e('Previous page', 'obydullah-restaurant-pos-lite'); ?>">‹</a>
+                                    <span class="paging-input">
+                                        <input class="current-page form-control form-control-sm" id="current-page-selector" type="text" name="paged" value="1">
+                                        <span class="tablenav-paging-text"><?php esc_html_e('of', 'obydullah-restaurant-pos-lite'); ?> <span class="total-pages">1</span></span>
                                     </span>
-                                    <a class="next-page btn btn-sm btn-secondary" href="#">
-                                        <span class="screen-reader-text"><?php esc_html_e('Next page', 'obydullah-restaurant-pos-lite'); ?></span>
-                                        <span aria-hidden="true">›</span>
-                                    </a>
-                                    <a class="last-page btn btn-sm btn-secondary" href="#">
-                                        <span class="screen-reader-text"><?php esc_html_e('Last page', 'obydullah-restaurant-pos-lite'); ?></span>
-                                        <span aria-hidden="true">»</span>
-                                    </a>
+                                    <a class="next-page btn btn-sm btn-dark" href="#" title="<?php esc_attr_e('Next page', 'obydullah-restaurant-pos-lite'); ?>">›</a>
+                                    <a class="last-page btn btn-sm btn-dark" href="#" title="<?php esc_attr_e('Last page', 'obydullah-restaurant-pos-lite'); ?>">»</a>
                                 </span>
                             </div>
                             <div class="tablenav-pages">
@@ -308,8 +298,9 @@ class Obydullah_Restaurant_POS_Lite_Customers
 
             // Build WHERE conditions
             if (!empty($search)) {
-                $where_conditions[] = "(name LIKE %s OR mobile LIKE %s)";
+                $where_conditions[] = "(name LIKE %s OR mobile LIKE %s OR email LIKE %s)";
                 $search_like = '%' . $wpdb->esc_like($search) . '%';
+                $query_params[] = $search_like;
                 $query_params[] = $search_like;
                 $query_params[] = $search_like;
             }

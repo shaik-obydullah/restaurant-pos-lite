@@ -1,5 +1,7 @@
 /**
- * ORPL Accounting Manager
+ * Accounting Management
+ * Plugin: Obydullah_Restaurant_POS_Lite
+ * Version: 1.0.0
  */
 (function ($) {
   "use strict";
@@ -114,7 +116,7 @@
       });
 
       // Delete entry (delegated)
-      $(document).on("click", ".delete-entry", function () {
+      $(document).on("click", ".pos-action.delete", function () {
         self.handleDeleteEntry(this);
       });
     },
@@ -186,14 +188,14 @@
     },
 
     /**
-     * Load accounting entries via AJAX
+     * Load accounting entries with pagination and filters
      */
     loadAccountingEntries: function (page = 1) {
       var self = this;
       self.config.currentPage = page;
 
       let tbody = $("#accounting-list");
-      tbody.html('<tr><td colspan="5" class="text-center p-4"><span class="spinner is-active"></span> ' + self.config.strings.loading_entries + "</td></tr>");
+      tbody.html('<tr><td colspan="5" class="loading-entries"><span class="spinner is-active"></span> ' + (self.config.strings.loadingEntries || "Loading entries...") + "</td></tr>");
 
       $.ajax({
         url: self.config.ajaxUrl,
@@ -207,16 +209,15 @@
           nonce: self.config.getNonce,
         },
         success: function (response) {
-          let tbody = $("#accounting-list").empty();
+          tbody.empty();
           if (response.success) {
-            self.updatePagination({
-              total_items: response.data.total,
-              total_pages: Math.ceil(response.data.total / self.config.perPage),
-            });
-            self.updateSummaryCards(response.data.totals);
-
             if (!response.data.entries.length) {
-              tbody.append('<tr><td colspan="5" class="text-center p-4 text-muted">' + self.config.strings.no_entries + "</td></tr>");
+              tbody.append('<tr><td colspan="5" class="no-entries">' + (self.config.strings.noEntries || "No accounting entries found.") + "</td></tr>");
+              self.updateSummaryCards(response.data.totals);
+              self.updatePagination({
+                total_items: response.data.total,
+                total_pages: Math.ceil(response.data.total / self.config.perPage),
+              });
               return;
             }
 
@@ -265,38 +266,39 @@
               // Income column
               let incomeAmount = parseFloat(entry.in_amount || 0);
               let formattedIncome = entry.formatted_in_amount || self.formatCurrency(incomeAmount);
-              row.append(
-                $("<td>").append(
-                  $("<span>")
-                    .addClass("badge")
-                    .text(formattedIncome)
-                )
-              );
+              row.append($("<td>").append($("<span>").text(formattedIncome)));
 
               // Expense column
               let expenseAmount = parseFloat(entry.out_amount || 0);
               let formattedExpense = entry.formatted_out_amount || self.formatCurrency(expenseAmount);
-              row.append(
-                $("<td>").append(
-                  $("<span>")
-                    .addClass("badge")
-                    .text(formattedExpense)
-                )
-              );
+              row.append($("<td>").append($("<span>").text(formattedExpense)));
 
               // Actions column
-              let actionsTd = $("<td class='text-center'>");
-              actionsTd.append($("<button>").addClass("btn btn-sm btn-danger delete-entry").text(self.config.strings.delete));
-              row.append(actionsTd);
+              row.append(
+                $("<td>")
+                  .addClass("pos-row-actions")
+                  .append(
+                    $("<button>")
+                      .addClass("pos-action delete")
+                      .text(self.config.strings.delete || "Delete")
+                      .attr("data-id", entry.id)
+                  )
+              );
 
               tbody.append(row);
             });
+
+            self.updateSummaryCards(response.data.totals);
+            self.updatePagination({
+              total_items: response.data.total,
+              total_pages: Math.ceil(response.data.total / self.config.perPage),
+            });
           } else {
-            tbody.append('<tr><td colspan="5" class="text-center">' + response.data + "</td></tr>");
+            tbody.append('<tr><td colspan="5" class="error-message">' + response.data + "</td></tr>");
           }
         },
         error: function () {
-          $("#accounting-list").html('<tr><td colspan="5" class="text-center">' + self.config.strings.failed_load + "</td></tr>");
+          $("#accounting-list").html('<tr><td colspan="5" class="error-message">' + (self.config.strings.loadError || "Failed to load entries.") + "</td></tr>");
         },
       });
     },
@@ -317,8 +319,19 @@
       let description = $("#entry-description").val();
       let entryDate = $("#entry-date").val();
 
+      // Validation
       if (inAmount === 0 && outAmount === 0) {
-        alert(self.config.strings.amount_required);
+        showLimeModal(self.config.strings.amountRequired || "Please enter either income or expense amount", "Validation Error");
+        return false;
+      }
+
+      if (inAmount < 0) {
+        showLimeModal(self.config.strings.validIncome || "Please enter a valid income amount", "Validation Error");
+        return false;
+      }
+
+      if (outAmount < 0) {
+        showLimeModal(self.config.strings.validExpense || "Please enter a valid expense amount", "Validation Error");
         return false;
       }
 
@@ -338,59 +351,72 @@
         },
         function (res) {
           if (res.success) {
-            self.resetForm();
-            self.loadAccountingEntries(self.config.currentPage);
+            showLimeModal(self.config.strings.successMessage || "Entry saved successfully!", "Success");
+
+            const modal = $("#lime-alert-modal");
+            modal
+              .find("#lime-alert-close")
+              .off("click")
+              .on("click", function () {
+                self.resetForm();
+                self.loadAccountingEntries(1);
+                modal.addClass("d-none");
+              });
           } else {
-            alert(self.config.strings.error + " " + res.data);
+            showLimeModal(self.config.strings.error + " " + res.data, "Error");
           }
         }
       )
         .fail(function () {
-          alert(self.config.strings.request_failed);
+          showLimeModal(self.config.strings.requestFailed || "Request failed. Please try again.", "Error");
         })
         .always(function () {
+          // Reset submitting state
           self.config.isSubmitting = false;
           self.setButtonLoading(false);
         });
     },
 
     /**
-     * Handle delete entry button click
+     * Handle delete entry
      */
     handleDeleteEntry: function (button) {
       var self = this;
+      var $button = $(button);
+      var originalText = $button.text();
+      var id = $button.closest("tr").data("entry-id");
 
-      if (!confirm(self.config.strings.confirm_delete)) {
-        return;
-      }
+      // Show confirmation modal instead of default confirm
+      showLimeConfirm(
+        self.config.strings.confirmDelete || "Are you sure you want to delete this accounting entry?",
+        function onYes() {
+          // Disable button and show deleting text
+          $button.prop("disabled", true).text(self.config.strings.deleting || "Deleting...");
 
-      let $button = $(button);
-      let originalText = $button.text();
-      let entryId = $button.closest("tr").data("entry-id");
-
-      $button.prop("disabled", true).text(self.config.strings.deleting);
-
-      $.post(
-        self.config.ajaxUrl,
-        {
-          action: "orpl_delete_accounting_entry",
-          id: entryId,
-          nonce: self.config.deleteNonce,
+          // Send AJAX request to delete entry
+          $.post(self.config.ajaxUrl, {
+            action: "orpl_delete_accounting_entry",
+            id: id,
+            nonce: self.config.deleteNonce,
+          })
+            .done(function (res) {
+              if (res.success) {
+                self.loadAccountingEntries(self.config.currentPage);
+                showLimeModal(res.data, "Success");
+              } else {
+                showLimeModal(res.data, "Error");
+              }
+            })
+            .fail(function () {
+              showLimeModal(self.config.strings.deleteFailed || "Delete request failed. Please try again.", "Error");
+            })
+            .always(function () {
+              // Re-enable button
+              $button.prop("disabled", false).text(originalText);
+            });
         },
-        function (res) {
-          if (res.success) {
-            self.loadAccountingEntries(self.config.currentPage);
-          } else {
-            alert(res.data);
-          }
-        }
-      )
-        .fail(function () {
-          alert(self.config.strings.delete_failed);
-        })
-        .always(function () {
-          $button.prop("disabled", false).text(originalText);
-        });
+        "Confirm Delete"
+      );
     },
   };
 

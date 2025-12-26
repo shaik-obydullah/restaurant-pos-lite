@@ -348,19 +348,22 @@
 
       // Validation
       if (!fk_product_id) {
-        alert(self.config.strings.selectProductRequired || "Please select a product");
+        showLimeModal(self.config.strings.selectProductRequired || "Please select a product", "Validation Error");
         return false;
       }
+
       if (net_cost <= 0) {
-        alert(self.config.strings.validBuyPrice || "Please enter a valid buy price");
+        showLimeModal(self.config.strings.validBuyPrice || "Please enter a valid buy price", "Validation Error");
         return false;
       }
+
       if (sale_cost <= 0) {
-        alert(self.config.strings.validSalePrice || "Please enter a valid sale price");
+        showLimeModal(self.config.strings.validSalePrice || "Please enter a valid sale price", "Validation Error");
         return false;
       }
+
       if (quantity <= 0) {
-        alert(self.config.strings.validQuantity || "Please enter a valid quantity greater than 0");
+        showLimeModal(self.config.strings.validQuantity || "Please enter a valid quantity greater than 0", "Validation Error");
         return false;
       }
 
@@ -381,16 +384,25 @@
         },
         function (res) {
           if (res.success) {
-            self.resetForm();
-            self.loadStocks(1);
-            self.loadProducts();
+            showLimeModal(self.config.strings.successMessage || "Saved!", "Success");
+
+            const modal = $("#lime-alert-modal");
+            modal
+              .find("#lime-alert-close")
+              .off("click")
+              .on("click", function () {
+                self.resetForm();
+                self.loadStocks(1);
+                self.loadProducts();
+                modal.addClass("d-none");
+              });
           } else {
-            alert(self.config.strings.error + ": " + res.data);
+            showLimeModal(self.config.strings.error + " " + res.data, "Error");
           }
         }
       )
-        .fail(() => {
-          alert(self.config.strings.requestFailed || "Request failed. Please try again.");
+        .fail(function () {
+          showLimeModal(self.config.strings.requestFailed || "Request failed. Please try again.", "Error");
         })
         .always(function () {
           // Reset submitting state

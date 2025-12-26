@@ -42,6 +42,7 @@ class Obydullah_Restaurant_POS_Lite_POS
         add_action('wp_ajax_orpl_process_sale', [$this, 'ajax_process_sale']);
         add_action('wp_ajax_orpl_get_saved_sales', [$this, 'ajax_get_saved_sales']);
         add_action('wp_ajax_orpl_load_saved_sale', [$this, 'ajax_load_saved_sale']);
+        add_action('wp_ajax_orpl_delete_saved_sale', [$this, 'ajax_delete_saved_sale']);
     }
 
 
@@ -425,6 +426,102 @@ class Obydullah_Restaurant_POS_Lite_POS
             'sale' => $sale,
             'items' => $items
         ]);
+    }
+
+    /** Delete saved sale */
+    public function ajax_delete_saved_sale()
+    {
+        // Verify nonce
+        check_ajax_referer('orpl_delete_saved_sale', 'nonce');
+
+        global $wpdb;
+
+        // Get sale ID to delete
+        $sale_id = intval($_POST['sale_id'] ?? 0);
+
+        if (!$sale_id) {
+            wp_send_json_error([
+                'message' => __('Invalid sale ID', 'obydullah-restaurant-pos-lite')
+            ]);
+        }
+
+        // Start transaction for data consistency
+        $wpdb->query('START TRANSACTION');
+
+        try {
+            $sale_status = 'saveSale';
+
+            // Check if sale exists and is in saved status
+            $existing_sale = $wpdb->get_row($wpdb->prepare(
+                "SELECT id, invoice_id FROM {$this->sales_table} 
+             WHERE id = %d AND status = %s",
+                $sale_id,
+                $sale_status
+            ));
+
+            if (!$existing_sale) {
+                throw new Exception(__('Saved sale not found or already processed', 'obydullah-restaurant-pos-lite'));
+            }
+
+            // Delete sale details
+            // First get sale items to restore stock if needed
+            $sale_items = $wpdb->get_results($wpdb->prepare(
+                "SELECT fk_product_id, quantity FROM {$this->sale_details_table} 
+             WHERE fk_sale_id = %d",
+                $sale_id
+            ));
+
+            // Restore stock quantities if this is a temporary saved sale
+            foreach ($sale_items as $item) {
+                $wpdb->query($wpdb->prepare(
+                    "UPDATE {$this->stocks_table} 
+                 SET quantity = quantity + %d 
+                 WHERE fk_product_id = %d",
+                    $item->quantity,
+                    $item->fk_product_id
+                ));
+            }
+
+            // 4. Delete sale details
+            $details_deleted = $wpdb->delete(
+                $this->sale_details_table,
+                ['fk_sale_id' => $sale_id],
+                ['%d']
+            );
+
+            if ($details_deleted === false) {
+                throw new Exception(__('Failed to delete sale items', 'obydullah-restaurant-pos-lite'));
+            }
+
+            // Delete the sale record
+            $sale_deleted = $wpdb->delete(
+                $this->sales_table,
+                ['id' => $sale_id, 'status' => $sale_status],
+                ['%d', '%s']
+            );
+
+            if ($sale_deleted === false) {
+                throw new Exception(__('Failed to delete sale record', 'obydullah-restaurant-pos-lite'));
+            }
+
+            // Commit transaction
+            $wpdb->query('COMMIT');
+
+            // Return success response
+            wp_send_json_success([
+                'message' => __('Saved sale deleted successfully', 'obydullah-restaurant-pos-lite'),
+                'deleted_id' => $sale_id,
+                'invoice_id' => $existing_sale->invoice_id
+            ]);
+
+        } catch (Exception $e) {
+            // Rollback transaction on error
+            $wpdb->query('ROLLBACK');
+
+            wp_send_json_error([
+                'message' => $e->getMessage()
+            ]);
+        }
     }
 
     /** Process sale completion or save */

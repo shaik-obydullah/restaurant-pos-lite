@@ -278,7 +278,7 @@ class Obydullah_Restaurant_POS_Lite_Dashboard
                     <div class="bg-light p-4 rounded shadow-sm stock-summary-card border-left border-info">
                         <h3 class="fs-6 fw-normal text-muted mb-2"><?php esc_html_e('Stock Value', 'obydullah-restaurant-pos-lite'); ?></h3>
                         <p class="summary-number text-info mb-0 fs-3 fw-bold"><?php echo esc_html($this->format_currency($dashboard_data['stock_value'])); ?></p>
-                        <small class="text-muted"><?php esc_html_e('Current inventory value', 'obydullah-restaurant-pos-lite'); ?></small>
+                        <small class="text-muted mb-3"><?php esc_html_e('Current inventory value', 'obydullah-restaurant-pos-lite'); ?></small>
                     </div>
                 </div>
 
@@ -287,7 +287,7 @@ class Obydullah_Restaurant_POS_Lite_Dashboard
                     <div class="bg-light p-4 rounded shadow-sm stock-summary-card border-left border-success">
                         <h3 class="fs-6 fw-normal text-muted mb-2"><?php esc_html_e("Today's Sales", 'obydullah-restaurant-pos-lite'); ?></h3>
                         <p class="summary-number text-success mb-0 fs-3 fw-bold"><?php echo esc_html($this->format_number($dashboard_data['today_sale'])); ?></p>
-                        <small class="text-muted"><?php esc_html_e('Completed orders today', 'obydullah-restaurant-pos-lite'); ?></small>
+                        <small class="text-muted mb-3"><?php esc_html_e('Completed orders today', 'obydullah-restaurant-pos-lite'); ?></small>
                     </div>
                 </div>
 
@@ -296,7 +296,7 @@ class Obydullah_Restaurant_POS_Lite_Dashboard
                     <div class="bg-light p-4 rounded shadow-sm stock-summary-card border-left border-primary">
                         <h3 class="fs-6 fw-normal text-muted mb-2"><?php esc_html_e('Monthly Sales', 'obydullah-restaurant-pos-lite'); ?></h3>
                         <p class="summary-number text-primary mb-0 fs-3 fw-bold"><?php echo esc_html($this->format_number($dashboard_data['month_sale'])); ?></p>
-                        <small class="text-muted"><?php esc_html_e('Total orders this month', 'obydullah-restaurant-pos-lite'); ?></small>
+                        <small class="text-muted mb-3"><?php esc_html_e('Total orders this month', 'obydullah-restaurant-pos-lite'); ?></small>
                     </div>
                 </div>
 
@@ -305,7 +305,7 @@ class Obydullah_Restaurant_POS_Lite_Dashboard
                     <div class="bg-light p-4 rounded shadow-sm stock-summary-card border-left border-lime">
                         <h3 class="fs-6 fw-normal text-muted mb-2"><?php esc_html_e("Today's Income", 'obydullah-restaurant-pos-lite'); ?></h3>
                         <p class="summary-number text-lime mb-0 fs-3 fw-bold"><?php echo esc_html($this->format_currency($dashboard_data['today_income'])); ?></p>
-                        <small class="text-muted"><?php esc_html_e('Revenue generated today', 'obydullah-restaurant-pos-lite'); ?></small>
+                        <small class="text-muted mb-3"><?php esc_html_e('Revenue generated today', 'obydullah-restaurant-pos-lite'); ?></small>
                     </div>
                 </div>
 
@@ -314,7 +314,7 @@ class Obydullah_Restaurant_POS_Lite_Dashboard
                     <div class="bg-light p-4 rounded shadow-sm stock-summary-card border-left border-success">
                         <h3 class="fs-6 fw-normal text-muted mb-2"><?php esc_html_e('Monthly Income', 'obydullah-restaurant-pos-lite'); ?></h3>
                         <p class="summary-number text-success mb-0 fs-3 fw-bold"><?php echo esc_html($this->format_currency($dashboard_data['month_income'])); ?></p>
-                        <small class="text-muted"><?php esc_html_e('Total revenue this month', 'obydullah-restaurant-pos-lite'); ?></small>
+                        <small class="text-muted mb-3"><?php esc_html_e('Total revenue this month', 'obydullah-restaurant-pos-lite'); ?></small>
                     </div>
                 </div>
 
@@ -323,7 +323,7 @@ class Obydullah_Restaurant_POS_Lite_Dashboard
                     <div class="bg-light p-4 rounded shadow-sm stock-summary-card border-left border-warning">
                         <h3 class="fs-6 fw-normal text-muted mb-2"><?php esc_html_e("Today's Expense", 'obydullah-restaurant-pos-lite'); ?></h3>
                         <p class="summary-number text-warning mb-0 fs-3 fw-bold"><?php echo esc_html($this->format_currency($dashboard_data['today_expense'])); ?></p>
-                        <small class="text-muted"><?php esc_html_e('Expenses incurred today', 'obydullah-restaurant-pos-lite'); ?></small>
+                        <small class="text-muted mb-3"><?php esc_html_e('Expenses incurred today', 'obydullah-restaurant-pos-lite'); ?></small>
                     </div>
                 </div>
 
@@ -332,7 +332,7 @@ class Obydullah_Restaurant_POS_Lite_Dashboard
                     <div class="bg-light p-4 rounded shadow-sm stock-summary-card border-left border-danger">
                         <h3 class="fs-6 fw-normal text-muted mb-2"><?php esc_html_e('Monthly Expense', 'obydullah-restaurant-pos-lite'); ?></h3>
                         <p class="summary-number text-danger mb-0 fs-3 fw-bold"><?php echo esc_html($this->format_currency($dashboard_data['month_expense'])); ?></p>
-                        <small class="text-muted"><?php esc_html_e('Total expenses this month', 'obydullah-restaurant-pos-lite'); ?></small>
+                        <small class="text-muted mb-3"><?php esc_html_e('Total expenses this month', 'obydullah-restaurant-pos-lite'); ?></small>
                     </div>
                 </div>
 
@@ -343,7 +343,7 @@ class Obydullah_Restaurant_POS_Lite_Dashboard
                         <p class="summary-number text-lime mb-0 fs-3 fw-bold">
                             <?php echo esc_html($this->format_currency($dashboard_data['month_income'] - $dashboard_data['month_expense'])); ?>
                         </p>
-                        <small class="text-muted"><?php esc_html_e('Net profit this month', 'obydullah-restaurant-pos-lite'); ?></small>
+                        <small class="text-muted mb-3"><?php esc_html_e('Net profit this month', 'obydullah-restaurant-pos-lite'); ?></small>
                     </div>
                 </div>
             </div>

@@ -1,6 +1,9 @@
 /**
- * ORPL Customers Manager
+ * Customers Management
+ * Plugin: Obydullah_Restaurant_POS_Lite
+ * Version: 1.0.0
  */
+
 (function ($) {
   "use strict";
 
@@ -123,12 +126,12 @@
       });
 
       // Edit customer (delegated)
-      $(document).on("click", ".edit-customer", function () {
+      $(document).on("click", ".pos-action.edit", function () {
         self.handleEditCustomer(this);
       });
 
       // Delete customer (delegated)
-      $(document).on("click", ".delete-customer", function () {
+      $(document).on("click", ".pos-action.delete", function () {
         self.handleDeleteCustomer(this);
       });
     },
@@ -141,7 +144,7 @@
       self.config.currentPage = page;
 
       let tbody = $("#customer-list");
-      tbody.html('<tr><td colspan="6" class="text-center p-5"><span class="spinner is-active"></span> ' + self.config.strings.loading_customers + "</td></tr>");
+      tbody.html('<tr><td colspan="6" class="loading-stocks"><span class="spinner is-active"></span> ' + (self.config.strings.loading_customers || "Loading customers...") + "</td></tr>");
 
       $.ajax({
         url: self.config.ajaxUrl,
@@ -158,7 +161,7 @@
           tbody.empty();
           if (response.success) {
             if (!response.data.customers.length) {
-              tbody.append('<tr><td colspan="6" class="text-center p-5 text-muted">' + self.config.strings.no_customers + "</td></tr>");
+              tbody.append('<tr><td colspan="6" class="no-stocks">' + (self.config.strings.no_customers || "No customers found.") + "</td></tr>");
               self.updateSummaryORPLCards();
               self.updateORPLPagination(response.data.pagination);
               return;
@@ -179,15 +182,37 @@
               // Address column
               row.append($("<td>").text(customer.address || "-"));
 
-              // Status
+              // Status column with badge
+              let statusClass = customer.status === "active" ? "badge bg-success" : "badge bg-danger";
               let statusText = customer.status === "active" ? self.config.strings.active : self.config.strings.inactive;
-              row.append($("<td>").text(statusText));
+
+              row.append(
+                $("<td>")
+                  .addClass("compact-status")
+                  .append(
+                    $("<span>")
+                      .addClass(statusClass + " badge-status")
+                      .text(statusText)
+                  )
+              );
 
               // Actions column
-              let actions = $("<td class='text-center'>");
-              actions.append($("<button>").addClass("btn btn-sm btn-secondary mr-2 edit-customer").text(self.config.strings.edit));
-              actions.append($("<button>").addClass("btn btn-sm btn-danger delete-customer").text(self.config.strings.delete));
-              row.append(actions);
+              row.append(
+                $("<td>")
+                  .addClass("pos-row-actions")
+                  .append(
+                    $("<button>")
+                      .addClass("pos-action edit")
+                      .text(self.config.strings.edit || "Edit")
+                      .attr("data-id", customer.id)
+                  )
+                  .append(
+                    $("<button>")
+                      .addClass("pos-action delete")
+                      .text(self.config.strings.delete || "Delete")
+                      .attr("data-id", customer.id)
+                  )
+              );
 
               tbody.append(row);
             });
@@ -195,11 +220,11 @@
             self.updateSummaryORPLCards(response.data.customers);
             self.updateORPLPagination(response.data.pagination);
           } else {
-            tbody.append('<tr><td colspan="6" class="text-center text-danger">' + response.data + "</td></tr>");
+            tbody.append('<tr><td colspan="6" class="error-message">' + response.data + "</td></tr>");
           }
         },
         error: function () {
-          $("#customer-list").html('<tr><td colspan="6" class="text-center text-danger">' + self.config.strings.failed_load + "</td></tr>");
+          tbody.html('<tr><td colspan="6" class="error-message">' + (self.config.strings.failed_load || "Failed to load customers.") + "</td></tr>");
         },
       });
     },
@@ -268,15 +293,17 @@
 
       // Validation
       if (!name) {
-        alert(self.config.strings.name_required);
+        showLimeModal(self.config.strings.name_required || "Please enter customer name", "Validation Error");
         return false;
       }
+
       if (!email) {
-        alert(self.config.strings.email_required);
+        showLimeModal(self.config.strings.email_required || "Please enter email address", "Validation Error");
         return false;
       }
+
       if (!this.isValidEmail(email)) {
-        alert(self.config.strings.email_invalid);
+        showLimeModal(self.config.strings.email_invalid || "Please enter a valid email address", "Validation Error");
         return false;
       }
 
@@ -298,15 +325,24 @@
         },
         function (res) {
           if (res.success) {
-            self.resetForm();
-            self.loadORPLCustomers(self.config.currentPage);
+            showLimeModal(self.config.strings.successMessage || "Saved!", "Success");
+
+            const modal = $("#lime-alert-modal");
+            modal
+              .find("#lime-alert-close")
+              .off("click")
+              .on("click", function () {
+                self.resetForm();
+                self.loadORPLCustomers(self.config.currentPage);
+                modal.addClass("d-none");
+              });
           } else {
-            alert(self.config.strings.error + ": " + res.data);
+            showLimeModal(self.config.strings.error + " " + res.data, "Error");
           }
         }
       )
         .fail(function () {
-          alert(self.config.strings.request_failed);
+          showLimeModal(self.config.strings.request_failed || "Request failed. Please try again.", "Error");
         })
         .always(function () {
           // Reset submitting state
@@ -357,40 +393,41 @@
      */
     handleDeleteCustomer: function (button) {
       const self = this;
+      var $button = $(button);
+      var originalText = $button.text();
+      var id = $button.data("id");
 
-      if (!confirm(self.config.strings.confirm_delete)) {
-        return;
-      }
+      // Show confirmation modal instead of default confirm
+      showLimeConfirm(
+        self.config.strings.confirm_delete || "Are you sure you want to delete this customer?",
+        function onYes() {
+          // Disable button and show deleting text
+          $button.prop("disabled", true).text(self.config.strings.deleting || "Deleting...");
 
-      let $button = $(button);
-      let originalText = $button.text();
-      let customerId = $button.closest("tr").data("customer-id");
-
-      // Disable button and show loading
-      $button.prop("disabled", true).text(self.config.strings.deleting);
-
-      $.post(
-        self.config.ajaxUrl,
-        {
-          action: "orpl_delete_customer",
-          id: customerId,
-          nonce: self.config.nonces.delete_customer,
+          // Send AJAX request to delete customer
+          $.post(self.config.ajaxUrl, {
+            action: "orpl_delete_customer",
+            id: id,
+            nonce: self.config.nonces.delete_customer,
+          })
+            .done(function (res) {
+              if (res.success) {
+                self.loadORPLCustomers(self.config.currentPage);
+                showLimeModal(res.data, "Success");
+              } else {
+                showLimeModal(res.data, "Error");
+              }
+            })
+            .fail(function () {
+              showLimeModal(self.config.strings.delete_failed || "Delete request failed. Please try again.", "Error");
+            })
+            .always(function () {
+              // Re-enable button
+              $button.prop("disabled", false).text(originalText);
+            });
         },
-        function (res) {
-          if (res.success) {
-            self.loadORPLCustomers(self.config.currentPage);
-          } else {
-            alert(res.data);
-          }
-        }
-      )
-        .fail(function () {
-          alert(self.config.strings.delete_failed);
-        })
-        .always(function () {
-          // Re-enable button
-          $button.prop("disabled", false).text(originalText);
-        });
+        "Confirm Delete"
+      );
     },
 
     /**
