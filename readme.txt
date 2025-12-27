@@ -200,7 +200,7 @@ Yes, the plugin is fully translation-ready and includes .pot file for translator
 
 * **Support**: For support requests, please visit the [support forum](https://wordpress.org/support/plugin/obydullah-restaurant-pos-lite/)
 * **Contributions**: Found a bug or have a feature request? Please submit it on our [GitHub repository](https://github.com/shaik-obydullah/restaurant-pos-lite)
-* **Documentation**: Full user and setup documentation is available here: (https://obydullah.com/documentation/wordpress-restaurant-pos-lite-plugin)
+* **Documentation**: Full user and setup documentation is available here: [Documentation](https://obydullah.com/documentation/wordpress-restaurant-pos-lite-plugin)
 * **Translations**: Help translate the plugin on our [translation platform](https://translate.wordpress.org/projects/wp-plugins/obydullah-restaurant-pos-lite/)
 
 == License ==
