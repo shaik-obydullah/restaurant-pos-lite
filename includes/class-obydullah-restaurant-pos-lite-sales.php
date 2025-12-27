@@ -315,6 +315,7 @@ class Obydullah_Restaurant_POS_Lite_Sales
 			array(
 				'sales' => $sales,
 				'total' => $total,
+				'total_pages' => ceil($total / $per_page),
 				'showing_from' => $showing_from,
 				'showing_to' => $showing_to,
 				'current_page' => $page,
@@ -376,7 +377,7 @@ class Obydullah_Restaurant_POS_Lite_Sales
 
 		$sale->items = $items;
 		$sale->shop_info = Obydullah_Restaurant_POS_Lite_Helpers::get_shop_info();
-		
+
 		wp_send_json_success($sale);
 	}
 

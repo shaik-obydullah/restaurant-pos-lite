@@ -5,7 +5,6 @@
  * @package Obydullah_Restaurant_POS_Lite
  * @since   1.0.0
  */
-
 if (!defined('ABSPATH')) {
     exit;
 }

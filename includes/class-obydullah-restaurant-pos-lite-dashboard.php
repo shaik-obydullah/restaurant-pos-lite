@@ -1,13 +1,11 @@
 <?php
 /**
  * Obydullah Restaurant POS Lite Dashboard Class
- * Handles all dashboard functionality for the Restaurant POS plugin
  *
  * @package Obydullah_Restaurant_POS_Lite
  * @since 1.0.0
  */
 
-// Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
 }

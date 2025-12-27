@@ -1,7 +1,7 @@
 /**
  * Sales Management
  * Plugin: Obydullah_Restaurant_POS_Lite
- * Version: 1.0.0
+ * Version: 1.0.1
  */
 (function ($) {
   "use strict";
@@ -22,6 +22,7 @@
       currencyTemplate: "",
       shopInfo: {},
       nonces: {},
+      searchTimeout: null,
     },
 
     /**
@@ -82,48 +83,66 @@
         self.loadORPLSales();
       });
 
-      // Enter key in search
-      $("#search-invoice").on("change", function () {
-        clearTimeout(self.searchTimeout);
-        self.config.searchTerm = $(this).val().trim();
+      // Real-time search
+      $("#search-invoice").on("input", function () {
+        clearTimeout(self.config.searchTimeout);
+        self.config.currentSearch = $(this).val().trim();
 
-        self.searchTimeout = setTimeout(() => {
-          self.loadORPLSales(1);
+        self.config.searchTimeout = setTimeout(() => {
+          self.config.currentPage = 1;
+          self.loadORPLSales();
         }, 500);
       });
+
       // Per page change
       $("#per-page-select").on("change", function () {
         self.config.perPage = parseInt($(this).val());
-        self.loadORPLSales(1);
+        self.config.currentPage = 1;
+        self.loadORPLSales();
       });
 
       // Pagination handlers
-      $(".first-page").on("click", function (e) {
+      $(document).on("click", ".first-page", function (e) {
         e.preventDefault();
-        if (self.config.currentPage > 1) self.loadORPLSales(1);
+        if (self.config.currentPage > 1) {
+          self.config.currentPage = 1;
+          self.loadORPLSales();
+        }
       });
 
-      $(".prev-page").on("click", function (e) {
+      $(document).on("click", ".prev-page", function (e) {
         e.preventDefault();
-        if (self.config.currentPage > 1) self.loadORPLSales(self.config.currentPage - 1);
+        if (self.config.currentPage > 1) {
+          self.config.currentPage--;
+          self.loadORPLSales();
+        }
       });
 
-      $(".next-page").on("click", function (e) {
+      $(document).on("click", ".next-page", function (e) {
         e.preventDefault();
-        if (self.config.currentPage < self.config.totalPages) self.loadORPLSales(self.config.currentPage + 1);
+        if (self.config.currentPage < self.config.totalPages) {
+          self.config.currentPage++;
+          self.loadORPLSales();
+        }
       });
 
-      $(".last-page").on("click", function (e) {
+      $(document).on("click", ".last-page", function (e) {
         e.preventDefault();
-        if (self.config.currentPage < self.config.totalPages) self.loadORPLSales(self.config.totalPages);
+        if (self.config.currentPage < self.config.totalPages) {
+          self.config.currentPage = self.config.totalPages;
+          self.loadORPLSales();
+        }
       });
 
+      // Handle Enter key in page selector
       $("#current-page-selector").on("keypress", function (e) {
         if (e.which === 13) {
-          // Enter key
           let page = parseInt($(this).val());
           if (page >= 1 && page <= self.config.totalPages) {
-            self.loadORPLSales(page);
+            self.config.currentPage = page;
+            self.loadORPLSales();
+          } else {
+            alert("Please enter a page between 1 and " + self.config.totalPages);
           }
         }
       });
@@ -153,7 +172,11 @@
      */
     formatSaleType: function (saleType) {
       if (!saleType) return this.config.strings.na || "N/A";
-      return saleType.charAt(0).toUpperCase() + saleType.slice(1).replace(/([A-Z])/g, " $1");
+      if (saleType === "dineIn") return "Dine In";
+      if (saleType === "takeAway") return "Take Away";
+      if (saleType === "pickUp") return "Pick Up";
+      if (saleType === "delivery") return "Delivery";
+      return saleType;
     },
 
     /**
@@ -162,18 +185,22 @@
     formatSaleStatus: function (status) {
       if (!status) return this.config.strings.na || "N/A";
       if (status === "saveSale") return this.config.strings.saved || "Saved";
-      return status.charAt(0).toUpperCase() + status.slice(1);
+      if (status === "completed") return "Completed";
+      if (status === "pending") return "Pending";
+      if (status === "canceled") return "Canceled";
+      return status;
     },
 
     /**
      * Update pagination UI
      */
     updatePagination: function (pagination) {
-      this.config.totalPages = pagination.total_pages;
-      this.config.totalItems = pagination.total_items;
+      // Use total_pages from server response or calculate it
+      this.config.totalPages = pagination.total_pages || Math.ceil(pagination.total / pagination.per_page);
+      this.config.totalItems = pagination.total;
 
       // Update displaying text
-      $("#displaying-num").text(pagination.total_items + " " + this.config.strings.items);
+      $("#displaying-num").text(pagination.total + " " + (this.config.strings.items || "items"));
 
       // Update page input and total pages
       $("#current-page-selector").val(this.config.currentPage);
@@ -187,9 +214,8 @@
     /**
      * Load sales with pagination and filters
      */
-    loadORPLSales: function (page = 1) {
+    loadORPLSales: function () {
       var self = this;
-      self.config.currentPage = page;
 
       let tbody = $("#sales-list");
       tbody.html('<tr><td colspan="11" class="loading-sales"><span class="spinner is-active"></span> ' + (self.config.strings.loadingSales || "Loading sales...") + "</td></tr>");
@@ -201,7 +227,7 @@
           action: "orpl_get_sales",
           page: self.config.currentPage,
           per_page: self.config.perPage,
-          search: self.config.searchTerm,
+          search: self.config.currentSearch,
           date_from: self.config.dateFrom,
           date_to: self.config.dateTo,
           sale_type: self.config.saleType,
@@ -211,7 +237,7 @@
         success: function (response) {
           tbody.empty();
           if (response.success) {
-            if (!response.data.sales.length) {
+            if (!response.data.sales || response.data.sales.length === 0) {
               tbody.append('<tr><td colspan="11" class="no-sales">' + (self.config.strings.noSales || "No sales found.") + "</td></tr>");
               self.updatePagination(response.data);
               return;
@@ -233,7 +259,7 @@
 
               // Type column
               let typeClass = sale.sale_type === "dineIn" ? "badge bg-primary" : sale.sale_type === "takeAway" ? "badge bg-info" : sale.sale_type === "pickUp" ? "badge bg-warning" : "badge bg-secondary";
-              let typeText = sale.sale_type === "dineIn" ? "Dine In" : sale.sale_type === "takeAway" ? "Take Away" : sale.sale_type === "pickUp" ? "Pick Up" : sale.sale_type || "N/A";
+              let typeText = self.formatSaleType(sale.sale_type);
 
               row.append(
                 $("<td>")
@@ -266,8 +292,8 @@
               row.append($("<td>").text(self.formatCurrency(sale.grand_total)));
 
               // Status column
-              let statusClass = sale.status === "completed" ? "badge bg-success" : sale.status === "saveSale" ? "badge bg-warning" : sale.status === "pending" ? "badge bg-info" : "badge bg-danger"; // canceled or any other
-              let statusText = sale.status === "completed" ? "Completed" : sale.status === "saveSale" ? "Saved" : sale.status === "pending" ? "Pending" : sale.status === "canceled" ? "Canceled" : sale.status || "N/A";
+              let statusClass = sale.status === "completed" ? "badge bg-success" : sale.status === "saveSale" ? "badge bg-warning" : sale.status === "pending" ? "badge bg-info" : "badge bg-danger";
+              let statusText = self.formatSaleStatus(sale.status);
 
               row.append(
                 $("<td>")
@@ -319,7 +345,7 @@
       let saleId = $(button).closest("tr").data("sale-id");
 
       if (!saleId) {
-        alert(self.config.strings.cannot_print);
+        alert(self.config.strings.cannot_print || "Cannot print: No sale ID available");
         return;
       }
 
@@ -334,8 +360,6 @@
         success: function (response) {
           if (response.success) {
             let sale = response.data;
-
-            // Use shop info from sale data or fallback to config
             let shop = sale.shop_info || self.config.shop_info || {};
 
             let printContent = `
@@ -480,16 +504,7 @@
         <span class="info-label">Type:</span>
         <span>${self.formatSaleType(sale.sale_type)}</span>
     </div>
-    ${
-      sale.table_number
-        ? `
-    <div class="info-row">
-        <span class="info-label">Table:</span>
-        <span>${sale.table_number}</span>
-    </div>
-    `
-        : ""
-    }
+    ${sale.table_number ? `<div class="info-row"><span class="info-label">Table:</span><span>${sale.table_number}</span></div>` : ""}
     
     <div class="divider"></div>
     
@@ -507,20 +522,15 @@
               sale.items && sale.items.length > 0
                 ? sale.items
                     .map(
-                      (item, index) => `
+                      (item) => `
             <tr>
                 <td class="name">${item.product_name || "Item"}</td>
                 <td class="qty">${item.quantity}</td>
                 <td class="price">${self.formatCurrency(item.total_price)}</td>
-            </tr>
-            `
+            </tr>`
                     )
                     .join("")
-                : `
-            <tr>
-                <td colspan="3" style="text-align: center;">No items</td>
-            </tr>
-            `
+                : `<tr><td colspan="3" style="text-align: center;">No items</td></tr>`
             }
         </tbody>
     </table>
@@ -532,84 +542,23 @@
             <span>Subtotal:</span>
             <span>${self.formatCurrency(sale.net_price || 0)}</span>
         </div>
-        ${
-          sale.tax_amount && parseFloat(sale.tax_amount) > 0
-            ? `
-        <div class="total-row">
-            <span>Tax (${parseFloat(sale.tax_rate || 0)}%):</span>
-            <span>${self.formatCurrency(sale.tax_amount)}</span>
-        </div>
-        `
-            : ""
-        }
-        ${
-          sale.vat_amount && parseFloat(sale.vat_amount) > 0
-            ? `
-        <div class="total-row">
-            <span>VAT (${parseFloat(sale.vat_rate || 0)}%):</span>
-            <span>${self.formatCurrency(sale.vat_amount)}</span>
-        </div>
-        `
-            : ""
-        }
-        ${
-          sale.discount_amount && parseFloat(sale.discount_amount) > 0
-            ? `
-        <div class="total-row">
-            <span>Discount:</span>
-            <span>-${self.formatCurrency(sale.discount_amount)}</span>
-        </div>
-        `
-            : ""
-        }
-        ${
-          sale.shipping_cost && parseFloat(sale.shipping_cost) > 0
-            ? `
-        <div class="total-row">
-            <span>Shipping:</span>
-            <span>${self.formatCurrency(sale.shipping_cost)}</span>
-        </div>
-        `
-            : ""
-        }
+        ${sale.tax_amount && parseFloat(sale.tax_amount) > 0 ? `<div class="total-row"><span>Tax (${parseFloat(sale.tax_rate || 0)}%):</span><span>${self.formatCurrency(sale.tax_amount)}</span></div>` : ""}
+        ${sale.vat_amount && parseFloat(sale.vat_amount) > 0 ? `<div class="total-row"><span>VAT (${parseFloat(sale.vat_rate || 0)}%):</span><span>${self.formatCurrency(sale.vat_amount)}</span></div>` : ""}
+        ${sale.discount_amount && parseFloat(sale.discount_amount) > 0 ? `<div class="total-row"><span>Discount:</span><span>-${self.formatCurrency(sale.discount_amount)}</span></div>` : ""}
+        ${sale.shipping_cost && parseFloat(sale.shipping_cost) > 0 ? `<div class="total-row"><span>Shipping:</span><span>${self.formatCurrency(sale.shipping_cost)}</span></div>` : ""}
         <div class="total-row total">
             <span>TOTAL:</span>
             <span>${self.formatCurrency(sale.grand_total || 0)}</span>
         </div>
     </div>
     
-    <!-- Payment Method (Optional) -->
-    ${
-      sale.payment_method
-        ? `
-    <div class="info-row" style="margin-top: 8px;">
-        <span class="info-label">Payment:</span>
-        <span>${sale.payment_method}</span>
-    </div>
-    `
-        : ""
-    }
+    <!-- Payment Method -->
+    ${sale.payment_method ? `<div class="info-row" style="margin-top: 8px;"><span class="info-label">Payment:</span><span>${sale.payment_method}</span></div>` : ""}
     
     <!-- Notes -->
-    ${
-      sale.note
-        ? `
-    <div style="margin-top: 10px; padding: 5px; border: 1px dashed #666; font-size: 11px;">
-        <strong>Note:</strong> ${sale.note}
-    </div>
-    `
-        : ""
-    }
+    ${sale.note ? `<div style="margin-top: 10px; padding: 5px; border: 1px dashed #666; font-size: 11px;"><strong>Note:</strong> ${sale.note}</div>` : ""}
     
-    ${
-      sale.cooking_instructions
-        ? `
-    <div style="margin-top: 5px; padding: 5px; border: 1px dashed #666; font-size: 11px;">
-        <strong>Cooking Instructions:</strong> ${sale.cooking_instructions}
-    </div>
-    `
-        : ""
-    }
+    ${sale.cooking_instructions ? `<div style="margin-top: 5px; padding: 5px; border: 1px dashed #666; font-size: 11px;"><strong>Cooking Instructions:</strong> ${sale.cooking_instructions}</div>` : ""}
     
     <!-- Footer -->
     <div class="footer">
@@ -618,8 +567,7 @@
         ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
     </div>
 </body>
-</html>
-        `;
+</html>`;
 
             let printWindow = window.open("", "_blank");
             if (!printWindow) {
@@ -630,23 +578,21 @@
             printWindow.document.head.innerHTML = `<title>Invoice #${sale.invoice_id || sale.id}</title>`;
             printWindow.document.body.innerHTML = printContent;
 
-            // Wait for content to load, then print
             printWindow.onload = function () {
               setTimeout(() => {
                 printWindow.focus();
                 printWindow.print();
-                // Optional: close after printing
                 printWindow.onafterprint = function () {
                   printWindow.close();
                 };
               }, 100);
             };
           } else {
-            alert(self.config.strings.error + ": " + response.data);
+            alert((self.config.strings.error || "Error:") + " " + response.data);
           }
         },
-        error: function (xhr, status, error) {
-          alert(self.config.strings.request_failed + ": " + error);
+        error: function () {
+          alert((self.config.strings.request_failed || "Request failed:") + " " + error);
         },
       });
     },
@@ -670,14 +616,11 @@
       var originalText = $button.text();
       var id = $button.closest("tr").data("sale-id");
 
-      // Show confirmation modal instead of default confirm
       showLimeConfirm(
         self.config.strings.confirmDelete || "Are you sure you want to delete this sale?",
         function onYes() {
-          // Disable button and show deleting text
           $button.prop("disabled", true).text(self.config.strings.deleting || "Deleting...");
 
-          // Send AJAX request to delete sale
           $.post(self.config.ajaxUrl, {
             action: "orpl_delete_sale",
             id: id,
@@ -685,7 +628,7 @@
           })
             .done(function (res) {
               if (res.success) {
-                self.loadORPLSales(self.config.currentPage);
+                self.loadORPLSales();
                 showLimeModal(res.data, "Success");
               } else {
                 showLimeModal(res.data, "Error");
@@ -695,7 +638,6 @@
               showLimeModal(self.config.strings.deleteFailed || "Delete request failed. Please try again.", "Error");
             })
             .always(function () {
-              // Re-enable button
               $button.prop("disabled", false).text(originalText);
             });
         },

@@ -1,9 +1,8 @@
 /**
  * Product Management
  * Plugin: Obydullah_Restaurant_POS_Lite
- * Version: 1.0.0
+ * Version: 1.0.1
  */
-
 (function ($) {
   "use strict";
 
