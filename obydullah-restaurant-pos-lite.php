@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Plugin constants
-define('ORPL_VERSION', '1.0.0');
+define('ORPL_VERSION', '1.0.1');
 define('ORPL_PATH', plugin_dir_path(__FILE__));
 define('ORPL_URL', plugin_dir_url(__FILE__));
 
