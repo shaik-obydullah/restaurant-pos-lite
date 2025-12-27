@@ -345,11 +345,10 @@ tr:hover .pos-row-actions {
 }
 
 .qty-input {
-  width: 55px;
+  max-width: 5rem;
   text-align: center;
   padding: 4px;
   font-size: 14px;
-  -moz-appearance: textfield;
 }
 
 .qty-input::-webkit-inner-spin-button,
