@@ -18,6 +18,10 @@ A comprehensive restaurant Point of Sale (POS) system for WordPress that provide
 
 Designed for ease of use and performance, the plugin provides a modern POS interface suitable for real-world restaurant environments.
 
+== Video ==
+
+Watch the full tutorial and demo of Obydullah Restaurant POS Lite here: [Video Tutorial](https://youtu.be/FlJ_RkWfsl0)
+
 = Key Features =
 
 * **Dashboard & Analytics**
