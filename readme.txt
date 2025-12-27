@@ -154,12 +154,16 @@ Yes, the plugin is fully translation-ready and includes .pot file for translator
 
 == Screenshots ==
 
-1. Dashboard Overview - Main dashboard showing business metrics and summaries
-2. POS Interface - Point of Sale screen with product grid and order panel
-3. Products Management - Add and manage menu items with categories
-4. Sales History - View and filter completed sales with print options
-5. Customer Management - Manage customer database and contact information
-6. Accounting Module - Track income, expenses, and financial summaries
+1. Dashboard Overview – Main admin dashboard displaying key business metrics and summaries.
+2. Product Categories – Create and manage product categories for better menu organization.
+3. Product Management – Add, edit, and organize menu items with categories.
+4. Stock Management – Monitor product stock levels and inventory availability.
+5. Stock Adjustment – Adjust stock quantities manually with reason tracking.
+6. Customer Management – Manage customer records, contact details.
+7. POS Interface – Point of Sale screen with product grid, cart, and order panel.
+8. Sales History – View, search, and filter completed sales with receipt printing options.
+9. Accounting Module – Track income, expenses, and overall financial summaries.
+10. Settings Panel – Configure taxes, receipts, and system preferences.
 
 == Changelog ==
 
