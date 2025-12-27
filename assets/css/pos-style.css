@@ -331,10 +331,41 @@ tr:hover .pos-row-actions {
 }
 
 .orpl-cart-item-qty {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.qty-minus, .qty-plus {
+  padding: 4px 10px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.qty-input {
+  width: 55px;
+  text-align: center;
+  padding: 4px;
+  font-size: 14px;
+  -moz-appearance: textfield;
+}
+
+.qty-input::-webkit-inner-spin-button,
+.qty-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+@media (max-width: 1400px) {
+  .orpl-cart-item-qty {
+    gap: 5px;
+  }
+  
+  .qty-input {
+    width: 45px;
+  }
 }
 
 .orpl-cart-item-price {
