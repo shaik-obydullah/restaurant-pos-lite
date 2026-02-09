@@ -4,6 +4,7 @@
  *
  * @package Obydullah_Restaurant_POS_Lite
  * @since   1.0.0
+ * @version 1.0.2
  */
 if (!defined('ABSPATH')) {
     exit;
@@ -781,7 +782,6 @@ class Obydullah_Restaurant_POS_Lite_POS
 
                 $accounting_data = [
                     'in_amount' => $grand_total,     // Revenue from sale
-                    'out_amount' => $buy_price_total, // Cost of goods sold
                     'description' => sprintf('Sale #%s completed (Income: %s)', $invoice_id, number_format($income, 2)),
                     'created_at' => current_time('mysql')
                 ];

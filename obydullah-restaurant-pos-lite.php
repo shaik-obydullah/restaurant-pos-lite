@@ -3,7 +3,7 @@
  * Plugin Name: Obydullah Restaurant POS Lite
  * Plugin URI: https://obydullah.com/project/wordpress-restaurant-pos-lite-plugin
  * Description: A free plugin to manage restaurant orders, menu, and sales directly from your WordPress dashboard.
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author: Shaik Obydullah
  * Author URI: https://obydullah.com
  * License: GPLv2 or later
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Plugin constants
-define('ORPL_VERSION', '1.0.1');
+define('ORPL_VERSION', '1.0.2');
 define('ORPL_PATH', plugin_dir_path(__FILE__));
 define('ORPL_URL', plugin_dir_url(__FILE__));
 

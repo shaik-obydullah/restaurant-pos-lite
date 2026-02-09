@@ -4,6 +4,7 @@
  *
  * @package Obydullah_Restaurant_POS_Lite
  * @since   1.0.0
+ * @version 1.0.2
  */
 if (!defined('ABSPATH')) {
     exit;
@@ -69,7 +70,7 @@ class Obydullah_Restaurant_POS_Lite_Accounting
                 <div class="col-lg-3 col-md-6 mb-3">
                     <div class="bg-light p-4 rounded shadow-sm stock-summary-card border-left border-success">
                         <h3 class="fs-6 fw-normal text-muted mb-2">
-                            <?php esc_html_e('Total Income', 'obydullah-restaurant-pos-lite'); ?>
+                            <?php esc_html_e('Total In', 'obydullah-restaurant-pos-lite'); ?>
                         </h3>
                         <p class="summary-number text-success mb-0 fs-3 fw-bold" id="total-income">
                             <?php echo esc_html($this->format_currency(0)); ?>
@@ -79,7 +80,7 @@ class Obydullah_Restaurant_POS_Lite_Accounting
                 <div class="col-lg-3 col-md-6 mb-3">
                     <div class="bg-light p-4 rounded shadow-sm stock-summary-card border-left border-danger">
                         <h3 class="fs-6 fw-normal text-muted mb-2">
-                            <?php esc_html_e('Total Expense', 'obydullah-restaurant-pos-lite'); ?>
+                            <?php esc_html_e('Total Out', 'obydullah-restaurant-pos-lite'); ?>
                         </h3>
                         <p class="summary-number text-danger mb-0 fs-3 fw-bold" id="total-expense">
                             <?php echo esc_html($this->format_currency(0)); ?>
