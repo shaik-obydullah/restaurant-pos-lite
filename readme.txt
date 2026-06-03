@@ -1,22 +1,20 @@
 === Obydullah Restaurant POS Lite ===
 Contributors: obydullah
 Donate link: https://obydullah.com
-Tags: restaurant, pos, point of sale, orders, sales, inventory, menu, customers, management, accounting, food, cafe, takeaway
+Tags: point of sale, orders, sales, inventory, takeaway
 Requires at least: 5.0
-Tested up to: 6.9
-Stable tag: 1.0.1
+Tested up to: 7.0
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: obydullah-restaurant-pos-lite
 Domain Path: /languages
 
-A comprehensive restaurant Point of Sale (POS) system for WordPress that provides end-to-end management for restaurant operations, including inventory management, sales processing, customer management, and accounting.
+Complete restaurant Point of Sale (POS) with inventory, order management, and sales tracking for food businesses.
 
 == Description ==
 
 **Obydullah Restaurant POS Lite** is a complete restaurant management solution that helps you streamline your restaurant operations. Manage your menu, process orders, track inventory, handle customers, and generate sales reports — all from your WordPress admin area.
-
-Designed for ease of use and performance, the plugin provides a modern POS interface suitable for real-world restaurant environments.
 
 == Video ==
 
@@ -171,6 +169,12 @@ Yes, the plugin is fully translation-ready and includes .pot file for translator
 
 == Changelog ==
 
+= 1.0.2 =
+* Dashboard UI improvements
+* Simplified accounting workflow
+* Performance improvements
+* No database changes
+
 = 1.0.1 =
 * Fixed: UI layout improvements for better responsiveness
 * Fixed: Improved form validation and error messages
@@ -191,14 +195,22 @@ Yes, the plugin is fully translation-ready and includes .pot file for translator
 
 == Upgrade Notice ==
 
+= 1.0.2 =
+* Recommended update for all users.
+* Dashboard UI improvements and simplified accounting workflow.
+* No database changes required.
+* Backward compatible with version 1.0.1.
+
 = 1.0.1 =
-* Recommended update for all users - includes UI improvements and bug fixes
-* No database changes required
-* Backward compatible with version 1.0.0
+* Recommended update for all users.
+* UI improvements and bug fixes.
+* No database changes required.
+* Backward compatible with version 1.0.0.
 
 = 1.0.0 =
-* Initial release - Complete restaurant POS system
-* Requires initial database setup on activation
+* Initial release.
+* Complete restaurant POS system.
+* Requires initial database setup on activation.
 
 == Additional Notes ==
 
